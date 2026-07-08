@@ -25,32 +25,41 @@ const CATALOG = [
     "Custom print tee — special price", "Custom print tee — my own design", ["As shown"], 0],
 ];
 
-const force = process.argv.includes("--force");
-const count = db.prepare("SELECT COUNT(*) AS c FROM products").get().c;
+async function runSeed() {
+  const force = process.argv.includes("--force");
+  const countRow = await db.prepare("SELECT COUNT(*) AS c FROM products").get();
+  const count = countRow?.c ?? 0;
 
-if (count > 0 && !force) {
-  console.log(`[seed] ${count} product(s) already exist — run "npm run seed -- --force" to wipe and reseed.`);
+  if (count > 0 && !force) {
+    console.log(`[seed] ${count} product(s) already exist — run "npm run seed -- --force" to wipe and reseed.`);
+    process.exit(0);
+  }
+
+  if (force && count > 0) {
+    await db.exec("DELETE FROM products;"); // images + variants cascade
+    console.log(`[seed] cleared ${count} existing product(s)`);
+  }
+
+  let variants = 0;
+  for (let i = 0; i < CATALOG.length; i++) {
+    const row = CATALOG[i];
+    const [name, tag, price, priceFrom, edition, img, alt, orderItem, colours, stock] = row;
+    const product = await createProduct({ name, tag, price, priceFrom, edition, orderItem, sortOrder: (i + 1) * 10 });
+    await addImage(product.id, { url: img, alt });
+    for (const color of colours) {
+      for (const size of SIZES) {
+        const sku = `GJ-${product.id}-${size}-${color.slice(0, 2).toUpperCase()}`;
+        await addVariant(product.id, { size, color, stock, sku });
+        variants++;
+      }
+    }
+  }
+
+  console.log(`[seed] inserted ${CATALOG.length} products, ${variants} variants`);
   process.exit(0);
 }
 
-if (force && count > 0) {
-  db.exec("DELETE FROM products;"); // images + variants cascade
-  console.log(`[seed] cleared ${count} existing product(s)`);
-}
-
-let variants = 0;
-CATALOG.forEach((row, i) => {
-  const [name, tag, price, priceFrom, edition, img, alt, orderItem, colours, stock] = row;
-  const product = createProduct({ name, tag, price, priceFrom, edition, orderItem, sortOrder: (i + 1) * 10 });
-  addImage(product.id, { url: img, alt });
-  for (const color of colours) {
-    for (const size of SIZES) {
-      const sku = `GJ-${product.id}-${size}-${color.slice(0, 2).toUpperCase()}`;
-      addVariant(product.id, { size, color, stock, sku });
-      variants++;
-    }
-  }
+runSeed().catch((err) => {
+  console.error("[seed] error:", err);
+  process.exit(1);
 });
-
-console.log(`[seed] inserted ${CATALOG.length} products, ${variants} variants`);
-process.exit(0);

@@ -2,8 +2,6 @@ import { db } from "./index.js";
 
 // The /custom-print "send us your idea" inbox. Unchanged from the old schema.
 
-const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
-
 const insert = db.prepare(
   `INSERT INTO custom_requests (name, contact, method, idea, colour, size, qty, reference_url)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
@@ -11,6 +9,7 @@ const insert = db.prepare(
 const selectById = db.prepare("SELECT * FROM custom_requests WHERE id = ?");
 
 export function customToJson(row) {
+  if (!row) return null;
   return {
     id: row.id,
     name: row.name,
@@ -28,33 +27,43 @@ export function customToJson(row) {
   };
 }
 
-export function createCustomRequest(f) {
-  const info = insert.run(
+export async function createCustomRequest(f) {
+  const info = await insert.run(
     f.name, f.contact, f.method ?? "instagram", f.idea,
     f.colour ?? "", f.size ?? "", f.qty ?? 1, f.referenceUrl ?? ""
   );
-  return customToJson(selectById.get(Number(info.lastInsertRowid)));
+  return customToJson(await selectById.get(Number(info.lastInsertRowid)));
 }
 
-export function listCustomRequests(status) {
-  const rows = status
-    ? db.prepare("SELECT * FROM custom_requests WHERE status = ? ORDER BY id DESC").all(status)
-    : db.prepare("SELECT * FROM custom_requests ORDER BY id DESC").all();
+export async function listCustomRequests(status) {
+  const stmt = status
+    ? db.prepare("SELECT * FROM custom_requests WHERE status = ? ORDER BY id DESC")
+    : db.prepare("SELECT * FROM custom_requests ORDER BY id DESC");
+  const rows = status ? await stmt.all(status) : await stmt.all();
   return rows.map(customToJson);
 }
 
 const COL = { status: "status", adminNote: "admin_note" };
 
-export function updateCustomRequest(id, patch) {
+export async function updateCustomRequest(id, patch) {
   const sets = [];
   const params = [];
   for (const [key, col] of Object.entries(COL)) {
     if (Object.hasOwn(patch, key)) { sets.push(`${col} = ?`); params.push(patch[key]); }
   }
-  if (sets.length === 0) return selectById.get(id) ? customToJson(selectById.get(id)) : null;
-  const info = db.prepare(`UPDATE custom_requests SET ${sets.join(", ")}, updated_at = ${NOW} WHERE id = ?`).run(...params, id);
-  return info.changes > 0 ? customToJson(selectById.get(id)) : null;
+  if (sets.length === 0) {
+    const existing = await selectById.get(id);
+    return existing ? customToJson(existing) : null;
+  }
+  const info = await db.prepare(`UPDATE custom_requests SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...params, id);
+  if (info.changes > 0) {
+    const row = await selectById.get(id);
+    return row ? customToJson(row) : null;
+  }
+  return null;
 }
 
-export const deleteCustomRequest = (id) =>
-  db.prepare("DELETE FROM custom_requests WHERE id = ?").run(id).changes > 0;
+export async function deleteCustomRequest(id) {
+  const info = await db.prepare("DELETE FROM custom_requests WHERE id = ?").run(id);
+  return info.changes > 0;
+}

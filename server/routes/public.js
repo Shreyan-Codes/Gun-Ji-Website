@@ -10,18 +10,19 @@ import { createCustomRequest } from "../db/customRequests.js";
 const router = Router();
 const submitLimit = rateLimit({ name: "submit", windowMs: 10 * 60 * 1000, max: 8 });
 
-router.get("/health", (req, res) => {
-  res.json({ ok: true, uptimeSec: Math.round(process.uptime()), products: listActiveProducts().length });
+router.get("/health", async (req, res) => {
+  const products = await listActiveProducts();
+  res.json({ ok: true, uptimeSec: Math.round(process.uptime()), products: products.length });
 });
 
-router.get("/settings", (req, res) => res.json(getSettings()));
+router.get("/settings", async (req, res) => res.json(await getSettings()));
 
-router.get("/products", (req, res) => res.json({ products: listActiveProducts() }));
+router.get("/products", async (req, res) => res.json({ products: await listActiveProducts() }));
 
-router.get("/products/:idOrSlug", (req, res) => {
-  const product = getProduct(req.params.idOrSlug);
+router.get("/products/:idOrSlug", async (req, res) => {
+  const product = await getProduct(req.params.idOrSlug);
   // Only expose active products publicly.
-  if (!product || !getProductRow(product.id)?.active) {
+  if (!product || !(await getProductRow(product.id))?.active) {
     return res.status(404).json({ error: "Product not found" });
   }
   res.json({ product });
@@ -40,7 +41,7 @@ const contactSpec = {
 // POST /api/orders handles two shapes:
 //   { items: [{ variantId, qty }], name, contact, ... }  → cart checkout (stock-enforced)
 //   { productId, size, colour, qty, name, contact, ... }  → legacy single-item
-router.post("/orders", submitLimit, optionalCustomer, (req, res) => {
+router.post("/orders", submitLimit, optionalCustomer, async (req, res) => {
   // Honeypot short-circuit for both paths.
   if (typeof req.body?.website === "string" && req.body.website.trim()) {
     return res.status(201).json({ ok: true });
@@ -60,7 +61,7 @@ const checkoutSpec = {
   note: { max: 1000 },
 };
 
-function placeCartOrder(req, res) {
+async function placeCartOrder(req, res) {
   const { ok, errors, value } = clean(checkoutSpec, req.body);
   if (!ok) return res.status(400).json({ error: "Check your details", errors });
 
@@ -76,7 +77,7 @@ function placeCartOrder(req, res) {
       problems.push({ variantId: line?.variantId ?? null, error: "Invalid item" });
       continue;
     }
-    const v = getVariantWithProduct(variantId);
+    const v = await getVariantWithProduct(variantId);
     if (!v || !v.product_active) { problems.push({ variantId, error: "No longer available" }); continue; }
     if (v.stock < qty) { problems.push({ variantId, stock: v.stock, error: v.stock > 0 ? `Only ${v.stock} left` : "Out of stock" }); continue; }
     items.push({
@@ -88,7 +89,7 @@ function placeCartOrder(req, res) {
   if (items.length === 0) return res.status(400).json({ error: "Your cart is empty" });
 
   try {
-    const order = createOrder({
+    const order = await createOrder({
       userId: req.user ? req.user.id : null,
       shippingName: value.name,
       shippingAddress: value.shippingAddress,
@@ -109,7 +110,7 @@ function placeCartOrder(req, res) {
   }
 }
 
-function placeSingleOrder(req, res) {
+async function placeSingleOrder(req, res) {
   const { ok, errors, value } = clean(
     { ...contactSpec, productId: { type: "int", min: 1 }, item: { max: 160 }, note: { max: 1000 } },
     req.body
@@ -121,20 +122,20 @@ function placeSingleOrder(req, res) {
   let productId = null;
   let variantId = null;
   if (value.productId) {
-    const product = getProductRow(value.productId);
+    const product = await getProductRow(value.productId);
     if (!product || !product.active) {
       return res.status(400).json({ error: "Check the highlighted fields", errors: { productId: "Unknown product" } });
     }
     item = product.order_item || product.name;
     unitPrice = product.price;
     productId = product.id;
-    variantId = findVariant(product.id, value.size, value.colour)?.id ?? null;
+    variantId = (await findVariant(product.id, value.size, value.colour))?.id ?? null;
   }
   if (!item) {
     return res.status(400).json({ error: "Check the highlighted fields", errors: { item: "Tell us which tee" } });
   }
 
-  const order = createOrder({
+  const order = await createOrder({
     userId: req.user ? req.user.id : null,
     shippingName: value.name,
     contact: value.contact,
@@ -150,7 +151,7 @@ function placeSingleOrder(req, res) {
 }
 
 // Custom print inquiry → the /admin inbox.
-router.post("/custom-requests", submitLimit, (req, res) => {
+router.post("/custom-requests", submitLimit, async (req, res) => {
   const { ok, errors, value } = clean(
     {
       ...contactSpec,
@@ -162,7 +163,7 @@ router.post("/custom-requests", submitLimit, (req, res) => {
   if (!ok) return res.status(400).json({ error: "Check the highlighted fields", errors });
   if (value.website) return res.status(201).json({ ok: true });
 
-  const created = createCustomRequest({
+  const created = await createCustomRequest({
     name: value.name, contact: value.contact, method: value.method,
     idea: value.idea, colour: value.colour, size: value.size, qty: value.qty,
     referenceUrl: value.referenceUrl,

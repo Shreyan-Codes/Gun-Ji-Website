@@ -1,69 +1,137 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DatabaseSync } from "node:sqlite";
+import { AsyncLocalStorage } from "node:async_hooks";
+import pg from "pg";
 import { config } from "../config.js";
 import { hashPassword } from "../lib/password.js";
-import { preSchema, postSchema, tableExists } from "./migrate.js";
+
+const { Pool, types } = pg;
+
+// Parse PostgreSQL BIGINT (INT8) as integer in JavaScript
+types.setTypeParser(types.builtins.INT8, (value) => parseInt(value, 10));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-fs.mkdirSync(path.dirname(config.dbPath), { recursive: true });
+// Create a connection pool to Supabase / PostgreSQL.
+// In development, if DATABASE_URL is not set, it will fallback to local postgres defaults or we can log a warning.
+if (!config.databaseUrl) {
+  console.error("[db] ERROR: DATABASE_URL environment variable is not set!");
+}
 
-export const db = new DatabaseSync(config.dbPath);
-db.exec("PRAGMA journal_mode = WAL;");
-db.exec("PRAGMA foreign_keys = ON;");
+export const pool = new Pool({
+  connectionString: config.databaseUrl,
+  ssl: config.databaseUrl.includes("supabase.co") || config.databaseUrl.includes("render.com")
+    ? { rejectUnauthorized: false }
+    : false,
+});
 
-// If this DB file predates the new schema, back it up once before we touch it.
-const needsMigration =
-  fs.existsSync(config.dbPath) &&
-  (tableExists(db, "customers") ||
-    (tableExists(db, "products") && !hasColumn(db, "products", "slug")) ||
-    (tableExists(db, "orders") && hasColumn(db, "orders", "item")));
+const txStorage = new AsyncLocalStorage();
 
-if (needsMigration) {
-  const backup = `${config.dbPath}.backup-${Date.now()}`;
-  try {
-    fs.copyFileSync(config.dbPath, backup);
-    console.log(`[db] backed up old database → ${path.basename(backup)}`);
-  } catch (err) {
-    console.warn("[db] could not back up database:", err.message);
+class Stmt {
+  constructor(sqlStr) {
+    this.sqlStr = sqlStr;
+    // Translate SQLite style '?' placeholders to Postgres '$1, $2, ...'
+    let count = 1;
+    let sql = sqlStr.replace(/\?/g, () => `$${count++}`);
+    
+    // Convert strftime to CURRENT_TIMESTAMP
+    sql = sql.replace(/strftime\([^)]+\)/g, "CURRENT_TIMESTAMP");
+
+    // Handle SQLite specific "INSERT OR IGNORE" to Postgres "INSERT ... ON CONFLICT"
+    if (/insert\s+or\s+ignore\s+into\s+settings/i.test(sql)) {
+      sql = sql.replace(/insert\s+or\s+ignore\s+into\s+settings/i, "INSERT INTO settings");
+      sql += " ON CONFLICT (key) DO NOTHING";
+    } else if (/insert\s+or\s+ignore\s+into\s+users/i.test(sql)) {
+      sql = sql.replace(/insert\s+or\s+ignore\s+into\s+users/i, "INSERT INTO users");
+      sql += " ON CONFLICT (email) DO NOTHING";
+    }
+
+    // Append RETURNING id or RETURNING * to INSERT queries to get lastInsertRowid
+    this.isInsert = /^\s*insert\s+/i.test(sql);
+    if (this.isInsert && !/returning/i.test(sql)) {
+      sql += " RETURNING id";
+    }
+
+    this.translatedSql = sql;
+  }
+
+  async get(...params) {
+    const actualParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+    const txClient = txStorage.getStore();
+    const executor = txClient || pool;
+    const result = await executor.query(this.translatedSql, actualParams);
+    return result.rows[0] || null;
+  }
+
+  async all(...params) {
+    const actualParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+    const txClient = txStorage.getStore();
+    const executor = txClient || pool;
+    const result = await executor.query(this.translatedSql, actualParams);
+    return result.rows;
+  }
+
+  async run(...params) {
+    const actualParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+    const txClient = txStorage.getStore();
+    const executor = txClient || pool;
+    const result = await executor.query(this.translatedSql, actualParams);
+    return {
+      lastInsertRowid: result.rows[0]?.id || null,
+      changes: result.rowCount,
+    };
   }
 }
 
-function hasColumn(database, table, column) {
-  return database.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
-}
+export const db = {
+  prepare(sql) {
+    return new Stmt(sql);
+  },
+  async exec(sqlStr) {
+    const txClient = txStorage.getStore();
+    const executor = txClient || pool;
+    let sql = sqlStr.replace(/strftime\([^)]+\)/g, "CURRENT_TIMESTAMP");
+    await executor.query(sql);
+  },
+  async close() {
+    await pool.end();
+  }
+};
 
-// 1) rename/drop legacy tables, 2) create the new schema, 3) copy data across.
-preSchema(db);
-db.exec(fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8"));
-postSchema(db);
+// Initialize schema
+try {
+  const schemaSql = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8");
+  await db.exec(schemaSql);
+  console.log("[db] schema initialized successfully");
+} catch (err) {
+  console.error("[db] schema initialization failed:", err.message);
+}
 
 // ---------- boot-time seeding ----------
 
-// Default site settings (only inserted if missing).
 const defaultSettings = {
   whatsapp_number: "",
   ig_dm: "https://ig.me/m/gunji.clo1",
   ig_profile: "https://www.instagram.com/gunji.clo1/",
 };
-const seedSetting = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
-for (const [key, value] of Object.entries(defaultSettings)) seedSetting.run(key, value);
 
-// The admin lives in `users` with role='admin'. Its password mirrors
-// ADMIN_PASSWORD from .env and is refreshed on every boot, so changing the env
-// value updates the login. Admin login stays disabled until it's set.
+// Seed default settings
+const seedSetting = db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO NOTHING");
+for (const [key, value] of Object.entries(defaultSettings)) {
+  await seedSetting.run(key, value);
+}
+
 const ADMIN_EMAIL = "admin@gunji.local";
 if (config.adminPassword) {
   const { hash, salt } = hashPassword(config.adminPassword);
-  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(ADMIN_EMAIL);
+  const existing = await db.prepare("SELECT id FROM users WHERE email = ?").get(ADMIN_EMAIL);
   if (existing) {
-    db.prepare(
-      "UPDATE users SET password_hash = ?, salt = ?, role = 'admin', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?"
+    await db.prepare(
+      "UPDATE users SET password_hash = ?, salt = ?, role = 'admin', updated_at = CURRENT_TIMESTAMP WHERE id = ?"
     ).run(hash, salt, existing.id);
   } else {
-    db.prepare(
+    await db.prepare(
       "INSERT INTO users (email, name, password_hash, salt, role) VALUES (?, 'Studio admin', ?, ?, 'admin')"
     ).run(ADMIN_EMAIL, hash, salt);
   }
@@ -71,16 +139,29 @@ if (config.adminPassword) {
 
 export { ADMIN_EMAIL };
 
-// Small manual-transaction helper — node:sqlite has no better-sqlite3-style
-// db.transaction(). Rolls back and rethrows on error.
-export function tx(fn) {
-  db.exec("BEGIN");
+// Transaction Helper using AsyncLocalStorage
+export async function tx(fn) {
+  const existingClient = txStorage.getStore();
+  if (existingClient) {
+    return await fn();
+  }
+
+  const client = await pool.connect();
   try {
-    const result = fn();
-    db.exec("COMMIT");
+    await client.query("BEGIN");
+    const result = await txStorage.run(client, async () => {
+      return await fn();
+    });
+    await client.query("COMMIT");
     return result;
   } catch (err) {
-    try { db.exec("ROLLBACK"); } catch { /* already rolled back */ }
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      // already rolled back
+    }
     throw err;
+  } finally {
+    client.release();
   }
 }

@@ -44,8 +44,8 @@ function pick(spec, body) {
 
 // ---------- auth ----------
 
-router.post("/login", loginLimit, (req, res) => {
-  const admin = findAdmin();
+router.post("/login", loginLimit, async (req, res) => {
+  const admin = await findAdmin();
   if (!admin || !config.adminPassword) {
     return res.status(503).json({ error: "Admin login is disabled — set ADMIN_PASSWORD in .env and restart." });
   }
@@ -53,26 +53,26 @@ router.post("/login", loginLimit, (req, res) => {
   if (!verifyPassword(password, admin.password_hash, admin.salt)) {
     return res.status(401).json({ error: "Wrong password" });
   }
-  res.json(createSession(admin.id, config.sessionTtlMs));
+  res.json(await createSession(admin.id, config.sessionTtlMs));
 });
 
 router.use(requireAdmin);
 
-router.post("/logout", (req, res) => {
-  destroySession(bearer(req));
+router.post("/logout", async (req, res) => {
+  await destroySession(bearer(req));
   res.json({ ok: true });
 });
 
 router.get("/me", (req, res) => res.json({ ok: true, expiresAt: req.sessionExpiresAt }));
 
-router.get("/stats", (req, res) => {
-  const group = (table) =>
+router.get("/stats", async (req, res) => {
+  const group = async (table) =>
     Object.fromEntries(
-      db.prepare(`SELECT status, COUNT(*) AS c FROM ${table} GROUP BY status`).all().map((r) => [r.status, r.c])
+      (await db.prepare(`SELECT status, COUNT(*) AS c FROM ${table} GROUP BY status`).all()).map((r) => [r.status, r.c])
     );
-  const orders = group("orders");
-  const customRequests = group("custom_requests");
-  const products = db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(active), 0) AS active FROM products").get();
+  const orders = await group("orders");
+  const customRequests = await group("custom_requests");
+  const products = await db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(active), 0) AS active FROM products").get();
   const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
   res.json({
     orders: { byStatus: orders, total: sum(orders) },
@@ -97,14 +97,14 @@ const orderFields = {
   adminNote: { max: 1000 },
 };
 
-router.get("/orders", (req, res) => {
+router.get("/orders", async (req, res) => {
   const status = req.query.status;
   if (status && !ORDER_STATUSES.includes(status)) return res.status(400).json({ error: "Unknown status filter" });
-  res.json({ items: adminListOrders(status) });
+  res.json({ items: await adminListOrders(status) });
 });
 
 // Manual entry — log an order that arrived via DM.
-router.post("/orders", (req, res) => {
+router.post("/orders", async (req, res) => {
   const { ok, errors, value } = clean(
     {
       ...orderFields,
@@ -119,7 +119,7 @@ router.post("/orders", (req, res) => {
     req.body
   );
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
-  const order = createOrder({
+  const order = await createOrder({
     status: value.status,
     shippingName: value.name,
     contact: value.contact,
@@ -148,20 +148,20 @@ const orderPatchFields = {
   shippingPhone: { max: 40 },
 };
 
-router.patch("/orders/:id", (req, res) => {
+router.patch("/orders/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
   const { ok, errors, value } = clean(pick(orderPatchFields, req.body), req.body);
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
-  const order = updateOrder(id, value);
+  const order = await updateOrder(id, value);
   if (!order) return res.status(404).json({ error: "Not found" });
   res.json({ item: order });
 });
 
-router.delete("/orders/:id", (req, res) => {
+router.delete("/orders/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
-  if (!deleteOrder(id)) return res.status(404).json({ error: "Not found" });
+  if (!(await deleteOrder(id))) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
 });
 
@@ -169,26 +169,26 @@ router.delete("/orders/:id", (req, res) => {
 
 const customPatchFields = { status: { enum: CUSTOM_STATUSES }, adminNote: { max: 1000 } };
 
-router.get("/custom-requests", (req, res) => {
+router.get("/custom-requests", async (req, res) => {
   const status = req.query.status;
   if (status && !CUSTOM_STATUSES.includes(status)) return res.status(400).json({ error: "Unknown status filter" });
-  res.json({ items: listCustomRequests(status) });
+  res.json({ items: await listCustomRequests(status) });
 });
 
-router.patch("/custom-requests/:id", (req, res) => {
+router.patch("/custom-requests/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
   const { ok, errors, value } = clean(pick(customPatchFields, req.body), req.body);
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
-  const item = updateCustomRequest(id, value);
+  const item = await updateCustomRequest(id, value);
   if (!item) return res.status(404).json({ error: "Not found" });
   res.json({ item });
 });
 
-router.delete("/custom-requests/:id", (req, res) => {
+router.delete("/custom-requests/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
-  if (!deleteCustomRequest(id)) return res.status(404).json({ error: "Not found" });
+  if (!(await deleteCustomRequest(id))) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
 });
 
@@ -208,9 +208,9 @@ const productFields = {
   active: { type: "bool" },
 };
 
-router.get("/products", (req, res) => res.json({ items: listAllProducts() }));
+router.get("/products", async (req, res) => res.json({ items: await listAllProducts() }));
 
-router.post("/products", (req, res) => {
+router.post("/products", async (req, res) => {
   const { ok, errors, value } = clean(
     {
       ...productFields,
@@ -224,43 +224,43 @@ router.post("/products", (req, res) => {
   );
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
 
-  const product = createProduct({
+  const product = await createProduct({
     name: value.name, description: value.description, tag: value.tag, price: value.price,
     priceFrom: value.priceFrom, edition: value.edition, orderItem: value.orderItem,
     sortOrder: value.sortOrder === "" ? undefined : value.sortOrder, active: value.active,
   });
-  setPrimaryImage(product.id, value.img, value.alt);
+  await setPrimaryImage(product.id, value.img, value.alt);
   // Give new products a placeholder variant so they have valid inventory rows;
   // real sizes/stock are managed later in the variant editor.
-  addVariant(product.id, { size: "One size", color: "As shown", stock: 0 });
-  res.status(201).json({ item: getProduct(product.id, { admin: true }) });
+  await addVariant(product.id, { size: "One size", color: "As shown", stock: 0 });
+  res.status(201).json({ item: await getProduct(product.id, { admin: true }) });
 });
 
-router.patch("/products/:id", (req, res) => {
+router.patch("/products/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
   const { ok, errors, value } = clean(pick(productFields, req.body), req.body);
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
 
   const { img, alt, ...rest } = value;
-  const updated = updateProduct(id, rest);
+  const updated = await updateProduct(id, rest);
   if (!updated) return res.status(404).json({ error: "Not found" });
-  if (Object.hasOwn(value, "img")) setPrimaryImage(id, img, alt ?? updated.alt ?? "");
-  res.json({ item: getProduct(id, { admin: true }) });
+  if (Object.hasOwn(value, "img")) await setPrimaryImage(id, img, alt ?? updated.alt ?? "");
+  res.json({ item: await getProduct(id, { admin: true }) });
 });
 
 // Soft delete (hide) by default; ?hard=1 removes the row (+ images/variants).
-router.delete("/products/:id", (req, res) => {
+router.delete("/products/:id", async (req, res) => {
   const id = idParam(req, res);
   if (id === null) return;
-  const done = req.query.hard === "1" ? deleteProduct(id) : setProductActive(id, false);
+  const done = req.query.hard === "1" ? await deleteProduct(id) : await setProductActive(id, false);
   if (!done) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
 });
 
 // ---------- settings ----------
 
-router.put("/settings", (req, res) => {
+router.put("/settings", async (req, res) => {
   const body = req.body || {};
   const digits = typeof body.whatsappNumber === "string" ? body.whatsappNumber.replace(/[^\d]/g, "") : "";
   const { ok, errors, value } = clean(
@@ -273,10 +273,10 @@ router.put("/settings", (req, res) => {
   );
   if (!ok) return res.status(400).json({ error: "Check the fields", errors });
 
-  if (Object.hasOwn(body, "whatsappNumber")) setSetting("whatsapp_number", value.whatsappNumber);
-  if (value.igDm) setSetting("ig_dm", value.igDm);
-  if (value.igProfile) setSetting("ig_profile", value.igProfile);
-  res.json(getSettings());
+  if (Object.hasOwn(body, "whatsappNumber")) await setSetting("whatsapp_number", value.whatsappNumber);
+  if (value.igDm) await setSetting("ig_dm", value.igDm);
+  if (value.igProfile) await setSetting("ig_profile", value.igProfile);
+  res.json(await getSettings());
 });
 
 export default router;

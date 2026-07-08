@@ -6,8 +6,6 @@ import { decrementStock } from "./products.js";
 // edits. orderToJson also flattens the first item onto the top level so the
 // current single-item UI + admin panel keep working unchanged.
 
-const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
-
 const selectOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
 const selectItems = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
 const insertOrder = db.prepare(
@@ -19,8 +17,10 @@ const insertItem = db.prepare(
    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 );
 
-export function orderToJson(row) {
-  const items = selectItems.all(row.id).map((i) => ({
+export async function orderToJson(row) {
+  if (!row) return null;
+  const itemRows = await selectItems.all(row.id);
+  const items = itemRows.map((i) => ({
     id: i.id,
     variantId: i.variant_id,
     productId: i.product_id,
@@ -59,16 +59,14 @@ export function orderToJson(row) {
   };
 }
 
-export const getOrder = (id) => {
-  const row = selectOrder.get(id);
-  return row ? orderToJson(row) : null;
-};
+export async function getOrder(id) {
+  const row = await selectOrder.get(id);
+  return row ? await orderToJson(row) : null;
+}
 
-// items: [{ variantId?, productId?, productName, size, color, quantity, priceAtPurchase }]
-// items: [{ variantId?, productId?, productName, size, color, quantity, priceAtPurchase }]
 // enforceStock: when true (cart checkout), a variant without enough stock aborts
 // the whole order (throws "OUT_OF_STOCK:<variantId>", rolling back the tx).
-export function createOrder({
+export async function createOrder({
   userId = null, status = "pending",
   shippingName = "", shippingAddress = "", shippingPhone = "",
   contact = "", contactMethod = "instagram", note = "", adminNote = "",
@@ -77,37 +75,39 @@ export function createOrder({
   if (items.length === 0) throw new Error("An order needs at least one item");
   const total = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
 
-  return tx(() => {
-    const info = insertOrder.run(
+  return tx(async () => {
+    const info = await insertOrder.run(
       userId, status, total, shippingName, shippingAddress, shippingPhone,
       contact, contactMethod, note, adminNote, source
     );
     const orderId = Number(info.lastInsertRowid);
     for (const it of items) {
-      insertItem.run(
+      await insertItem.run(
         orderId, it.variantId ?? null, it.productId ?? null,
         it.productName, it.size ?? "", it.color ?? "", it.quantity, it.priceAtPurchase
       );
       if (it.variantId) {
-        const ok = decrementStock(it.variantId, it.quantity);
+        const ok = await decrementStock(it.variantId, it.quantity);
         if (!ok && enforceStock) throw new Error(`OUT_OF_STOCK:${it.variantId}`);
       }
     }
-    return getOrder(orderId);
+    return await getOrder(orderId);
   });
 }
 
-export function listOrdersByUser(userId) {
-  return db.prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC").all(userId).map(orderToJson);
+export async function listOrdersByUser(userId) {
+  const rows = await db.prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC").all(userId);
+  return Promise.all(rows.map(orderToJson));
 }
 
-export function adminListOrders(status) {
+export async function adminListOrders(status) {
   const base = `SELECT o.*, u.email AS customer_email
                 FROM orders o LEFT JOIN users u ON u.id = o.user_id`;
-  const rows = status
-    ? db.prepare(`${base} WHERE o.status = ? ORDER BY o.id DESC`).all(status)
-    : db.prepare(`${base} ORDER BY o.id DESC`).all();
-  return rows.map(orderToJson);
+  const stmt = status
+    ? db.prepare(`${base} WHERE o.status = ? ORDER BY o.id DESC`)
+    : db.prepare(`${base} ORDER BY o.id DESC`);
+  const rows = status ? await stmt.all(status) : await stmt.all();
+  return Promise.all(rows.map(orderToJson));
 }
 
 const ORDER_COL = {
@@ -116,15 +116,18 @@ const ORDER_COL = {
   shippingName: "shipping_name", shippingAddress: "shipping_address", shippingPhone: "shipping_phone",
 };
 
-export function updateOrder(id, patch) {
+export async function updateOrder(id, patch) {
   const sets = [];
   const params = [];
   for (const [key, col] of Object.entries(ORDER_COL)) {
     if (Object.hasOwn(patch, key)) { sets.push(`${col} = ?`); params.push(patch[key]); }
   }
-  if (sets.length === 0) return getOrder(id);
-  const info = db.prepare(`UPDATE orders SET ${sets.join(", ")}, updated_at = ${NOW} WHERE id = ?`).run(...params, id);
-  return info.changes > 0 ? getOrder(id) : null;
+  if (sets.length === 0) return await getOrder(id);
+  const info = await db.prepare(`UPDATE orders SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...params, id);
+  return info.changes > 0 ? await getOrder(id) : null;
 }
 
-export const deleteOrder = (id) => db.prepare("DELETE FROM orders WHERE id = ?").run(id).changes > 0;
+export async function deleteOrder(id) {
+  const info = await db.prepare("DELETE FROM orders WHERE id = ?").run(id);
+  return info.changes > 0;
+}

@@ -1,6 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/((?!assets/|.*\\.).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/((?!assets/|.*\\.).*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "gunji-api"
+      }
+    }
+  ],
+  "services": {
+    "gunji-api": {
+      "root": ".",
+      "framework": "vite"
+    }
+  }
 }

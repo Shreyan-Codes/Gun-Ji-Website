@@ -1,9 +1,8 @@
-# Render Blueprint — BACKEND ONLY (API + admin dashboard + SQLite).
+# Render Blueprint — BACKEND ONLY (API + admin dashboard + PostgreSQL).
 # The React frontend is hosted separately on Vercel.
 #
-# A persistent disk holds the SQLite database so orders/accounts/settings
-# survive restarts and redeploys. Disks require a paid plan (Render's free
-# tier has no disk), so this runs on "starter" (~$7/mo).
+# Database is hosted on Supabase (free tier). Set DATABASE_URL in the Render
+# dashboard to the Supabase connection string (Session pooler recommended).
 #
 # After the first deploy, copy this service's URL (e.g. https://gunji-api.onrender.com)
 # into the Vercel project as VITE_API_URL, and set CORS_ORIGINS here to your
@@ -12,7 +11,7 @@ services:
   - type: web
     name: gunji-api
     runtime: node
-    plan: starter
+    plan: free
     region: singapore          # closest Render region to Nepal
     branch: main
     buildCommand: npm install
@@ -21,6 +20,8 @@ services:
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      - key: DATABASE_URL
+        sync: false            # Supabase connection string — set as a secret in the dashboard
       - key: ADMIN_PASSWORD
         sync: false            # set as a secret in the dashboard
       - key: GOOGLE_CLIENT_ID
@@ -29,9 +30,3 @@ services:
         sync: false            # e.g. https://gunji.vercel.app (comma-separated)
       - key: TRUST_PROXY
         value: "1"
-      - key: DB_PATH
-        value: /var/data/gunji.db
-    disk:
-      name: gunji-data
-      mountPath: /var/data
-      sizeGB: 1

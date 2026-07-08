@@ -41,6 +41,7 @@ export const config = {
   dbPath: process.env.DB_PATH
     ? path.resolve(ROOT, process.env.DB_PATH)
     : path.join(ROOT, "data", "gunji.db"),
+  databaseUrl: process.env.DATABASE_URL || "",
   // Set TRUST_PROXY=1 when running behind nginx/caddy so rate limits see real IPs.
   trustProxy: process.env.TRUST_PROXY === "1",
 };

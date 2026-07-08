@@ -14,26 +14,28 @@ const joinUser = db.prepare(
 );
 const prune = db.prepare("DELETE FROM sessions WHERE expires_at <= ?");
 
-export function createSession(userId, ttlMs) {
+export async function createSession(userId, ttlMs) {
   const token = crypto.randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + ttlMs).toISOString();
-  insert.run(hashToken(token), userId, expiresAt);
+  await insert.run(hashToken(token), userId, expiresAt);
   return { token, expiresAt };
 }
 
-export function destroySession(token) {
-  if (typeof token === "string" && token) del.run(hashToken(token));
+export async function destroySession(token) {
+  if (typeof token === "string" && token) await del.run(hashToken(token));
 }
 
 // Returns the joined user row (with session_expires_at) or null.
-export function userForToken(token) {
+export async function userForToken(token) {
   if (typeof token !== "string" || !token) return null;
-  return joinUser.get(hashToken(token), new Date().toISOString()) || null;
+  return (await joinUser.get(hashToken(token), new Date().toISOString())) || null;
 }
 
-export function pruneSessions() {
-  prune.run(new Date().toISOString());
+export async function pruneSessions() {
+  await prune.run(new Date().toISOString());
 }
 
 // Hourly cleanup of expired sessions.
-setInterval(pruneSessions, 60 * 60 * 1000).unref();
+setInterval(() => {
+  pruneSessions().catch((err) => console.error("[session prune error]", err));
+}, 60 * 60 * 1000).unref();
