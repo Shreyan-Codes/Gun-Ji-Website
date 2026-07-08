@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GUN-जी — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+
+<!-- ========== login ========== -->
+<div id="login-view" class="login-wrap hidden">
+  <form id="login-form" class="login-card">
+    <p class="login-mark">GUN<span class="dash">—</span><span class="dev">जी</span><sup>™</sup></p>
+    <p class="login-sub">Studio admin · <span class="dev">काठमाडौं</span></p>
+    <label class="field">
+      <span class="field-label">Password</span>
+      <input id="login-password" type="password" autocomplete="current-password" required>
+    </label>
+    <p id="login-error" class="form-error hidden"></p>
+    <button type="submit" class="btn btn-solid">Enter the studio</button>
+  </form>
+</div>
+
+<!-- ========== app ========== -->
+<div id="app-view" class="hidden">
+  <header class="topbar">
+    <span class="topbar-mark">GUN<span class="dash">—</span><span class="dev">जी</span> <span class="topbar-admin">ADMIN</span></span>
+    <nav class="tabs" id="tabs">
+      <button class="tab" data-tab="orders">Orders <span class="tab-badge hidden" id="badge-orders"></span></button>
+      <button class="tab" data-tab="requests">Custom requests <span class="tab-badge hidden" id="badge-requests"></span></button>
+      <button class="tab" data-tab="products">Products</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+    <button id="logout-btn" class="btn btn-line btn-sm" type="button">Log out</button>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <main class="panel" id="panel"></main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="./admin.js"></script>
+</body>
+</html>

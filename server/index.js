@@ -1,0 +1,114 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
+import { config, ROOT } from "./config.js";
+import { db } from "./db/index.js";
+import publicRoutes from "./routes/public.js";
+import adminRoutes from "./routes/admin.js";
+import authRoutes from "./routes/auth.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const app = express();
+app.disable("x-powered-by");
+if (config.trustProxy) app.set("trust proxy", 1);
+
+app.use(express.json({ limit: "32kb" }));
+
+// Baseline security headers on everything; a strict CSP just for the
+// dashboard (it's fully self-hosted, so 'self' is enough there — the main
+// site keeps using Google Fonts and stays CSP-free).
+app.use((req, res, next) => {
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.set("X-Frame-Options", "DENY");
+  if (req.path === "/admin" || req.path.startsWith("/admin/")) {
+    res.set(
+      "Content-Security-Policy",
+      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'"
+    );
+  }
+  next();
+});
+
+// Compact request log for API traffic only (static noise stays out).
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/api")) return next();
+  const started = Date.now();
+  res.on("finish", () => {
+    console.log(`[api] ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - started}ms`);
+  });
+  next();
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api", publicRoutes);
+
+// Owner dashboard — vanilla HTML/JS served straight from server/admin.
+app.use("/admin", express.static(path.join(__dirname, "admin")));
+
+// Serve the built site when dist/ exists (production single-process mode);
+// in dev Vite serves the frontend and proxies /api + /admin here.
+const distDir = path.join(ROOT, "dist");
+if (fs.existsSync(path.join(distDir, "index.html"))) {
+  app.use(express.static(distDir, { maxAge: "1h" }));
+  // SPA fallback for client-side routes (/tees, /custom-print, ...)
+  app.use((req, res, next) => {
+    if (req.method !== "GET" || req.path.startsWith("/api") || req.path.startsWith("/admin")) {
+      return next();
+    }
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.json({
+      ok: true,
+      hint: "API server. Run `npm run build` to also serve the site from here, or use the Vite dev server for the frontend.",
+    });
+  });
+}
+
+// JSON 404 for unknown API routes.
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+// Final error handler — malformed JSON gets a 400, everything else a clean 500.
+app.use((err, req, res, next) => {
+  if (err?.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Invalid JSON body" });
+  }
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({ error: "Request body too large" });
+  }
+  console.error("[error]", err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: "Something broke on our side — try again." });
+});
+
+const server = app.listen(config.port, () => {
+  console.log(`[gunji] API running at http://localhost:${config.port}`);
+  console.log(`[gunji] admin dashboard: http://localhost:${config.port}/admin`);
+  if (!config.adminPassword) {
+    console.warn("[gunji] WARNING: ADMIN_PASSWORD is not set — admin login is disabled. Add it to .env.");
+  }
+});
+
+function shutdown(signal) {
+  console.log(`[gunji] ${signal} — shutting down`);
+  server.close(() => {
+    try {
+      db.close();
+    } catch {
+      // already closed
+    }
+    process.exit(0);
+  });
+  // Don't hang forever on open keep-alive sockets.
+  setTimeout(() => process.exit(0), 5000).unref();
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
