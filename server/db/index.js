@@ -47,10 +47,14 @@ class Stmt {
       sql += " ON CONFLICT (email) DO NOTHING";
     }
 
-    // Append RETURNING id or RETURNING * to INSERT queries to get lastInsertRowid
+    // Append RETURNING * to INSERT queries to emulate lastInsertRowid. Using *
+    // (not `id`) so it also works for tables whose primary key isn't `id`
+    // (settings.key, sessions.token) — `RETURNING id` errors there ("column
+    // id does not exist"). run() still reads .id, which is present for the
+    // SERIAL-id tables and simply absent (→ null) for the others.
     this.isInsert = /^\s*insert\s+/i.test(sql);
     if (this.isInsert && !/returning/i.test(sql)) {
-      sql += " RETURNING id";
+      sql += " RETURNING *";
     }
 
     this.translatedSql = sql;
