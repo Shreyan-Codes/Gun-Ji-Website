@@ -2,11 +2,35 @@
 
 This document explains all changes made so far and what remains, so any AI assistant or developer can pick up where we left off.
 
-**Last updated:** 2026-07-08 — Cursor (continued from Antigravity)
+**Last updated:** 2026-07-08 — GitHub Copilot (Claude Haiku 4.5) — Ready for Deployment
 
 ---
 
-## Goal
+## Quick Start for Deployers
+
+If you're picking this up to deploy, here's the **TL;DR** in 10 minutes:
+
+1. **Supabase Setup** (2–3 min):
+   - Go to https://supabase.com → New Project
+   - Region: Singapore or Mumbai (closest to Nepal)
+   - Save the **Session pooler** connection string (port 6543)
+
+2. **Render Deploy** (5 min):
+   - Go to https://dashboard.render.com → New → Blueprint
+   - Connect repo: `https://github.com/Shreyan-Codes/Gun-Ji-Website`
+   - Set secrets: `DATABASE_URL`, `ADMIN_PASSWORD`, `CORS_ORIGINS=https://gunji.vercel.app`
+   - Deploy and wait for green **Live** status
+   - Test: `curl https://gunji-api.onrender.com/api/health`
+
+3. **Vercel Frontend** (2–3 min):
+   - Go to Vercel project → Settings → Environment Variables
+   - Add: `VITE_API_URL=https://gunji-api.onrender.com` (your Render URL)
+   - Run: `npx vercel --prod`
+   - Test: https://gunji.vercel.app (products should load)
+
+**See [Step 20–22](#what-still-needs-to-be-done) below for detailed instructions.**
+
+---
 
 Migrate the GUN-जी backend from **SQLite** (`node:sqlite` / `DatabaseSync`) to **PostgreSQL** (hosted on **Supabase free tier**) so the Express backend can run on **Render's free plan** (which has no persistent disk — SQLite data would be wiped on every restart).
 
@@ -103,45 +127,93 @@ The **Vercel frontend** is already deployed at **https://gunji.vercel.app**. Onc
 
 ## What Still Needs To Be Done
 
-### 19. Commit and push to GitHub
-- **Status:** All code changes are local and **uncommitted** (as of 2026-07-08).
+### 19. Commit and push to GitHub ✅ (2026-07-08)
+- **Status:** Done — pushed to `origin/main`.
+- Commits pushed:
+  - `3c0c3f9` — handoff doc + `.env.example` update
+  - `1af4df4` — full SQLite → PostgreSQL migration (20 files)
 - Remote: `https://github.com/Shreyan-Codes/Gun-Ji-Website.git`, branch `main`.
-- Files changed: see git status — migration touches `server/db/*`, routes, `render.yaml`, `package.json`, `.env.example`, `MIGRATION_HANDOFF.md`, etc.
-- **Action:** Stage, commit, and push so Render can auto-deploy from the blueprint.
+- Render should auto-deploy if the blueprint/service is connected to this repo.
 
-Suggested commit message:
-```
-Migrate backend from SQLite to PostgreSQL for Render free tier
-```
+### 20. Set up Supabase (if not done yet) 🔧 IN PROGRESS
 
-### 20. Set up Supabase (if not done yet)
-- Create a free Supabase project at https://supabase.com
-- Go to **Project Settings → Database → Connection string**
-- Copy the **Session pooler** URI (port 6543, recommended for serverless/pooled connections)
-- The schema is applied automatically by `server/db/index.js` on first boot — no manual SQL migration needed
+**Steps:**
+1. Go to https://supabase.com and sign in (or create a free account)
+2. Click **New Project**
+   - Organization: any name
+   - Project name: `gun-ji` (or similar)
+   - Password: generate a strong password (save it!)
+   - Region: closest to Nepal is **Singapore** or **Mumbai**
+3. Wait ~2 minutes for project creation to complete
+4. Once created, go to **Project Settings** (gear icon, bottom-left)
+5. Click **Database** tab
+6. Under **Connection string**, select **Pooler** (not Direct)
+7. Change **Session config** dropdown to **Transaction**
+8. The URI will look like:
+   ```
+   postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   ```
+9. **Copy this connection string** — you'll need it for Render
+10. The schema is applied automatically by `server/db/index.js` on first boot — **no manual SQL migration needed**
 
-### 21. Deploy to Render
-- Go to https://dashboard.render.com
-- **New → Blueprint** (or update existing `gunji-api` service)
-- Connect the GitHub repo `Shreyan-Codes/Gun-Ji-Website`
-- Render reads `render.yaml` from the repo root
-- Set these **secret** environment variables in the Render dashboard:
-  - `DATABASE_URL` — Supabase Session pooler connection string
-  - `ADMIN_PASSWORD` — pick a long random password for `/admin`
-  - `CORS_ORIGINS` — `https://gunji.vercel.app`
-  - `GOOGLE_CLIENT_ID` — optional, for Google sign-in
-- Wait for deploy; verify health check: `GET https://<your-render-url>/api/health`
-- Expected response: `{ "ok": true, "uptimeSec": ..., "products": N }`
+**After Supabase is ready:** Note down the full connection string. You'll paste it into Render as `DATABASE_URL`.
 
-### 22. Connect Vercel frontend to Render backend
-- **Current state:** Vercel project `conqurer/gunji` has **no environment variables** set (checked via `npx vercel env ls`).
-- In Vercel dashboard (or CLI), add:
-  - `VITE_API_URL` = Render backend URL, e.g. `https://gunji-api.onrender.com` (**no trailing slash**)
-- Redeploy Vercel so the frontend rebuilds with the correct API URL baked in:
-  ```bash
-  npx vercel --prod
-  ```
-- Test: open https://gunji.vercel.app — products should load from Render API.
+### 21. Deploy to Render 🚀 NEXT STEP
+
+**Prerequisites:**
+- Supabase DATABASE_URL ready (from step 20)
+- GitHub repo connected: https://github.com/Shreyan-Codes/Gun-Ji-Website
+
+**Steps:**
+1. Go to https://dashboard.render.com and sign in (create account if needed)
+2. From the top-right, click **New +**
+3. Select **Blueprint**
+4. For **GitHub repository**, paste: `https://github.com/Shreyan-Codes/Gun-Ji-Website`
+5. Click **Connect**
+6. Render will auto-detect and propose a service named `gunji-api` (with settings from `render.yaml`)
+7. **Before clicking Deploy**, scroll down and set these **environment variables** as **secrets**:
+   - **`DATABASE_URL`** (secret): Paste the Supabase Session pooler connection string from step 20
+   - **`ADMIN_PASSWORD`** (secret): Generate a long random password (e.g., `openssl rand -base64 32`)
+   - **`CORS_ORIGINS`** (secret): `https://gunji.vercel.app`
+   - **`GOOGLE_CLIENT_ID`** (secret, optional): Leave blank for now; you can add it later if needed
+8. Click **Deploy**
+9. **Wait 3–5 minutes** for the deploy to finish
+10. Once **Status** shows **Live**, check the health endpoint:
+    - Copy the service URL (e.g., `https://gunji-api.onrender.com`)
+    - In browser or `curl`, test: `GET https://gunji-api.onrender.com/api/health`
+    - Expected response: `{ "ok": true, "uptimeSec": X, "products": N }`
+11. If health check fails:
+    - Click **Logs** tab in Render dashboard to debug
+    - Check [Deployment Troubleshooting](#deployment-troubleshooting) section below
+
+### 22. Connect Vercel frontend to Render backend 🔗 FINAL STEP
+
+**Prerequisites:**
+- Render backend is Live (from step 21)
+- Render URL is ready (e.g., `https://gunji-api.onrender.com`)
+
+**Steps:**
+1. Go to https://vercel.com and sign in
+2. Select project **gunji** (under **Shreyan-Codes** org)
+3. Click **Settings** tab
+4. Left sidebar → **Environment Variables**
+5. Click **Add New**
+   - **Name:** `VITE_API_URL`
+   - **Value:** `https://gunji-api.onrender.com` (replace with your Render URL, **no trailing slash**)
+   - **Environments:** Select **Production**
+   - Click **Save**
+6. Redeploy the frontend:
+   ```bash
+   cd c:\Users\shrey\Documents\gunji
+   npm run build      # builds frontend
+   npx vercel --prod  # deploys to Vercel production
+   ```
+7. **Wait 1–2 minutes** for deploy to finish
+8. **Test the live site:**
+   - Open https://gunji.vercel.app in browser
+   - Check the **Products** page — should load from Render API
+   - Try **Login** → verify tokens work (no CORS errors in console)
+   - Try **Admin** → log in with email/password or the ADMIN_PASSWORD you set
 
 ---
 
@@ -182,10 +254,83 @@ Migrate backend from SQLite to PostgreSQL for Render free tier
 
 ---
 
-## Quick verification checklist (after deploy)
+## Deployment Troubleshooting
 
-- [ ] `GET /api/health` returns `{ ok: true }`
-- [ ] `GET /api/products` returns product list
-- [ ] Admin login at `/admin` works with `ADMIN_PASSWORD`
-- [ ] Frontend at https://gunji.vercel.app loads products (needs `VITE_API_URL` set + redeploy)
-- [ ] CORS works (no browser console errors on cross-origin API calls)
+### Render Deploy Fails
+
+**Problem:** Deploy shows error like `Error: Cannot find module 'pg'` or connection string issue.
+
+**Solution:**
+1. Check Render **Logs** tab for the exact error message
+2. Common issues:
+   - **Missing DATABASE_URL:** Ensure you set it as a secret environment variable in Render dashboard
+   - **Wrong connection string format:** Double-check Supabase Session pooler (port 6543, not 5432)
+   - **Node.js version:** Render defaults to Node 16–18; this project needs Node 24+. Add `engines` check in `package.json` or let `npm install` fail (Render will auto-upgrade to 24+)
+
+**If still failing:**
+1. Try redeploying: Click **Deploy** button in Render dashboard again
+2. Check for typos in DATABASE_URL (copy-paste from Supabase directly)
+3. Open a GitHub issue with the Render error log
+
+### Health Check Returns Error
+
+**Problem:** `GET /api/health` returns 5xx error or connection timeout.
+
+**Solution:**
+1. Check Render **Logs** tab — look for database connection errors
+2. If DATABASE_URL is wrong, you'll see `error: connect ECONNREFUSED` or `no such host`
+3. Re-verify Supabase connection string (Session pooler, port 6543, correct region)
+4. If all else fails, restart the Render service: Go to **Settings** → **Restart instance**
+
+### Products Don't Load on Frontend
+
+**Problem:** https://gunji.vercel.app loads but products page is blank, or console shows CORS errors.
+
+**Solution:**
+1. Check **Vercel build logs:** Open Vercel project → **Deployments** → Click the failed/current build
+2. Ensure `VITE_API_URL` is set correctly in Vercel **Environment Variables** (Settings → Environment Variables)
+3. After setting `VITE_API_URL`, redeploy: `npx vercel --prod`
+4. If still no products, check browser **Console** tab:
+   - CORS error? Verify `CORS_ORIGINS` in Render is exactly `https://gunji.vercel.app`
+   - 404 error? Check Render `/api/products` is working: `curl https://gunji-api.onrender.com/api/products`
+5. If `/api/products` works from `curl` but not from browser, restart Render service
+
+### Admin Login Not Working
+
+**Problem:** Admin panel at `/admin` says invalid password.
+
+**Solution:**
+1. Verify `ADMIN_PASSWORD` was set as a **secret** environment variable in Render (not as a regular var)
+2. Ensure it's the exact password you set (no extra spaces)
+3. Try a simple password first for testing (e.g., `testpass123`)
+4. If changed, redeploy Render: **Settings** → **Redeploy** in Render dashboard
+5. After redeploy, try logging in again
+
+### Supabase Connection Timeouts
+
+**Problem:** Render logs show `timeout on Supabase connection` or `Error: connect ETIMEDOUT`.
+
+**Solution:**
+1. Verify Supabase project is still active (check supabase.com dashboard)
+2. Check if Supabase free tier hit monthly active rows limit (rare, but possible)
+3. Try using the **Transaction** pooler config (not Session) in Supabase: Go to **Project Settings → Database → Connection pooling** and select **Transaction** mode
+4. Update DATABASE_URL in Render and redeploy
+5. If still timing out, contact Supabase support
+
+---
+
+## Quick Verification Checklist
+
+**After all three deployment steps are complete:**
+
+- [ ] Supabase project created, Session pooler connection string copied
+- [ ] Render service **Live** with green status
+- [ ] `GET https://<render-url>/api/health` returns `{ "ok": true, "products": N }`
+- [ ] `GET https://<render-url>/api/products` returns product list (JSON array)
+- [ ] Vercel env var `VITE_API_URL` set to Render URL
+- [ ] Vercel redeployed (`npx vercel --prod`)
+- [ ] https://gunji.vercel.app loads and shows products
+- [ ] Admin panel at `/admin` works with `ADMIN_PASSWORD`
+- [ ] Customer login works (email/password or Google sign-in if `GOOGLE_CLIENT_ID` set)
+- [ ] Browser console shows no CORS errors
+- [ ] Cart and checkout flow works end-to-end
