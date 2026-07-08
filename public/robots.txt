@@ -1,0 +1,8 @@
+# GUN-जी™ — https://gunji.vercel.app
+User-agent: *
+Allow: /
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+
+Sitemap: https://gunji.vercel.app/sitemap.xml

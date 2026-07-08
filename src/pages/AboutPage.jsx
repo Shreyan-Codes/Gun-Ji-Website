@@ -1,8 +1,15 @@
 import PageHero from "../components/PageHero.jsx";
 import Brand from "../components/Brand.jsx";
 import CtaBand from "../components/CtaBand.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 export default function AboutPage() {
+  usePageMeta({
+    title: "About — Small Label, Loud Tees",
+    description:
+      "GUN-जी is a Kathmandu t-shirt label: heavyweight oversized tees, printed locally, ordered over DM. Born in Kathmandu, printed in Kathmandu.",
+    path: "/about",
+  });
   return (
     <>
       <PageHero

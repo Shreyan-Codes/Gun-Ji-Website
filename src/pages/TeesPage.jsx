@@ -5,10 +5,17 @@ import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
 import { editionFilters } from "../data/products.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 export default function TeesPage() {
   const [filter, setFilter] = useState("all");
   const { products, productsRev } = useSiteData();
+  usePageMeta({
+    title: "Oversized T-Shirts Catalog — Buy Tees Online Nepal",
+    description:
+      "Shop premium oversized t-shirts printed in Kathmandu — football player editions, anime back prints, देसी Devanagari type and plain essentials. Ships across Nepal.",
+    path: "/tees",
+  });
   useReveal(`${filter}:${productsRev}`);
   const shown = filter === "all" ? products : products.filter((p) => p.edition === filter);
 

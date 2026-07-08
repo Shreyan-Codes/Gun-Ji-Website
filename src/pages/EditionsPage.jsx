@@ -1,8 +1,15 @@
 import PageHero from "../components/PageHero.jsx";
 import Editions from "../components/Editions.jsx";
 import CtaBand from "../components/CtaBand.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 export default function EditionsPage() {
+  usePageMeta({
+    title: "Editions — Player, Anime, देसी Type & Custom Tees",
+    description:
+      "Four GUN-जी editions: football player edition tees, anime back prints, देसी Devanagari type, and fully custom prints — all premium oversized fit, printed in Kathmandu.",
+    path: "/editions",
+  });
   return (
     <>
       <PageHero

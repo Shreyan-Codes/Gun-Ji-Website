@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Dev from "../lib/Dev.jsx";
 import { useCart } from "../context/Cart.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 
 export default function CartPage() {
   const { items, setQty, remove, subtotal, count } = useCart();
+  usePageMeta({ title: "Your Cart", path: "/cart", noindex: true });
 
   return (
     <>

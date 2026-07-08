@@ -6,6 +6,7 @@ import AuthPanel from "../components/AuthPanel.jsx";
 import Dev from "../lib/Dev.jsx";
 import { apiGet } from "../lib/api.js";
 import { useAuth } from "../context/Auth.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 const fmtDate = (iso) => {
@@ -104,6 +105,7 @@ function Dashboard() {
 
 export default function AccountPage() {
   const { customer, ready } = useAuth();
+  usePageMeta({ title: "Your Account", path: "/account", noindex: true });
 
   return (
     <>

@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { apiGet } from "../lib/api.js";
 import { useCart } from "../context/Cart.jsx";
 import Dev from "../lib/Dev.jsx";
+import { usePageMeta, useJsonLd, SITE_URL } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 
@@ -37,6 +38,37 @@ export default function ProductPage() {
       .catch(() => alive && setStatus("notfound"));
     return () => { alive = false; };
   }, [slug]);
+
+  // Per-product SEO: dynamic title/description + Product structured data so
+  // Google can show price and stock status in search results.
+  usePageMeta({
+    title: product ? `${product.name} — ${rupees(product.price)} Oversized Tee` : "Tees",
+    description: product
+      ? `${product.name} (${product.tag}) — premium heavyweight oversized t-shirt printed in Kathmandu. ${rupees(product.price)}, ships across Nepal. Order online or via DM.`
+      : undefined,
+    path: `/product/${slug}`,
+    image: product?.img,
+  });
+  useJsonLd(
+    "product",
+    product && {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      image: `${SITE_URL}${product.img}`,
+      description: `${product.tag} — premium heavyweight oversized tee, printed in Kathmandu, Nepal.`,
+      brand: { "@type": "Brand", name: "GUN-जी™" },
+      offers: {
+        "@type": "Offer",
+        url: `${SITE_URL}/product/${product.slug}`,
+        priceCurrency: "NPR",
+        price: product.price,
+        availability: product.inStock
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      },
+    }
+  );
 
   const colors = useMemo(
     () => [...new Set((product?.variants ?? []).map((v) => v.color))],

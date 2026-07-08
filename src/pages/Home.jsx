@@ -7,9 +7,11 @@ import ProductCard from "../components/ProductCard.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
 import { useSiteData } from "../context/SiteData.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 export default function Home() {
   const { products, productsRev } = useSiteData();
+  usePageMeta({ path: "/" }); // homepage keeps the full default title/description
   // Re-observe reveal targets if the API swaps the catalog in after mount.
   useReveal(`home:${productsRev}`);
   const featured = products.slice(0, 3);

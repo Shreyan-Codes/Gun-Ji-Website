@@ -6,6 +6,7 @@ import { apiPost } from "../lib/api.js";
 import { useCart } from "../context/Cart.jsx";
 import { useAuth } from "../context/Auth.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
   const { customer, getToken } = useAuth();
   const { settings } = useSiteData();
+  usePageMeta({ title: "Checkout", path: "/checkout", noindex: true });
 
   const [form, setForm] = useState({
     name: customer?.name || "",

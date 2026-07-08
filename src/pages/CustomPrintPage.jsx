@@ -2,6 +2,7 @@ import Custom from "../components/Custom.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import CustomOrderForm from "../components/CustomOrderForm.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
+import { usePageMeta } from "../lib/seo.js";
 
 const sendables = [
   {
@@ -23,6 +24,12 @@ const sendables = [
 
 export default function CustomPrintPage() {
   const { settings } = useSiteData();
+  usePageMeta({
+    title: "Custom T-Shirt Printing in Kathmandu, Nepal",
+    description:
+      "Print your own t-shirt design in Kathmandu — send finished artwork, a reference photo, or just an idea. Premium heavyweight oversized tees, any colour. Ships across Nepal.",
+    path: "/custom-print",
+  });
 
   return (
     <>
