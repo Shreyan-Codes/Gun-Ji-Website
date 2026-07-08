@@ -46,6 +46,36 @@ npm run build      # builds the site into dist/
 npm start          # one process serves site + API + admin on API_PORT
 ```
 
+## Deploy (Vercel frontend + Render backend)
+
+Split hosting: the React app is static on **Vercel**; the Node/Express + SQLite
+API + `/admin` run on **Render** with a persistent disk. Config lives in
+`vercel.json` and `render.yaml`. SQLite needs the disk, which is a paid Render
+plan (~$7/mo) — free tiers wipe the file on every deploy.
+
+**1. Backend → Render (do first, to get the API URL)**
+- New → Blueprint → pick this repo (reads `render.yaml`: `gunji-api` web
+  service, Node, `npm install`, `npm run seed && npm start`, 1 GB disk at
+  `/var/data`, health check `/api/health`).
+- Set env vars: `ADMIN_PASSWORD` (your /admin login). `DB_PATH`, `TRUST_PROXY`,
+  and the disk come from the blueprint. Leave `CORS_ORIGINS` blank for now.
+- Deploy → note the URL, e.g. `https://gunji-api.onrender.com`. Check
+  `/api/health` returns `{"ok":true}` and `/admin` shows the login.
+
+**2. Frontend → Vercel**
+- New Project → import this repo. Vercel auto-detects Vite (`vite build` → `dist`);
+  `vercel.json` handles SPA routing.
+- Add env var `VITE_API_URL` = the Render URL (no trailing slash). Deploy.
+
+**3. Wire them**
+- In Render, set `CORS_ORIGINS` = your Vercel URL(s), comma-separated. It
+  redeploys. The store now loads from Vercel and talks to the Render API.
+
+**4. Go-live**
+- Set real prices + WhatsApp number at `<render-url>/admin` → Settings/Products.
+- Google sign-in (optional): set `GOOGLE_CLIENT_ID` on Render and add your
+  Vercel domain to Google's Authorized JavaScript origins.
+
 ## Database
 
 Raw SQLite via Node's built-in `node:sqlite` (no ORM). The layer lives in
