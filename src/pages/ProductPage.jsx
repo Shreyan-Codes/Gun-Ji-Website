@@ -100,7 +100,7 @@ export default function ProductPage() {
   return (
     <section className="product-page">
       <div className="pp-grid">
-        <figure className="pp-media reveal">
+        <figure className="pp-media">
           <img src={product.img} alt={product.alt || product.name} width="1024" height="1280" />
           <span className="pp-plate">PL·<span className="dev">{product.edition}</span></span>
         </figure>

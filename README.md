@@ -2,12 +2,14 @@
 
 Vite + React storefront with an Express + SQLite backend:
 
-- **Direct order page** — `/order` lets a customer pick a tee (size, colour,
-  quantity), drop their handle, and place an order that lands in the studio
-  order book instantly. Product cards deep-link to it (`/order?tee=<id>`) with
-  the tee preselected. No payment upfront — it captures the order and offers a
-  one-tap WhatsApp/DM to finalise price & delivery, keeping the brand's
-  DM-first close.
+- **Shop (cart + checkout)** — product pages at `/product/:slug` with a
+  variant picker (colour swatches + size buttons driven by stock), a
+  client-side `/cart`, and a `/checkout` with a shipping form. Orders are
+  multi-item and stock-enforced (the API rejects and won't oversell). No
+  payment upfront — checkout captures the order and offers a one-tap
+  WhatsApp/DM to finalise price & delivery, keeping the brand's DM-first close.
+  Guests can check out; logged-in buyers get their orders saved to their
+  account.
 - **Customer accounts** — `/account` is a login/signup portal with email +
   password and "Sign in with Google". Logged-in buyers get their name
   prefilled at checkout and an order history in the portal; the admin order
