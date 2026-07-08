@@ -3,6 +3,11 @@
 
 const TIMEOUT_MS = 6000;
 
+// In production (Vercel), point at the Render backend via VITE_API_URL, e.g.
+// https://gunji-api.onrender.com. In dev it's empty, so paths stay relative
+// and Vite proxies /api to the local backend.
+const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
 export class ApiError extends Error {
   constructor(message, { status = 0, errors = {} } = {}) {
     super(message);
@@ -19,7 +24,7 @@ async function request(path, options = {}) {
 
   let res;
   try {
-    res = await fetch(path, {
+    res = await fetch(API_BASE + path, {
       ...rest,
       headers: finalHeaders,
       signal: AbortSignal.timeout(TIMEOUT_MS),

@@ -31,6 +31,13 @@ export const config = {
   // Google "Sign in with Google" — paste your OAuth Client ID here (public,
   // safe to expose). Google sign-in stays hidden until this is set.
   googleClientId: process.env.GOOGLE_CLIENT_ID || "",
+  // Allowed browser origins for cross-origin API calls (the Vercel frontend
+  // calling this Render backend). Comma-separated. Empty = reflect any origin
+  // (fine here since auth is Bearer-token, not cookies) — set it to lock down.
+  corsOrigins: (process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
   dbPath: process.env.DB_PATH
     ? path.resolve(ROOT, process.env.DB_PATH)
     : path.join(ROOT, "data", "gunji.db"),

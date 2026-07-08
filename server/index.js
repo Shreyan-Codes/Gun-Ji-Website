@@ -14,6 +14,22 @@ const app = express();
 app.disable("x-powered-by");
 if (config.trustProxy) app.set("trust proxy", 1);
 
+// CORS for the split deployment (frontend on Vercel calls this API on Render).
+// Auth is a Bearer token in a header (no cookies), so reflecting the request
+// origin is safe; set CORS_ORIGINS to an allowlist to lock it down.
+app.use((req, res, next) => {
+  const origin = req.get("origin");
+  if (origin && (config.corsOrigins.length === 0 || config.corsOrigins.includes(origin))) {
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Vary", "Origin");
+    res.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    res.set("Access-Control-Max-Age", "86400");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204); // preflight
+  next();
+});
+
 app.use(express.json({ limit: "32kb" }));
 
 // Baseline security headers on everything; a strict CSP just for the
@@ -48,6 +64,11 @@ app.use("/api", publicRoutes);
 
 // Owner dashboard — vanilla HTML/JS served straight from server/admin.
 app.use("/admin", express.static(path.join(__dirname, "admin")));
+
+// Product photos live in the repo (public/assets) — serve them from the API
+// too so the admin dashboard's thumbnails work even when this runs
+// backend-only (the Vercel frontend serves its own copy from the build).
+app.use("/assets", express.static(path.join(ROOT, "public", "assets"), { maxAge: "1h" }));
 
 // Serve the built site when dist/ exists (production single-process mode);
 // in dev Vite serves the frontend and proxies /api + /admin here.
