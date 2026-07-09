@@ -85,6 +85,12 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_user   ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 
+-- Optional GPS delivery pin shared by the customer at checkout (opt-in,
+-- nullable). ADD COLUMN IF NOT EXISTS so this also upgrades existing DBs.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_lat      DOUBLE PRECISION;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_lng      DOUBLE PRECISION;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_accuracy INTEGER;
+
 -- ---------- order items (line items, with snapshots) ----------
 CREATE TABLE IF NOT EXISTS order_items (
   id                SERIAL PRIMARY KEY,

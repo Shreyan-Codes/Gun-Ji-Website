@@ -9,8 +9,8 @@ import { decrementStock } from "./products.js";
 const selectOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
 const selectItems = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
 const insertOrder = db.prepare(
-  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
 const insertItem = db.prepare(
   `INSERT INTO order_items (order_id, variant_id, product_id, product_name, size, color, quantity, price_at_purchase)
@@ -32,6 +32,9 @@ export async function orderToJson(row) {
     lineTotal: i.price_at_purchase * i.quantity,
   }));
   const first = items[0] || {};
+  const lat = row.location_lat;
+  const lng = row.location_lng;
+  const hasLocation = lat !== null && lat !== undefined && lng !== null && lng !== undefined;
   return {
     id: row.id,
     userId: row.user_id ?? null,
@@ -45,6 +48,9 @@ export async function orderToJson(row) {
     note: row.note,
     adminNote: row.admin_note,
     source: row.source,
+    // GPS delivery pin (null unless the customer shared it at checkout).
+    location: hasLocation ? { lat, lng, accuracy: row.location_accuracy ?? null } : null,
+    locationUrl: hasLocation ? `https://www.google.com/maps?q=${lat},${lng}` : null,
     customerEmail: row.customer_email ?? null, // present when admin query joins users
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -71,6 +77,7 @@ export async function createOrder({
   shippingName = "", shippingAddress = "", shippingPhone = "",
   contact = "", contactMethod = "instagram", note = "", adminNote = "",
   source = "site", items = [], enforceStock = false,
+  locationLat = null, locationLng = null, locationAccuracy = null,
 }) {
   if (items.length === 0) throw new Error("An order needs at least one item");
   const total = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
@@ -78,7 +85,8 @@ export async function createOrder({
   return tx(async () => {
     const info = await insertOrder.run(
       userId, status, total, shippingName, shippingAddress, shippingPhone,
-      contact, contactMethod, note, adminNote, source
+      contact, contactMethod, note, adminNote, source,
+      locationLat, locationLng, locationAccuracy
     );
     const orderId = Number(info.lastInsertRowid);
     for (const it of items) {

@@ -16,7 +16,7 @@ export function clean(spec, input = {}) {
       } else if (rule.default !== undefined) {
         value[key] = rule.default;
       } else {
-        value[key] = rule.type === "int" ? null : rule.type === "bool" ? 0 : "";
+        value[key] = rule.type === "int" || rule.type === "num" ? null : rule.type === "bool" ? 0 : "";
       }
       continue;
     }
@@ -24,6 +24,15 @@ export function clean(spec, input = {}) {
     if (rule.type === "int") {
       const n = Number(v);
       if (!Number.isInteger(n)) { errors[key] = "Must be a whole number"; continue; }
+      if (rule.min !== undefined && n < rule.min) { errors[key] = `Must be at least ${rule.min}`; continue; }
+      if (rule.max !== undefined && n > rule.max) { errors[key] = `Must be at most ${rule.max}`; continue; }
+      value[key] = n;
+      continue;
+    }
+
+    if (rule.type === "num") {
+      const n = Number(v);
+      if (!Number.isFinite(n)) { errors[key] = "Must be a number"; continue; }
       if (rule.min !== undefined && n < rule.min) { errors[key] = `Must be at least ${rule.min}`; continue; }
       if (rule.max !== undefined && n > rule.max) { errors[key] = `Must be at most ${rule.max}`; continue; }
       value[key] = n;

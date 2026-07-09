@@ -1904,6 +1904,19 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .co-error-main { display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap; }
 .co-submit { justify-content: center; margin-top: 0.4rem; }
 
+/* Opt-in GPS delivery pin */
+.co-geo-btn { align-self: flex-start; }
+.co-geo-ok { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.co-geo-badge {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink);
+  background: var(--bone-deep); border: 1px solid var(--line-dark); padding: 0.4em 0.7em;
+}
+.co-geo-clear {
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--umber); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0;
+}
+.co-geo-clear:hover { color: var(--brick); }
+
 .co-summary { border: 1px solid var(--line-dark-strong); background: var(--bone-deep); padding: 1.3rem; position: sticky; top: 90px; }
 .co-summary-items { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; margin: 0.8rem 0 1.1rem; }
 .co-summary-items li { display: grid; grid-template-columns: 2.6rem 1fr auto; gap: 0.7rem; align-items: center; }

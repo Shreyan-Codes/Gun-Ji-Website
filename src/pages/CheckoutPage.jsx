@@ -37,7 +37,44 @@ export default function CheckoutPage() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [placed, setPlaced] = useState(null);
 
+  // Opt-in GPS delivery pin. geo = { lat, lng, accuracy } once shared.
+  const [geo, setGeo] = useState(null);
+  const [geoStatus, setGeoStatus] = useState("idle"); // idle | locating | ok | error
+  const [geoError, setGeoError] = useState("");
+
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  function shareLocation() {
+    if (!("geolocation" in navigator)) {
+      setGeoStatus("error");
+      setGeoError("Your browser can’t share location — just type your address instead.");
+      return;
+    }
+    setGeoStatus("locating");
+    setGeoError("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setGeo({ lat: +latitude.toFixed(6), lng: +longitude.toFixed(6), accuracy: Math.round(accuracy) });
+        setGeoStatus("ok");
+      },
+      (err) => {
+        setGeoStatus("error");
+        setGeoError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location blocked — allow it in your browser, or just type your address."
+            : "Couldn’t get your location — try again, or type your address."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  }
+
+  function clearLocation() {
+    setGeo(null);
+    setGeoStatus("idle");
+    setGeoError("");
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -57,6 +94,7 @@ export default function CheckoutPage() {
           shippingPhone: form.shippingPhone,
           note: form.note,
           website: form.website,
+          ...(geo ? { locationLat: geo.lat, locationLng: geo.lng, locationAccuracy: geo.accuracy } : {}),
         },
         { token: getToken() }
       );
@@ -166,6 +204,24 @@ export default function CheckoutPage() {
               <span className="co-label">Delivery address <em>(or “pickup in KTM”)</em></span>
               <textarea maxLength={300} rows={2} value={form.shippingAddress} onChange={set("shippingAddress")} placeholder="Tole, city — or arrange on DM" />
             </label>
+
+            <div className="co-field co-geo">
+              <span className="co-label">Pin your location <em>(optional — helps our rider find you)</em></span>
+              {geoStatus === "ok" && geo ? (
+                <div className="co-geo-ok">
+                  <span className="co-geo-badge">📍 Location captured{geo.accuracy ? ` · ±${geo.accuracy}m` : ""}</span>
+                  <a className="mono-link" href={`https://www.google.com/maps?q=${geo.lat},${geo.lng}`} target="_blank" rel="noopener noreferrer">
+                    view on map ↗
+                  </a>
+                  <button type="button" className="co-geo-clear" onClick={clearLocation}>clear</button>
+                </div>
+              ) : (
+                <button type="button" className="btn btn-line-dark btn-sm co-geo-btn" onClick={shareLocation} disabled={geoStatus === "locating"}>
+                  {geoStatus === "locating" ? "Getting your location…" : "📍 Share my location"}
+                </button>
+              )}
+              {geoStatus === "error" && <span className="co-error">{geoError}</span>}
+            </div>
 
             <div className="co-row">
               <label className="co-field">

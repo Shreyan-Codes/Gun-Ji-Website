@@ -226,7 +226,7 @@ async function renderOrders(panel) {
       <td>${esc(o.item)}<span class="sub">${o.qty} pc${o.qty > 1 ? "s" : ""}${o.size ? ` · ${esc(o.size)}` : ""}${o.colour ? ` · ${esc(o.colour)}` : ""}</span>
         ${o.total ? `<span class="order-total">Rs. ${Number(o.total).toLocaleString("en-IN")}${o.qty > 1 ? ` <span class="sub-inline">(${o.qty} × ${Number(o.unitPrice).toLocaleString("en-IN")})</span>` : ""}</span>` : ""}
         ${o.note ? `<span class="note-line">“${esc(o.note)}”</span>` : ""}</td>
-      <td>${contactCell(o)}${o.customerEmail ? `<span class="acct-badge" title="Placed while logged in">◆ ${esc(o.customerEmail)}</span>` : ""}</td>
+      <td>${contactCell(o)}${o.locationUrl ? `<span class="sub"><a class="contact-link" href="${esc(o.locationUrl)}" target="_blank" rel="noopener noreferrer">📍 delivery pin${o.location && o.location.accuracy ? ` (±${o.location.accuracy}m)` : ""} ↗</a></span>` : ""}${o.customerEmail ? `<span class="acct-badge" title="Placed while logged in">◆ ${esc(o.customerEmail)}</span>` : ""}</td>
       <td>${statusSelect("order", o.id, o.status, ORDER_STATUSES)}
         ${o.adminNote ? `<span class="note-line">✎ ${esc(o.adminNote)}</span>` : ""}</td>
       <td><div class="row-actions">

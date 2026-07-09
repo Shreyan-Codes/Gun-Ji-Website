@@ -59,6 +59,10 @@ const checkoutSpec = {
   shippingAddress: { max: 300 },
   shippingPhone: { max: 40 },
   note: { max: 1000 },
+  // Optional GPS delivery pin (opt-in "Share my location" button at checkout).
+  locationLat: { type: "num", min: -90, max: 90 },
+  locationLng: { type: "num", min: -180, max: 180 },
+  locationAccuracy: { type: "int", min: 0, max: 100000 },
 };
 
 async function placeCartOrder(req, res) {
@@ -100,6 +104,10 @@ async function placeCartOrder(req, res) {
       source: "site",
       items,
       enforceStock: true,
+      // Only persist the pin when both coordinates came through.
+      locationLat: value.locationLat,
+      locationLng: value.locationLng,
+      locationAccuracy: value.locationLat !== null && value.locationLng !== null ? value.locationAccuracy : null,
     });
     res.status(201).json({ ok: true, id: order.id, order });
   } catch (err) {
