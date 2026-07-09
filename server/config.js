@@ -46,6 +46,9 @@ export const config = {
   // enable; otherwise notifications are silently skipped.
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
   telegramChatId: process.env.TELEGRAM_CHAT_ID || "",
+  // Google Apps Script web-app webhook URL that appends orders/requests to a
+  // Google Sheet. Empty = skip. Set as a secret in the Render dashboard.
+  sheetsWebhookUrl: process.env.GSHEET_WEBHOOK_URL || "",
   // Set TRUST_PROXY=1 when running behind nginx/caddy so rate limits see real IPs.
   trustProxy: process.env.TRUST_PROXY === "1",
 };
