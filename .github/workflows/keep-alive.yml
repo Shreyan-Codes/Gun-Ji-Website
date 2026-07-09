@@ -1,0 +1,32 @@
+name: Keep Render backend awake
+
+# Render's free tier sleeps the backend after ~15 min of no traffic, and a
+# cold start (30-50s) is longer than the site's 6s API timeout — so visitors
+# arriving on a sleeping backend see no live catalog. This pings the health
+# endpoint every 10 minutes so the server (and its DB connection) stays warm.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # every 10 minutes (UTC)
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        run: |
+          URL="https://gunji-api.onrender.com/api/health"
+          # Retry for up to ~2 min in case the server is doing a cold start.
+          for i in $(seq 1 8); do
+            code=$(curl -s -o /tmp/body.json -w "%{http_code}" --max-time 60 "$URL" || echo 000)
+            echo "Attempt $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              cat /tmp/body.json
+              echo
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Backend did not return 200 after retries."
+          exit 1
