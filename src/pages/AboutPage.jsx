@@ -1,4 +1,7 @@
 import PageHero from "../components/PageHero.jsx";
+import Hero from "../components/Hero.jsx";
+import Ticker from "../components/Ticker.jsx";
+import Editions from "../components/Editions.jsx";
 import Brand from "../components/Brand.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import { usePageMeta } from "../lib/seo.js";
@@ -29,6 +32,10 @@ export default function AboutPage() {
           </>
         }
       />
+
+      <Ticker />
+      <Hero />
+      <Editions />
 
       <section className="about-photos">
         <figure className="about-photo reveal">

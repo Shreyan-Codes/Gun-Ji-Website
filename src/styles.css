@@ -212,10 +212,8 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   gap: 2rem;
   height: var(--head-h);
   padding: 0 var(--pad-x);
-  background: color-mix(in srgb, var(--bone) 80%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line-light);
+  background: transparent;
+  border-bottom: 1px solid transparent;
   color: var(--ink);
   transition: transform 0.35s var(--ease-out);
   will-change: transform;
