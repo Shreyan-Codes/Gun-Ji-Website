@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import Ticker from "../components/Ticker.jsx";
-import Brand from "../components/Brand.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
@@ -16,8 +14,6 @@ export default function Home() {
 
   return (
     <>
-      <Ticker />
-
       <section className="featured">
         <div className="sect-head sect-head-row reveal">
           <div>
@@ -36,8 +32,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      <Brand />
 
       <CtaBand
         titleDev="तपाईंको डिजाइन,"
