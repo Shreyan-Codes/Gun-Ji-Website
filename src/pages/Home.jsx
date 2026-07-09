@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import Hero from "../components/Hero.jsx";
 import Ticker from "../components/Ticker.jsx";
-import Editions from "../components/Editions.jsx";
 import Brand from "../components/Brand.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import CtaBand from "../components/CtaBand.jsx";
@@ -18,10 +16,7 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
       <Ticker />
-
-      <Editions />
 
       <section className="featured">
         <div className="sect-head sect-head-row reveal">
