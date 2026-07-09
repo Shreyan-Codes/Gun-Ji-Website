@@ -700,7 +700,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   line-height: 1;
   color: var(--brick);
   border: 2px solid var(--brick);
-  background: rgba(248, 245, 240, 0.62);
+  background: rgba(248, 249, 250, 0.62);
   backdrop-filter: blur(3px);
   opacity: 0;
   transform: scale(1.6) rotate(-16deg);
@@ -1263,7 +1263,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   border-left: 3px solid var(--mustard);
   padding: 0.7rem 0.9rem;
 }
-.op-custom-hint a { color: var(--brick); border-bottom: 1px solid rgba(178, 58, 40, 0.4); }
+.op-custom-hint a { color: var(--brick); border-bottom: 1px solid rgba(52, 58, 64, 0.4); }
 .op-custom-hint a:hover { border-bottom-color: var(--brick); }
 
 .op-summary {
