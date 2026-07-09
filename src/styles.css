@@ -217,22 +217,23 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line-light);
   color: var(--ink);
+  transition: transform 0.35s var(--ease-out);
+  will-change: transform;
 }
+/* Slide up out of view when scrolling down (JS toggles .hide) */
+.site-head.hide { transform: translateY(-100%); }
 
 .brand {
-  font-family: var(--font-display);
-  font-stretch: 125%;
-  font-weight: 900;
-  font-size: 1.35rem;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  text-decoration: none;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
 }
-.brand .dev { font-size: 1.16em; color: var(--mustard); margin-left: 0.02em; }
-.brand-dash { color: var(--brick); }
-.brand sup { font-size: 0.42em; font-family: var(--font-mono); margin-left: 0.3em; color: var(--bone-dim); }
+.brand-logo {
+  height: 1.75rem;          /* wordmark height in the header */
+  width: auto;
+  display: block;
+}
 
 .site-nav {
   display: flex;

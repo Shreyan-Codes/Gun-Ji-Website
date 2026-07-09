@@ -13,13 +13,40 @@ const links = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const { pathname } = useLocation();
   const { settings } = useSiteData();
   const { customer } = useAuth();
   const { count } = useCart();
   const accountLabel = customer ? (customer.name?.trim().split(/\s+/)[0] || "Account") : "Log in";
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+    setHidden(false); // always reveal on route change (page scrolls to top)
+  }, [pathname]);
+
+  // Hide the header when scrolling down, reveal it when scrolling up.
+  // Always visible near the top and whenever the mobile menu is open.
+  useEffect(() => {
+    let last = window.scrollY;
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY;
+      if (open || y < 80) setHidden(false);
+      else if (y > last + 6) setHidden(true);
+      else if (y < last - 6) setHidden(false);
+      last = y;
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [open]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -33,9 +60,9 @@ export default function Header() {
 
   return (
     <>
-      <header className="site-head">
-        <Link className="brand" to="/" aria-label="GUN-JI home">
-          GUN<span className="brand-dash">—</span><span className="dev">जी</span><sup>™</sup>
+      <header className={`site-head ${hidden ? "hide" : ""}`}>
+        <Link className="brand" to="/" aria-label="GUN-जी home">
+          <img className="brand-logo" src="/assets/gunji_logo_wordmark.png" alt="GUN-जी" width="343" height="144" />
         </Link>
 
         <nav className="site-nav" aria-label="Main">
