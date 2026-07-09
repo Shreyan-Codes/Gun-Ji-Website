@@ -1,34 +1,34 @@
 /* ============================================================
    GUN-जी™ — Kathmandu print-studio catalog
-   ink / bone / brick / mustard / umber — from the brand's photos
+   Monochrome greyscale palette (coolors: f8f9fa … 212529)
    Display: Archivo (ultra-expanded) — Devanagari: Rozha One
    Body: Instrument Sans — Utility: Fragment Mono
    ============================================================ */
 
 :root {
-  /* Whitish theme — near-white surfaces, muted terracotta/ochre accents.
-     The old dark bands are light now, so --ink is text/borders only. */
-  --ink: #2a2420;           /* warm charcoal — primary text & borders */
-  --ink-soft: #463d36;
-  --bone: #f8f5f0;          /* body background (near-white) */
-  --bone-deep: #efe9e0;     /* soft contrast panel */
-  --band: #f0eae0;          /* light bands: hero / custom / footer / page-hero */
-  --brick: #b26550;         /* muted terracotta accent */
-  --mustard: #c2a066;       /* muted soft ochre accent */
-  --umber: #6f6458;         /* warm taupe secondary text */
-  --khaki: #9a8f7e;         /* tertiary text */
+  /* Greyscale theme — near-white surfaces, near-black ink, slate accents.
+     Every surface is light; --ink is text/borders, dark greys are the accent. */
+  --ink: #212529;           /* near-black — primary text & borders */
+  --ink-soft: #343a40;      /* slightly softer heading/ink */
+  --bone: #f8f9fa;          /* body background (near-white) */
+  --bone-deep: #dee2e6;     /* soft contrast panel */
+  --band: #e9ecef;          /* light bands: hero / custom / footer / page-hero */
+  --brick: #343a40;         /* primary dark accent — CTA, solid buttons, selection */
+  --mustard: #6c757d;       /* secondary slate accent */
+  --umber: #495057;         /* secondary text */
+  --khaki: #adb5bd;         /* tertiary text */
 
-  /* muted secondary text (was light-on-ink; now dark on the flipped bands) */
-  --bone-dim: #7b6f61;
-  /* light text for the few elements that stay dark/coloured
+  /* muted secondary text (dark on the light bands) */
+  --bone-dim: #6c757d;
+  /* light text for elements that sit on the dark accent
      (solid buttons, cta band, product plate) */
-  --on-dark: #f5f0e7;
+  --on-dark: #f8f9fa;
 
-  /* hairlines — every surface is light now, so all are dark-on-light */
-  --line-dark: rgba(42, 37, 33, 0.16);
-  --line-dark-strong: rgba(42, 37, 33, 0.42);
-  --line-light: rgba(42, 37, 33, 0.14);
-  --line-light-strong: rgba(42, 37, 33, 0.34);
+  /* hairlines — every surface is light, so all are dark-on-light */
+  --line-dark: rgba(33, 37, 41, 0.16);
+  --line-dark-strong: rgba(33, 37, 41, 0.42);
+  --line-light: rgba(33, 37, 41, 0.14);
+  --line-light-strong: rgba(33, 37, 41, 0.34);
 
   --font-display: "Archivo", "Arial Narrow", sans-serif;
   --font-dev: "Rozha One", "Nirmala UI", "Noto Serif Devanagari", serif;
@@ -65,7 +65,7 @@ a { color: inherit; }
 
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bone); }
-::-webkit-scrollbar-thumb { background: #cbbda6; border: 2px solid var(--bone); }
+::-webkit-scrollbar-thumb { background: #adb5bd; border: 2px solid var(--bone); }
 
 :focus-visible {
   outline: 2px solid var(--brick);
@@ -1612,7 +1612,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   cursor: pointer;
   transition: background 0.2s ease;
 }
-.google-btn-placeholder:hover { background: #f5f2ec; }
+.google-btn-placeholder:hover { background: #e9ecef; }
 .g-mark {
   display: inline-grid;
   place-items: center;
@@ -1722,7 +1722,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 .ao-status.s-new { border-color: var(--brick); color: var(--brick); }
 .ao-status.s-confirmed { border-color: var(--mustard); color: var(--umber); }
-.ao-status.s-delivered { border-color: #6f8f6a; color: #587a53; }
+.ao-status.s-delivered { border-color: var(--ink); color: var(--ink); }
 .ao-status.s-cancelled { opacity: 0.6; text-decoration: line-through; }
 
 .account-empty {
