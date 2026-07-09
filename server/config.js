@@ -42,6 +42,10 @@ export const config = {
     ? path.resolve(ROOT, process.env.DB_PATH)
     : path.join(ROOT, "data", "gunji.db"),
   databaseUrl: process.env.DATABASE_URL || "",
+  // Telegram owner-alerts (new order / custom request). Both must be set to
+  // enable; otherwise notifications are silently skipped.
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
+  telegramChatId: process.env.TELEGRAM_CHAT_ID || "",
   // Set TRUST_PROXY=1 when running behind nginx/caddy so rate limits see real IPs.
   trustProxy: process.env.TRUST_PROXY === "1",
 };

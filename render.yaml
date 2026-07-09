@@ -30,5 +30,9 @@ services:
         value: "731951011595-jeqd4rsca0fku1n0ter20g06ovp963co.apps.googleusercontent.com"
       - key: CORS_ORIGINS
         sync: false            # e.g. https://gunji.vercel.app (comma-separated)
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false            # secret — set in dashboard (owner order alerts)
+      - key: TELEGRAM_CHAT_ID
+        sync: false            # your Telegram chat id — set in dashboard
       - key: TRUST_PROXY
         value: "1"

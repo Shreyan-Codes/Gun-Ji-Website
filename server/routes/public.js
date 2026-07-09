@@ -6,6 +6,7 @@ import { getSettings } from "../db/settings.js";
 import { listActiveProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
+import { notifyNewOrder, notifyNewCustomRequest } from "../lib/notify.js";
 
 const router = Router();
 const submitLimit = rateLimit({ name: "submit", windowMs: 10 * 60 * 1000, max: 8 });
@@ -109,6 +110,7 @@ async function placeCartOrder(req, res) {
       locationLng: value.locationLng,
       locationAccuracy: value.locationLat !== null && value.locationLng !== null ? value.locationAccuracy : null,
     });
+    notifyNewOrder(order); // fire-and-forget owner alert
     res.status(201).json({ ok: true, id: order.id, order });
   } catch (err) {
     if (String(err.message).startsWith("OUT_OF_STOCK")) {
@@ -155,6 +157,7 @@ async function placeSingleOrder(req, res) {
       size: value.size, color: value.colour, quantity: value.qty, priceAtPurchase: unitPrice,
     }],
   });
+  notifyNewOrder(order); // fire-and-forget owner alert
   res.status(201).json({ ok: true, id: order.id, order });
 }
 
@@ -176,6 +179,7 @@ router.post("/custom-requests", submitLimit, async (req, res) => {
     idea: value.idea, colour: value.colour, size: value.size, qty: value.qty,
     referenceUrl: value.referenceUrl,
   });
+  notifyNewCustomRequest({ id: created.id, ...value }); // fire-and-forget owner alert
   res.status(201).json({ ok: true, id: created.id });
 });
 
