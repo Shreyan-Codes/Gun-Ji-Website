@@ -14,12 +14,12 @@
   --bone-deep: #dee2e6;     /* soft contrast panel */
   --band: #e9ecef;          /* light bands: hero / custom / footer / page-hero */
   --brick: #343a40;         /* primary dark accent — CTA, solid buttons, selection */
-  --mustard: #6c757d;       /* secondary slate accent */
+  --mustard: #636a71;       /* secondary slate accent — AA on --bone (5.2:1) */
   --umber: #495057;         /* secondary text */
-  --khaki: #adb5bd;         /* tertiary text */
+  --khaki: #6b7178;         /* tertiary text — AA on --bone (4.6:1) */
 
   /* muted secondary text (dark on the light bands) */
-  --bone-dim: #6c757d;
+  --bone-dim: #636a71;
   /* light text for elements that sit on the dark accent
      (solid buttons, cta band, product plate) */
   --on-dark: #f8f9fa;
@@ -73,6 +73,28 @@ a { color: inherit; }
 }
 
 main { padding-top: var(--head-h); }
+
+/* keyboard skip link — hidden until focused, then pinned top-left */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3000;
+  padding: 0.65rem 1.1rem;
+  background: var(--ink);
+  color: var(--on-dark);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-radius: 3px;
+  transform: translateY(-160%);
+  transition: transform 0.2s var(--ease-out);
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--on-dark);
+  outline-offset: 2px;
+}
 
 /* Devanagari display */
 .dev { font-family: var(--font-dev); font-weight: 400; }
