@@ -1842,29 +1842,6 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   .bottom-nav .bn-item, .skip-link { transition: none; }
 }
 
-/* ---------- keyboard skip link ---------- */
-
-.skip-link {
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 3000;
-  padding: 0.65rem 1.1rem;
-  background: var(--ink);
-  color: var(--on-dark);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  text-decoration: none;
-  border-radius: 3px;
-  transform: translateY(-160%);
-  transition: transform 0.2s var(--ease-out);
-}
-.skip-link:focus {
-  transform: translateY(0);
-  outline: 2px solid var(--on-dark);
-  outline-offset: 2px;
-}
-
 /* ---------- mobile bottom tab bar (2a) ---------- */
 
 .bottom-nav { display: none; }
