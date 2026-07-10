@@ -927,6 +927,71 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   .qv-media { max-height: 42vh; aspect-ratio: auto; height: 42vh; }
 }
 
+/* ---------- search overlay (3f) ---------- */
+
+.head-search {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--umber);
+  padding: 0.3rem;
+  transition: color 0.2s ease;
+}
+.head-search:hover { color: var(--ink); }
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1rem, 8vh, 6rem) 1rem 1rem;
+  background: rgba(33, 37, 41, 0.55);
+  backdrop-filter: blur(2px);
+}
+.search-box {
+  width: min(620px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bone);
+  border: 1px solid var(--line-dark);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.search-input-row { display: flex; align-items: center; border-bottom: 1px solid var(--line-dark); }
+.search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 1rem 1.2rem;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.search-input:focus { outline: none; }
+.search-close { border: none; background: none; cursor: pointer; padding: 1rem 1.2rem; font-size: 1rem; color: var(--bone-dim); }
+.search-results { overflow-y: auto; padding: 0.4rem; }
+.search-note { padding: 1rem 1.1rem; color: var(--bone-dim); }
+.search-hit {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.search-hit:hover { background: var(--band); }
+.search-hit img { width: 44px; height: 55px; object-fit: cover; border: 1px solid var(--line-dark); flex: none; }
+.search-hit-name { flex: 1; min-width: 0; }
+.search-hit-price { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; }
+.search-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 1rem 1.1rem; }
+.search-suggest-lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bone-dim); }
+
 .plate {
   position: absolute;
   top: 0;

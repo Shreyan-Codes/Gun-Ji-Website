@@ -207,7 +207,10 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       selectors, qty stepper, Add to cart (Cart context), "Full details" → PDP.
       **Focus trap + Escape + backdrop close + body scroll-lock + focus restore
       to trigger** — all verified in browser. Reuses statusOf/swatch from PDP.
-- [~] **3f search — BACKEND DONE, UI PENDING.**
+- [x] **3f search — DONE (backend + UI).** UI: `SearchOverlay.jsx` (debounced
+      250ms, results list, empty-state top-collection chips) + header search icon
+      (this is Phase 2b's search icon too). Verified: opens, input autofocus, body
+      lock, empty-state chips, Escape close. Results path needs live API.
       - Migration `005_product_search.sql`: `products.search_vector` GENERATED
         tsvector (name+description+tag+edition) + GIN index. Postgres FTS, NOT
         SQLite FTS5. Idempotent.

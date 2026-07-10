@@ -4,6 +4,7 @@ import { useSiteData } from "../context/SiteData.jsx";
 import { useAuth } from "../context/Auth.jsx";
 import { useCart } from "../context/Cart.jsx";
 import { useWishlist } from "../context/Wishlist.jsx";
+import SearchOverlay from "./SearchOverlay.jsx";
 
 const links = [
   { to: "/editions", en: "Editions", ne: "संग्रह" },
@@ -15,6 +16,7 @@ const links = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
   const { settings } = useSiteData();
   const { customer } = useAuth();
@@ -75,6 +77,12 @@ export default function Header() {
             </NavLink>
           ))}
         </nav>
+
+        <button type="button" className="head-search" onClick={() => setSearchOpen(true)} aria-label="Search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+          </svg>
+        </button>
 
         <NavLink className="head-account" to="/account">
           <span className="head-account-icon" aria-hidden="true">
@@ -149,6 +157,8 @@ export default function Header() {
           </a>
         </div>
       </nav>
+
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
     </>
   );
 }
