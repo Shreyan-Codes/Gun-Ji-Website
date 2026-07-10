@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import BottomNav from "./components/BottomNav.jsx";
 import Home from "./pages/Home.jsx";
 import EditionsPage from "./pages/EditionsPage.jsx";
 import TeesPage from "./pages/TeesPage.jsx";
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <>
+      <a className="skip-link" href="#top">Skip to content</a>
       <Header />
       <main id="top">
         <Routes>
@@ -41,6 +43,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <BottomNav />
       <div className="grain" aria-hidden="true" />
     </>
   );

@@ -108,7 +108,25 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       NOT invent; add if Shreyan gives lat/lng). `PreOrder` availability mapping —
       blocked on Phase 3a `stock_status` column.
 
-### Phases 2–7 — NOT STARTED. See spec. Phase 3+ blocked on open questions (§5).
+### Phase 2 — Mobile shell (IN PROGRESS)
+- [x] **2a Bottom tab bar** — `src/components/BottomNav.jsx` + CSS. Fixed, mobile-only
+      (`display:none` base, shown `@media(max-width:768px)`), `env(safe-area-inset-bottom)`,
+      `body` gets `padding-bottom` so content/footer clear it. 5 real routes:
+      Home / Shop(/tees) / Custom / Cart(+badge) / Account. Active via NavLink.
+      **DEVIATION:** spec wanted Home/Search/Shop/Track/Account — Search(3f) + Track(3b)
+      not built yet, so swapped for Custom+Cart now; swap in when those land.
+      Verified: renders fixed bottom, item offsetHeight 51px (≥44 tap target), no console errors.
+- [x] **2d (most)** — reduced-motion block (styles.css ~1396) + `useReveal` already
+      respect `prefers-reduced-motion`; product imgs use `aspect-ratio:4/5` so CLS=0;
+      global `:focus-visible` ring exists. Added **skip link** (App.jsx + CSS) — was
+      only on the security branch; now self-contained here too (trivial merge dup).
+- [ ] **2b Header** — mostly already done (persistent logo/account/cart+badge). MISSING
+      search + wishlist icons → BLOCKED on 3f (search) / 3c (wishlist). Add when built.
+- [ ] **2c Mega menu** — categories Player/Anime/देसी/Custom linking `/shop?collection=<slug>`.
+      `/shop` = `/tees`; needs `?collection=` filter support (overlaps 3d shop filters).
+      Deferred — do alongside 3d.
+
+### Phases 3–7 — NOT STARTED. Phase 3+ blocked on open questions (§5).
 
 ---
 

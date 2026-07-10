@@ -1403,6 +1403,99 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   .edition-float { display: none; }
   .stamp { transition: none; }
   .product-img img, .edition-name, .edition-arrow, .menu, .menu-link { transition: none; }
+  .bottom-nav .bn-item, .skip-link { transition: none; }
+}
+
+/* ---------- keyboard skip link ---------- */
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3000;
+  padding: 0.65rem 1.1rem;
+  background: var(--ink);
+  color: var(--on-dark);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-radius: 3px;
+  transform: translateY(-160%);
+  transition: transform 0.2s var(--ease-out);
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--on-dark);
+  outline-offset: 2px;
+}
+
+/* ---------- mobile bottom tab bar (2a) ---------- */
+
+.bottom-nav { display: none; }
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 120;
+    background: var(--bone);
+    border-top: 1px solid var(--line-dark);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* reserve space so page content / footer never sit under the bar */
+  body { padding-bottom: calc(3.75rem + env(safe-area-inset-bottom)); }
+
+  .bn-item {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 44px;
+    padding: 0.5rem 0.25rem 0.55rem;
+    text-decoration: none;
+    color: var(--bone-dim);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s var(--ease-out);
+  }
+  .bn-item.active { color: var(--ink); }
+  .bn-item.active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 0 0 2px 2px;
+  }
+  .bn-icon { position: relative; display: block; line-height: 0; }
+  .bn-label { line-height: 1; }
+  .bn-badge {
+    position: absolute;
+    top: -6px;
+    right: -9px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    display: grid;
+    place-items: center;
+    background: var(--brick);
+    color: var(--on-dark);
+    border-radius: 999px;
+    font-size: 0.55rem;
+    line-height: 1;
+  }
 }
 
 /* ---------- responsive ---------- */
