@@ -55,14 +55,18 @@ export default function ProductPage() {
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.name,
-      image: `${SITE_URL}${product.img}`,
+      image: [`${SITE_URL}${product.img}`],
       description: `${product.tag} — premium heavyweight oversized tee, printed in Kathmandu, Nepal.`,
-      brand: { "@type": "Brand", name: "GUN-जी™" },
+      sku: product.slug,
+      brand: { "@type": "Brand", name: "Gunji" },
       offers: {
         "@type": "Offer",
         url: `${SITE_URL}/product/${product.slug}`,
         priceCurrency: "NPR",
         price: product.price,
+        itemCondition: "https://schema.org/NewCondition",
+        // TODO(phase-3a): map variant.stock_status → PreOrder once the
+        // stock_status column exists; for now inStock is a boolean.
         availability: product.inStock
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",

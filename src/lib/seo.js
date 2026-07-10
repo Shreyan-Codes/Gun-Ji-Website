@@ -8,7 +8,7 @@ import { useEffect } from "react";
 export const SITE_URL = "https://gunji.vercel.app";
 export const SITE_NAME = "GUN-जी™";
 
-const DEFAULT_TITLE = "GUN-जी™ — Oversized T-Shirts & Custom Print Studio, Kathmandu Nepal";
+const DEFAULT_TITLE = "Gunji — Oversized Tees & Custom Print | Kathmandu";
 const DEFAULT_DESC =
   "Premium heavyweight oversized tees printed in Kathmandu, Nepal. Football player editions, anime back prints, देसी Devanagari type — or custom print your own design. Ships across Nepal.";
 const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_post_02.jpg`;
