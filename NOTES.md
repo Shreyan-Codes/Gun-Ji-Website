@@ -367,6 +367,34 @@ working (don't break inbound links) and ADD the new ones, rather than renaming:
 
 ---
 
+## 5b. Cold-start & region mitigation (2026-07-11)
+
+Free-tier backend (Render) spins down after ~15 min idle → 30–60s cold start.
+Mitigations shipped (no new deps):
+
+- **`/api/health`** — already existed (`server/routes/public.js`), returns 200
+  `{ok,uptimeSec,products}`. Render `healthCheckPath` already points at it.
+- **Self-heartbeat** — `server/index.js` runs `setInterval` (`.unref()`) that
+  `fetch`es `${RENDER_EXTERNAL_URL}/api/health` every `HEARTBEAT_MINUTES` (default
+  **10**, must stay < 15 min idle window). Config in `server/config.js`
+  (`heartbeatUrl` = `HEARTBEAT_URL` || Render's auto `RENDER_EXTERNAL_URL`;
+  empty in local dev = disabled). Hitting the *public* URL routes through the
+  platform edge so it counts as inbound traffic and resets the idle timer.
+  Keeps a running instance warm; can't wake an already-slept one (process is dead).
+- **Region** — `render.yaml` `region: singapore` (Render's closest to Nepal;
+  options are oregon/ohio/virginia/frankfurt/singapore). Frontend is static on
+  Vercel's CDN edge (no serverless functions → no Vercel region setting needed).
+- **Slow-start UX** — `src/lib/api.js` already retries remote GETs 3× at 25s
+  each (survives cold start). `SiteData` renders a static fallback catalog
+  instantly (home/tees never blank). `ProductPage` now shows a shimmer
+  **skeleton** (`.sk-*` in `styles.css`) instead of a bare "Loading…", so a cold
+  backend never reads as broken.
+
+**True fix is a hosting decision, not code:** an always-on paid instance (Render
+Starter, or Fly/Railway) removes cold starts entirely. That's the owner's call.
+
+---
+
 ## 6. Definition-of-Done checklist (paste command output here as phases complete)
 
 1. `curl -s <url>/product/<slug> | grep -E 'og:title|og:image|canonical'` — product-specific → **DONE locally (1b); verify on preview deploy**

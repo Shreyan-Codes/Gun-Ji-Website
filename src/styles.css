@@ -2280,6 +2280,29 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .pp-loading, .pp-missing { font-family: var(--font-mono); font-size: 0.9rem; color: var(--umber); padding: 3rem 0; text-align: center; }
 .pp-missing { display: flex; flex-direction: column; align-items: center; gap: 1.2rem; }
 
+/* Skeleton placeholders — shown while a (possibly cold-starting) backend loads,
+   so the page never reads as blank/broken. Shared shimmer + product-page shapes. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+@keyframes sk-shimmer { to { background-position-x: -200%; } }
+.sk-block, .sk-line, .sk-chip {
+  background: linear-gradient(100deg, var(--bone-deep) 30%, #eef1f4 50%, var(--bone-deep) 70%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+.sk-block { width: 100%; aspect-ratio: 4 / 5; }
+.sk-line { height: 0.85rem; margin: 0.55rem 0; }
+.sk-line.sk-tall { height: 1.8rem; }
+.sk-line.sk-btn { height: 2.6rem; margin-top: 1.4rem; border-radius: 999px; }
+.sk-w-30 { width: 30%; } .sk-w-40 { width: 40%; } .sk-w-50 { width: 50%; }
+.sk-w-60 { width: 60%; } .sk-w-70 { width: 70%; } .sk-w-90 { width: 90%; }
+.sk-row { display: flex; gap: 0.6rem; margin: 1rem 0; }
+.sk-chip { width: 2.2rem; height: 2.2rem; border-radius: 50%; }
+@media (prefers-reduced-motion: reduce) { .sk-block, .sk-line, .sk-chip { animation: none; } }
+
 .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
 .pp-media {
   position: relative;

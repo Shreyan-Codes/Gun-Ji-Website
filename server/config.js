@@ -51,4 +51,11 @@ export const config = {
   sheetsWebhookUrl: process.env.GSHEET_WEBHOOK_URL || "",
   // Set TRUST_PROXY=1 when running behind nginx/caddy so rate limits see real IPs.
   trustProxy: process.env.TRUST_PROXY === "1",
+  // Cold-start heartbeat: on Render Free the instance spins down after ~15 min
+  // of no inbound traffic (30–60s cold start on the next visit). Pinging our own
+  // public URL every few minutes keeps it warm while it's running. Render injects
+  // RENDER_EXTERNAL_URL automatically; HEARTBEAT_URL is a manual override. Empty
+  // (e.g. local dev) disables it. Interval must stay under the ~15 min idle window.
+  heartbeatUrl: (process.env.HEARTBEAT_URL || process.env.RENDER_EXTERNAL_URL || "").replace(/\/+$/, ""),
+  heartbeatMinutes: posInt(process.env.HEARTBEAT_MINUTES, 10),
 };

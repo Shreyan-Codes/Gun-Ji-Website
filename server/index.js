@@ -124,6 +124,20 @@ const server = app.listen(config.port, () => {
   }
 });
 
+// Self-heartbeat — keeps the Render Free instance warm (see config.heartbeatUrl).
+// Hits our own public /api/health through the platform edge so it counts as
+// inbound traffic and resets the idle-spin-down timer. No-op when no URL is set.
+if (config.heartbeatUrl) {
+  const url = `${config.heartbeatUrl}/api/health`;
+  const everyMs = config.heartbeatMinutes * 60 * 1000;
+  console.log(`[gunji] heartbeat: pinging ${url} every ${config.heartbeatMinutes} min`);
+  setInterval(() => {
+    fetch(url, { signal: AbortSignal.timeout(15000) })
+      .then((res) => { if (!res.ok) console.warn(`[heartbeat] ${res.status}`); })
+      .catch((err) => console.warn(`[heartbeat] failed: ${err?.message || err}`));
+  }, everyMs).unref(); // .unref so it never blocks a clean shutdown
+}
+
 function shutdown(signal) {
   console.log(`[gunji] ${signal} — shutting down`);
   server.close(() => {

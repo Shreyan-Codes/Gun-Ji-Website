@@ -109,7 +109,27 @@ export default function ProductPage() {
   }, [color, sizesForColor]);
 
   if (status === "loading") {
-    return <section className="product-page"><p className="pp-loading">Loading…</p></section>;
+    // Skeleton mirrors the real layout so a slow (cold-start) backend never
+    // renders as a blank/broken page — see the cold-start note in NOTES.md.
+    return (
+      <section className="product-page" aria-busy="true">
+        <div className="pp-grid">
+          <div className="pp-media sk-block" aria-hidden="true" />
+          <div className="pp-info">
+            <div className="sk-line sk-w-30" aria-hidden="true" />
+            <div className="sk-line sk-w-70 sk-tall" aria-hidden="true" />
+            <div className="sk-line sk-w-40" aria-hidden="true" />
+            <div className="sk-line sk-w-90" aria-hidden="true" />
+            <div className="sk-line sk-w-60" aria-hidden="true" />
+            <div className="sk-row" aria-hidden="true">
+              <div className="sk-chip" /><div className="sk-chip" /><div className="sk-chip" />
+            </div>
+            <div className="sk-line sk-w-50 sk-btn" aria-hidden="true" />
+          </div>
+        </div>
+        <span className="sr-only">Loading this tee…</span>
+      </section>
+    );
   }
   if (status === "notfound" || !product) {
     return (
