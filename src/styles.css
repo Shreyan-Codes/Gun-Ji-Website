@@ -992,6 +992,53 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .search-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 1rem 1.1rem; }
 .search-suggest-lbl { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bone-dim); }
 
+/* ---------- mega menu (2c) ---------- */
+
+.nav-mega-wrap { position: relative; display: inline-flex; }
+.mega {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 8px);
+  min-width: 320px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.6rem;
+  background: var(--bone);
+  border: 1px solid var(--line-dark);
+  border-radius: 5px;
+  box-shadow: 0 12px 40px rgba(33, 37, 41, 0.14);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
+  z-index: 130;
+}
+.nav-mega-wrap:hover .mega,
+.nav-mega-wrap:focus-within .mega {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 4px);
+}
+.mega-link { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.6rem 0.7rem; border-radius: 3px; text-decoration: none; color: var(--ink); }
+.mega-link:hover { background: var(--band); }
+.mega-t { font-weight: 600; font-size: 0.9rem; }
+.mega-s { font-size: 0.75rem; color: var(--bone-dim); }
+
+.menu-cats { list-style: none; padding: 0; margin: 1.2rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.menu-cat {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line-dark-strong);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+
 .plate {
   position: absolute;
   top: 0;

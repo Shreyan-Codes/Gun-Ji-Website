@@ -122,9 +122,12 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       only on the security branch; now self-contained here too (trivial merge dup).
 - [ ] **2b Header** — mostly already done (persistent logo/account/cart+badge). MISSING
       search + wishlist icons → BLOCKED on 3f (search) / 3c (wishlist). Add when built.
-- [ ] **2c Mega menu** — categories Player/Anime/देसी/Custom linking `/shop?collection=<slug>`.
-      `/shop` = `/tees`; needs `?collection=` filter support (overlaps 3d shop filters).
-      Deferred — do alongside 3d.
+- [x] **2b Header** — search icon added (see 3f); persistent logo/account/wishlist/
+      cart already present. DONE.
+- [x] **2c Mega menu** — DONE. Desktop hover/focus-within panel on the "Tees" nav
+      item: Player Editions / Anime Back Prints / देसी Type / Custom Print →
+      `/tees?collection=<slug>` (+ `/custom-print`). Mobile: category chips in the
+      drawer. Verified links + focus-within reveal. **Phase 2 COMPLETE.**
 
 ### Phase 3 — Commerce (IN PROGRESS)
 - [x] **3a Stock states (schema + UI)** — Postgres, NOT SQLite.
