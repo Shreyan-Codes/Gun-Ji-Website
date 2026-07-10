@@ -45,7 +45,21 @@ your reasoning here." Zero new deps have been added. Deviations so far:
    app is Postgres. Plan: add a `tsvector` column (name + description +
    collection) with a GIN index, query with `plainto_tsquery`/`websearch_to_tsquery`.
    Fallback: `ILIKE '%q%'` if FTS proves fiddly. **No new npm package** either way.
-3. **Phase 3a migration is Postgres SQL**, placed in `server/db/migrations/`
+3. **Phase 1b implemented as a META-INJECTION prerender, not React
+   `renderToString`.** No `entry-server.jsx`, no `build:ssr`, no `hydrateRoot`.
+   Reasoning: the SPA fetches product data client-side and its providers touch
+   `window`/`localStorage`, so `renderToString` would (a) require risky provider
+   hardening and (b) still emit a loading-state body. Every acceptance/DoD check
+   depends only on the `<head>`, which the meta-injection produces reliably. The
+   `<div id="root">` stays empty and the SPA renders client-side exactly as
+   before — no hydration mismatch risk. Implemented in `scripts/prerender.js`
+   (plain Node, no deps) and wired via a **Vite `closeBundle` plugin** in
+   `vite.config.js` (NOT the npm `build` script) so it runs during `vite build`
+   regardless of whether the host invokes `vite build` or `npm run build` — the
+   current Vercel build command is unknown and this removes that dependency.
+   Future optional enhancement: inject a lightweight static product summary
+   (name/img/price) into `#root` for better LCP/no-JS — deferred.
+4. **Phase 3a migration is Postgres SQL**, placed in `server/db/migrations/`
    (new dir). The app currently loads `server/db/schema.sql` via `db.exec` at
    boot; there is **no numbered-migration runner yet** — one must be built
    (a tiny Node script that applies un-applied `NNN_*.sql` files, tracked in a
@@ -66,12 +80,27 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       (name "Gunji", alternateName ["GUN-जी","Gunji Nepal"], logo, sameAs IG).
       Enriched `Product` JSON-LD in `ProductPage.jsx`: `sku`, `itemCondition`,
       `image` as array, brand name → ASCII "Gunji".
+- [x] **1b PRERENDER — DONE** (meta-injection, see §1.3). `scripts/prerender.js`
+      + Vite `closeBundle` plugin generate static per-route HTML for `/`, `/tees`,
+      `/editions`, `/custom-print`, `/about`, and `/product/<slug>` (products
+      fetched from the live API at build, graceful fallback to static-only), plus
+      a fresh `dist/sitemap.xml` (all product slugs) and `dist/robots.txt`.
+      **Acceptance verified locally:** two products → different `<title>`,
+      different canonical, product-specific `og:image` (post_01 vs post_02),
+      exactly one `og:image` each, Product JSON-LD present, SPA shell intact,
+      no duplicate meta. Zero new deps.
+      **⚠️ VERIFY ON PREVIEW DEPLOY:** relies on Vercel serving
+      `dist/product/<slug>/index.html` for `/product/<slug>` *before* the SPA
+      catch-all rewrite in `vercel.json` (Vercel checks the filesystem before
+      `afterFiles` rewrites, so this should Just Work). Confirm with
+      `curl -s <preview>/product/<slug> | grep og:image` after deploy. If the
+      rewrite swallows it, adjust `vercel.json` so real files win.
+      Also relies on the build-time API fetch succeeding (Render cold start) —
+      if it fails, that build ships static routes only; consider committing a
+      `products.json` snapshot for build determinism.
 - [ ] **1c (remaining)** `LocalBusiness` schema — **BLOCKED** on real address /
       phone / hours / geo (open question #3). `PreOrder` availability mapping —
       blocked on Phase 3a `stock_status` column.
-- [ ] **1b PRERENDER — THE HEADLINE ITEM, NOT STARTED.** Detailed plan in §3.
-      This is the only thing that fixes Instagram/TikTok/Facebook link previews
-      (those crawlers don't run JS). Everything in 1a/1c only helps Google today.
 
 ### Phases 2–7 — NOT STARTED. See spec. Phase 3+ blocked on open questions (§5).
 
@@ -154,10 +183,10 @@ working (don't break inbound links) and ADD the new ones, rather than renaming:
 
 ## 6. Definition-of-Done checklist (paste command output here as phases complete)
 
-1. `curl -s <url>/product/<slug> | grep -E 'og:title|og:image|canonical'` — product-specific → **pending 1b**
-2. Lighthouse mobile throttled: Perf ≥90, A11y ≥95, SEO =100 → **pending**
-3. Facebook Sharing Debugger on 3 product URLs → 3 different cards → **pending 1b**
-4. Google Rich Results Test on a product URL → valid `Product` w/ price → partially ready (client-side JSON-LD exists; needs prerender for reliability)
+1. `curl -s <url>/product/<slug> | grep -E 'og:title|og:image|canonical'` — product-specific → **DONE locally (1b); verify on preview deploy**
+2. Lighthouse mobile throttled: Perf ≥90, A11y ≥95, SEO =100 → **pending** (SEO should now hit 100 via prerender; run after deploy)
+3. Facebook Sharing Debugger on 3 product URLs → 3 different cards → **ready; run after deploy** (each product now serves its own static og:image/title)
+4. Google Rich Results Test on a product URL → valid `Product` w/ price → **ready; run after deploy** (Product JSON-LD now in the static `<head>`, no JS needed)
 5. Keyboard-only walkthrough never loses focus ring → **pending Phase 2d** (partly covered by security branch)
 6. `npm ls --depth=0` byte-identical to start → **maintain: ZERO new deps so far ✅**
 
