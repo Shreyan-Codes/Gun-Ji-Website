@@ -856,6 +856,77 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 .chip-sm { padding: 0.35rem 0.7rem; font-size: 0.72rem; min-height: 40px; }
 
+/* ---------- quick view modal (3e) ---------- */
+
+.qv-open { background: none; border: none; cursor: pointer; padding: 0; }
+
+.qv-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(33, 37, 41, 0.55);
+  backdrop-filter: blur(2px);
+}
+.qv-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--bone);
+  border: 1px solid var(--line-dark);
+  border-radius: 5px;
+  padding: 1.4rem;
+}
+.qv-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: var(--bone);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.qv-media { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--bone-deep); border: 1px solid var(--line-dark); }
+.qv-media img { width: 100%; height: 100%; object-fit: cover; }
+.qv-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(248, 249, 250, 0.85);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.qv-prev { left: 0.5rem; }
+.qv-next { right: 0.5rem; }
+.qv-info { display: flex; flex-direction: column; gap: 0.9rem; }
+.qv-name { font-family: var(--font-display); font-stretch: 118%; font-weight: 800; font-size: clamp(1.4rem, 3vw, 2rem); text-transform: uppercase; line-height: 1; }
+.qv-price { font-family: var(--font-mono); font-size: 1.05rem; }
+.qv-swatches, .qv-sizes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.qv-buy { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+.qv-full { margin-top: 0.2rem; }
+
+@media (max-width: 640px) {
+  .qv-dialog { grid-template-columns: 1fr; }
+  .qv-media { max-height: 42vh; aspect-ratio: auto; height: 42vh; }
+}
+
 .plate {
   position: absolute;
   top: 0;

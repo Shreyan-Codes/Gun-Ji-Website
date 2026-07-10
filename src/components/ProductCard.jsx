@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Dev from "../lib/Dev.jsx";
+import QuickView from "./QuickView.jsx";
 
 export default function ProductCard({ product }) {
+  const [qvOpen, setQvOpen] = useState(false);
   // Link to the product page (variant picker + add to cart). Falls back to the
   // numeric id when a slug isn't available (static/offline catalog).
   const to = `/product/${product.slug ?? product.id}`;
@@ -18,6 +21,7 @@ export default function ProductCard({ product }) {
         : "Sold out";
 
   return (
+    <>
     <article className="product reveal">
       <Link className="product-img" to={to} aria-label={typeof product.name === "string" ? product.name : "View tee"}>
         <img src={product.img} alt={product.alt} loading="lazy" />
@@ -32,11 +36,13 @@ export default function ProductCard({ product }) {
         <p className="product-tag"><Dev text={product.tag} /></p>
         <div className="product-row">
           <span className="price">{product.price}</span>
-          <Link className="mono-link" to={to}>
-            View →
-          </Link>
+          <button type="button" className="mono-link qv-open" onClick={() => setQvOpen(true)}>
+            Quick view
+          </button>
         </div>
       </div>
     </article>
+    {qvOpen && <QuickView product={product} onClose={() => setQvOpen(false)} />}
+    </>
   );
 }

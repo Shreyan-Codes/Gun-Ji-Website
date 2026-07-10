@@ -202,7 +202,12 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       - Uses existing `/tees` (spec's `/shop`); size/colour options derived from
         catalog variants. Server SQL path unverified vs DB (no local DB); client
         fallback path verified.
-- [ ] **3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
+- [x] **3e Quick view** — DONE. `QuickView.jsx` modal from product cards
+      (ProductCard "Quick view" button). Image carousel, name/price, colour+size
+      selectors, qty stepper, Add to cart (Cart context), "Full details" → PDP.
+      **Focus trap + Escape + backdrop close + body scroll-lock + focus restore
+      to trigger** — all verified in browser. Reuses statusOf/swatch from PDP.
+- [ ] **3f search (FTS→tsvector, NOT FTS5)** — NOT STARTED.
       Then loop back to Phase 2 (2b header search icon, 2c mega-menu → `/tees?collection=`).
 
 ### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)
