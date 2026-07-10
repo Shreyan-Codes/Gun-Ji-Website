@@ -728,6 +728,61 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .co-esewa-upload input { display: none; }
 .co-esewa-preview { max-width: 140px; border: 1px solid var(--line-dark); border-radius: 3px; }
 .co-delivery { margin-top: 0.7rem; font-size: 0.82rem; color: var(--bone-dim); }
+.co-done-track { margin-top: 0.4rem; font-size: 0.9rem; }
+
+/* ---------- order tracking (/track) ---------- */
+
+.track-page { max-width: 640px; margin: 0 auto; padding: clamp(1.5rem, 5vw, 3rem) var(--pad-x) 4rem; }
+.track-form { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.track-input {
+  flex: 1 1 220px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line-dark-strong);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--bone);
+  color: var(--ink);
+}
+.track-msg { margin-top: 1.4rem; color: var(--bone-dim); }
+
+.track-result { margin-top: 2rem; }
+.track-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.6rem; }
+.track-code { font-family: var(--font-mono); font-size: 1.05rem; letter-spacing: 0.06em; }
+.track-placed { color: var(--bone-dim); font-size: 0.85rem; }
+
+.track-timeline { list-style: none; padding: 0; margin: 0 0 2rem; }
+.tt-step { position: relative; display: flex; align-items: center; gap: 0.9rem; min-height: 2.9rem; padding-left: 0.2rem; }
+.tt-step::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 1.45rem;
+  bottom: -1.45rem;
+  width: 2px;
+  background: var(--line-dark);
+}
+.tt-step:last-child::before { display: none; }
+.tt-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--line-dark-strong);
+  background: var(--bone);
+  flex: none;
+  z-index: 1;
+}
+.tt-step.is-done .tt-dot { background: var(--ink); border-color: var(--ink); }
+.tt-step.is-done::before { background: var(--ink); }
+.tt-step.is-current .tt-dot { box-shadow: 0 0 0 4px rgba(33, 37, 41, 0.15); }
+.tt-label { color: var(--bone-dim); }
+.tt-step.is-done .tt-label { color: var(--ink); font-weight: 600; }
+
+.track-items { list-style: none; padding: 1.2rem 0 0; margin: 0; border-top: 1px solid var(--line-dark); }
+.track-items li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0; font-size: 0.92rem; }
+.track-items em { color: var(--bone-dim); font-style: normal; }
 
 .plate {
   position: absolute;

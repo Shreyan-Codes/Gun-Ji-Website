@@ -4,7 +4,7 @@ import { rateLimit } from "../lib/rateLimit.js";
 import { optionalCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
 import { listActiveProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
-import { createOrder } from "../db/orders.js";
+import { createOrder, getOrderByTrackingCode } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
 import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
 import { logOrderToSheet, logCustomRequestToSheet } from "../lib/sheets.js";
@@ -56,6 +56,45 @@ router.post("/orders", submitLimit, optionalCustomer, async (req, res) => {
 
 // eSewa payment screenshot → forwarded to the owner (Telegram). Own body parser
 // because the global one caps at 32kb. Rate-limited; image-only; not stored.
+// Public order tracking (no login). Returns a safe subset only — NEVER the
+// customer's name, phone, address or email. Rate-limited: 10/min per IP.
+const TRACK_FLOW = [
+  { key: "pending", label: "Placed" },
+  { key: "confirmed", label: "Confirmed" },
+  { key: "shipped", label: "Dispatched" },
+  { key: "delivered", label: "Delivered" },
+];
+function buildTimeline(status) {
+  if (status === "cancelled") {
+    return [
+      { key: "pending", label: "Placed", done: true, current: false },
+      { key: "cancelled", label: "Cancelled", done: true, current: true },
+    ];
+  }
+  const idx = TRACK_FLOW.findIndex((s) => s.key === status);
+  return TRACK_FLOW.map((s, i) => ({ key: s.key, label: s.label, done: i <= idx, current: i === idx }));
+}
+
+const trackLimit = rateLimit({ name: "track", windowMs: 60 * 1000, max: 10 });
+router.get("/track/:code", trackLimit, async (req, res) => {
+  const code = String(req.params.code || "").trim().toUpperCase();
+  if (!/^GJ-[0-9A-F]{10}$/.test(code)) return res.status(400).json({ error: "That doesn't look like a tracking code." });
+  const order = await getOrderByTrackingCode(code);
+  if (!order) return res.status(404).json({ error: "No order with that code." });
+  res.json({
+    code: order.trackingCode,
+    status: order.status,
+    placedAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    items: (order.items || []).map((i) => ({
+      name: i.item,
+      variant: [i.size, i.colour].filter(Boolean).join(" / "),
+      qty: i.qty,
+    })),
+    timeline: buildTimeline(order.status),
+  });
+});
+
 const proofLimit = rateLimit({ name: "proof", windowMs: 10 * 60 * 1000, max: 10 });
 router.post("/orders/:id/payment-proof", proofLimit, json({ limit: "8mb" }), (req, res) => {
   const id = Number(req.params.id);

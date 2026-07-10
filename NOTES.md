@@ -154,7 +154,25 @@ your reasoning here." Zero new deps have been added. Deviations so far:
         to DM instead, so no broken checkout). (3) admin dashboard stock_status
         editor. (4) real pre-order lead-time copy (Q2, still unanswered).
 
-- [ ] **3b Order tracking** — NOT STARTED. Unblocked. Spec's most-valuable feature.
+- [x] **3b Order tracking (no login)** — DONE.
+      - Migration `003_order_tracking.sql`: orders.`tracking_code` + UNIQUE index,
+        backfills existing rows via md5(random()) (no pgcrypto). New codes from
+        `crypto.randomBytes(5)` → `GJ-XXXXXXXXXX` in createOrder.
+      - `GET /api/track/:code`: rate-limited 10/min, regex-validated, returns
+        **safe subset only** (code, status, placedAt, updatedAt, items
+        name/variant/qty, timeline) — **NO name/phone/address/email**.
+      - `/track` page (`TrackPage.jsx`) + route: code input (auto-looks-up
+        `?code=`), vertical timeline, item list, not-found/error states.
+      - Order confirmation shows the tracking code + "track your order" link.
+      - **DEVIATION:** spec statuses placed→confirmed→printing→dispatched→delivered.
+        Kept the existing DB enum (pending/confirmed/shipped/delivered/cancelled)
+        to avoid rippling through admin + order flow; timeline labels map
+        pending→"Placed", shipped→"Dispatched"; **no "printing" stage**.
+      - **UNVERIFIED vs DB** (no local DATABASE_URL); migration idempotent, runs on
+        deploy boot. Form + states verified in browser.
+      - **FOLLOW-UPS:** Track tab in BottomNav + footer link (currently reachable
+        via confirmation link / direct /track URL); add "printing" stage if owner
+        wants it (needs enum migration + admin option).
 - [ ] **3c wishlist / 3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
 
 ### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)

@@ -12,6 +12,7 @@ import CartPage from "./pages/CartPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
+import TrackPage from "./pages/TrackPage.jsx";
 import useReveal from "./hooks/useReveal.js";
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/order" element={<Navigate to="/tees" replace />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/track" element={<TrackPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>

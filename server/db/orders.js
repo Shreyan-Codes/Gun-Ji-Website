@@ -1,5 +1,10 @@
+import { randomBytes } from "node:crypto";
 import { db, tx } from "./index.js";
 import { decrementStock } from "./products.js";
+
+// Public order-tracking code, e.g. GJ-9F3A2B7C10. 5 bytes = 2^40 space, so
+// collisions are negligible at this volume; the UNIQUE index is the backstop.
+const genTrackingCode = () => "GJ-" + randomBytes(5).toString("hex").toUpperCase();
 
 // Orders are a header row (orders) plus one or more line items (order_items).
 // order_items snapshot product_name/size/color/price so history survives later
@@ -9,8 +14,8 @@ import { decrementStock } from "./products.js";
 const selectOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
 const selectItems = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
 const insertOrder = db.prepare(
-  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy, payment_method)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy, payment_method, tracking_code)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
 const insertItem = db.prepare(
   `INSERT INTO order_items (order_id, variant_id, product_id, product_name, size, color, quantity, price_at_purchase)
@@ -38,6 +43,7 @@ export async function orderToJson(row) {
   return {
     id: row.id,
     userId: row.user_id ?? null,
+    trackingCode: row.tracking_code ?? null,
     paymentMethod: row.payment_method ?? "cod",
     paymentStatus: row.payment_status ?? "unpaid",
     status: row.status,
@@ -89,7 +95,7 @@ export async function createOrder({
     const info = await insertOrder.run(
       userId, status, total, shippingName, shippingAddress, shippingPhone,
       contact, contactMethod, note, adminNote, source,
-      locationLat, locationLng, locationAccuracy, paymentMethod
+      locationLat, locationLng, locationAccuracy, paymentMethod, genTrackingCode()
     );
     const orderId = Number(info.lastInsertRowid);
     for (const it of items) {
@@ -104,6 +110,11 @@ export async function createOrder({
     }
     return await getOrder(orderId);
   });
+}
+
+export async function getOrderByTrackingCode(code) {
+  const row = await db.prepare("SELECT * FROM orders WHERE tracking_code = ?").get(code);
+  return orderToJson(row);
 }
 
 export async function listOrdersByUser(userId) {

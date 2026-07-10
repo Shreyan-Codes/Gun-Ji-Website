@@ -148,6 +148,12 @@ export default function CheckoutPage() {
           <div className="co-done">
             <span className="co-done-stamp dev" aria-hidden="true">जी</span>
             <p className="co-done-num">Order #{placed.id}</p>
+            {placed.trackingCode && (
+              <p className="co-done-track">
+                Tracking code <strong>{placed.trackingCode}</strong> —{" "}
+                <Link className="mono-link" to={`/track?code=${placed.trackingCode}`}>track your order →</Link>
+              </p>
+            )}
             <ul className="co-done-items">
               {placed.items.map((i) => (
                 <li key={i.id}>
