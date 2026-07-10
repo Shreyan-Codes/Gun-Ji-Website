@@ -24,6 +24,7 @@ export default function App() {
 
   return (
     <>
+      <a className="skip-link" href="#top">Skip to content</a>
       <Header />
       <main id="top">
         <Routes>
