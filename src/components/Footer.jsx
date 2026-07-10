@@ -1,4 +1,12 @@
+import { Link } from "react-router-dom";
 import { useSiteData } from "../context/SiteData.jsx";
+
+const policyLinks = [
+  { to: "/policies/shipping", label: "Shipping & Delivery" },
+  { to: "/policies/returns", label: "Returns & Exchange" },
+  { to: "/policies/custom-terms", label: "Custom Print Terms" },
+  { to: "/policies/privacy", label: "Privacy" },
+];
 
 export default function Footer() {
   const { settings } = useSiteData();
@@ -43,9 +51,13 @@ export default function Footer() {
           <div className="foot-meta-col">
             <h4>Studio</h4>
             <p>
-              Kathmandu, Nepal
+              Mid Baneshwor, Kathmandu, Nepal
               <br />
               <span className="dev">काठमाडौं, नेपाल</span>
+              <br />
+              <a href="tel:+9779768913498">+977 9768913498</a>
+              <br />
+              Open 24/7
             </p>
           </div>
           <div className="foot-meta-col">
@@ -64,6 +76,23 @@ export default function Footer() {
               Oversized — black, bone &amp; brown.
             </p>
           </div>
+        </div>
+
+        <div className="foot-help">
+          <nav className="foot-links" aria-label="Policies & help">
+            {policyLinks.map((l) => (
+              <Link key={l.to} to={l.to}>{l.label}</Link>
+            ))}
+            <Link to="/size-guide">Size Guide</Link>
+            <Link to="/track">Track Order</Link>
+          </nav>
+          <iframe
+            className="foot-map"
+            title="GUN-जी studio — Mid Baneshwor, Kathmandu"
+            src="https://www.google.com/maps?q=Mid+Baneshwor,+Kathmandu&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
 
         <p className="foot-fine">

@@ -273,6 +273,10 @@ export default function ProductPage() {
                 </svg>
                 {saved ? "Saved to wishlist" : "Save to wishlist"}
               </button>
+
+              <p className="pp-delivery">
+                Delivery ~2 days · inside &amp; outside the valley — <Link to="/policies/shipping">shipping</Link> · <Link to="/size-guide">size guide</Link>
+              </p>
             </>
           )}
         </div>

@@ -13,6 +13,8 @@ import CheckoutPage from "./pages/CheckoutPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
 import TrackPage from "./pages/TrackPage.jsx";
+import SizeGuidePage from "./pages/SizeGuidePage.jsx";
+import PolicyPage from "./pages/PolicyPage.jsx";
 import useReveal from "./hooks/useReveal.js";
 
 export default function App() {
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/track" element={<TrackPage />} />
+          <Route path="/size-guide" element={<SizeGuidePage />} />
+          <Route path="/policies/:slug" element={<PolicyPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>

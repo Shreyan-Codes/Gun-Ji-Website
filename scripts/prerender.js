@@ -67,6 +67,42 @@ const STATIC_ROUTES = [
     changefreq: "monthly",
     priority: "0.5",
   },
+  {
+    path: "/size-guide",
+    title: "Size Guide — Oversized Tee Measurements (cm)",
+    description:
+      "GUN-जी oversized t-shirt size chart in centimetres — chest, length, shoulder and sleeve per size. Measured flat.",
+    changefreq: "yearly",
+    priority: "0.4",
+  },
+  {
+    path: "/policies/shipping",
+    title: "Shipping & delivery",
+    description: "How GUN-जी ships across Nepal — timelines, charges and cash on delivery.",
+    changefreq: "yearly",
+    priority: "0.3",
+  },
+  {
+    path: "/policies/returns",
+    title: "Returns & exchange",
+    description: "Returns and exchange policy for GUN-जी oversized tees.",
+    changefreq: "yearly",
+    priority: "0.3",
+  },
+  {
+    path: "/policies/custom-terms",
+    title: "Custom print terms",
+    description: "Terms for custom / made-to-order prints at GUN-जी.",
+    changefreq: "yearly",
+    priority: "0.3",
+  },
+  {
+    path: "/policies/privacy",
+    title: "Privacy",
+    description: "How GUN-जी handles the information you share when you order.",
+    changefreq: "yearly",
+    priority: "0.3",
+  },
 ];
 
 // ---- escaping ----

@@ -328,6 +328,9 @@ export default function CheckoutPage() {
             </ul>
             <div className="cart-summary-row co-sum-grand"><span>Subtotal</span><span>{rupees(subtotal)}</span></div>
             <p className="co-delivery">Delivery ~2 days · inside &amp; outside the valley.</p>
+            <p className="co-policies">
+              <Link to="/policies/shipping">Shipping</Link> · <Link to="/policies/returns">Returns</Link> · <Link to="/size-guide">Size guide</Link>
+            </p>
           </aside>
         </div>
       </section>

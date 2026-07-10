@@ -248,7 +248,23 @@ eSewa QR + let the buyer upload a payment screenshot; he verifies manually.
       toggle for payment_status; proof endpoint has no order-ownership check (spam
       risk mitigated only by rate limit + image cap) — tighten later.
 
-### Phases 4, 6, 7 — NOT STARTED. Blocked on remaining open questions (§5).
+### Phase 4 — Trust & conversion (DONE)
+- [x] **Size guide** `/size-guide` — real cm HTML table (chest/length/shoulder/
+      sleeve per S–XXL) + how-to-measure. Values are typical oversized {{TODO:
+      confirm real measurements}}.
+- [x] **Policy pages** `/policies/:slug` (shipping, returns, custom-terms, privacy)
+      — practical copy, {{TODO: legal review}} + {{TODO: charges / lead time}}
+      markers. Linked from footer AND checkout.
+- [x] **Delivery expectations** at add-to-cart: line under the PDP buy area +
+      checkout summary ("~2 days inside & outside valley", links to shipping).
+- [x] **Footer NAP**: Mid Baneshwor address, `tel:+9779768913498`, "Open 24/7",
+      lazy-loaded Google Maps iframe, policy/size-guide/track links. Social links
+      are real (IG/WhatsApp) — no empty hrefs. **Email TODO** (no brand domain yet).
+      Verified pages render + footer links/tel/map in browser.
+
+### Phase 6 (hardening) — NOT STARTED. Phase 7 (deploy) is Shreyan's.
+### Remaining open questions (§5): delivery charges (Q1), pre-order lead (Q2),
+### merchant APIs (Q4), file-upload specifics (Q5), brand-domain email.
 
 ---
 

@@ -1039,6 +1039,46 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   color: var(--ink);
 }
 
+/* ---------- trust pages (Phase 4) ---------- */
+
+.sizeguide, .policy-page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) var(--pad-x) 4rem;
+}
+.table-scroll { overflow-x: auto; }
+.size-table { width: 100%; border-collapse: collapse; min-width: 460px; }
+.size-table th, .size-table td { padding: 0.7rem 0.9rem; text-align: left; border-bottom: 1px solid var(--line-dark); }
+.size-table thead th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bone-dim); }
+.size-table tbody th { font-weight: 700; }
+.sizeguide-how { margin-top: 2.5rem; }
+.sizeguide-how h2 { font-family: var(--font-display); font-stretch: 118%; font-weight: 800; text-transform: uppercase; margin-bottom: 0.8rem; }
+.sizeguide-how ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.sizeguide-note { margin-top: 1.2rem; color: var(--bone-dim); }
+
+.policy-h { font-family: var(--font-display); font-stretch: 115%; font-weight: 800; text-transform: uppercase; font-size: 1.15rem; margin: 1.8rem 0 0.5rem; }
+.policy-p { margin-bottom: 0.6rem; max-width: 62ch; }
+
+.pp-delivery { margin-top: 0.9rem; font-size: 0.82rem; color: var(--bone-dim); }
+.co-policies { margin-top: 0.35rem; font-size: 0.8rem; color: var(--bone-dim); }
+
+.foot-help {
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 320px);
+  gap: 1.5rem;
+  align-items: start;
+  padding: 1.8rem 0;
+  border-top: 1px solid var(--line-light);
+  margin-top: 1.5rem;
+}
+.foot-links { display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
+.foot-links a { text-decoration: none; color: var(--bone-dim); font-size: 0.9rem; }
+.foot-links a:hover { color: var(--ink); }
+.foot-map { width: 100%; height: 180px; border: 1px solid var(--line-dark); border-radius: 4px; }
+@media (max-width: 700px) {
+  .foot-help { grid-template-columns: 1fr; }
+}
+
 .plate {
   position: absolute;
   top: 0;
