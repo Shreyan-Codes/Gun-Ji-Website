@@ -9,8 +9,8 @@ import { decrementStock } from "./products.js";
 const selectOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
 const selectItems = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
 const insertOrder = db.prepare(
-  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy, payment_method)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
 const insertItem = db.prepare(
   `INSERT INTO order_items (order_id, variant_id, product_id, product_name, size, color, quantity, price_at_purchase)
@@ -38,6 +38,8 @@ export async function orderToJson(row) {
   return {
     id: row.id,
     userId: row.user_id ?? null,
+    paymentMethod: row.payment_method ?? "cod",
+    paymentStatus: row.payment_status ?? "unpaid",
     status: row.status,
     total: row.total,
     shippingName: row.shipping_name,
@@ -78,6 +80,7 @@ export async function createOrder({
   contact = "", contactMethod = "instagram", note = "", adminNote = "",
   source = "site", items = [], enforceStock = false,
   locationLat = null, locationLng = null, locationAccuracy = null,
+  paymentMethod = "cod",
 }) {
   if (items.length === 0) throw new Error("An order needs at least one item");
   const total = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
@@ -86,7 +89,7 @@ export async function createOrder({
     const info = await insertOrder.run(
       userId, status, total, shippingName, shippingAddress, shippingPhone,
       contact, contactMethod, note, adminNote, source,
-      locationLat, locationLng, locationAccuracy
+      locationLat, locationLng, locationAccuracy, paymentMethod
     );
     const orderId = Number(info.lastInsertRowid);
     for (const it of items) {

@@ -157,7 +157,30 @@ your reasoning here." Zero new deps have been added. Deviations so far:
 - [ ] **3b Order tracking** — NOT STARTED. Unblocked. Spec's most-valuable feature.
 - [ ] **3c wishlist / 3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
 
-### Phases 4–7 — NOT STARTED. Blocked on remaining open questions (§5).
+### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)
+Shreyan chose: skip eSewa/Khalti merchant integration for now — show his personal
+eSewa QR + let the buyer upload a payment screenshot; he verifies manually.
+- [x] Checkout (`CheckoutPage.jsx`): payment method radios COD / eSewa. eSewa shows
+      QR (`/assets/esewa_qr.png`) + payee (Shreyan Prasad Pandey · 9768913498) +
+      screenshot file picker (client base64, 6MB cap, preview). Delivery line
+      "~2 days inside & outside valley" added to summary.
+- [x] Migration `003`... no — `002_order_payment.sql`: orders + `payment_method`
+      (cod|esewa|khalti) + `payment_status` (unpaid|paid|refunded). createOrder +
+      /orders route persist paymentMethod; orderToJson exposes both.
+- [x] Screenshot delivery: `POST /api/orders/:id/payment-proof` (own 8MB json
+      parser — global cap is 32kb, carved out in index.js; rate-limited; image
+      data-URL only; NOT stored) → `notifyPaymentProof` sends it to the owner as a
+      Telegram photo (`sendPhoto`). No-ops if Telegram unconfigured.
+- **⚠️ ACTION FOR SHREYAN:** save the eSewa QR image to
+      `public/assets/esewa_qr.png` (I can't write binary from chat). Until then the
+      checkout QR shows broken/alt.
+- **⚠️ UNVERIFIED vs DB / Telegram** (no local DATABASE_URL). Migration idempotent,
+      runs on deploy boot.
+- **FOLLOW-UPS:** real eSewa/Khalti merchant verify APIs (Q4); admin "mark paid"
+      toggle for payment_status; proof endpoint has no order-ownership check (spam
+      risk mitigated only by rate limit + image cap) — tighten later.
+
+### Phases 4, 6, 7 — NOT STARTED. Blocked on remaining open questions (§5).
 
 ---
 

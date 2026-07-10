@@ -30,8 +30,11 @@ export default function CheckoutPage() {
     shippingAddress: "",
     shippingPhone: "",
     note: "",
+    paymentMethod: "cod",
     website: "",
   });
+  // eSewa payment screenshot (optional): { name, dataUrl } or { error }.
+  const [proof, setProof] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | sending | error
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -43,6 +46,16 @@ export default function CheckoutPage() {
   const [geoError, setGeoError] = useState("");
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  function onPickProof(e) {
+    const file = e.target.files?.[0];
+    if (!file) return setProof(null);
+    if (!file.type.startsWith("image/")) return setProof({ error: "Please pick an image." });
+    if (file.size > 6 * 1024 * 1024) return setProof({ error: "Image too big (max 6 MB)." });
+    const reader = new FileReader();
+    reader.onload = () => setProof({ name: file.name, dataUrl: reader.result });
+    reader.readAsDataURL(file);
+  }
 
   function shareLocation() {
     if (!("geolocation" in navigator)) {
@@ -93,12 +106,22 @@ export default function CheckoutPage() {
           shippingAddress: form.shippingAddress,
           shippingPhone: form.shippingPhone,
           note: form.note,
+          paymentMethod: form.paymentMethod,
           website: form.website,
           ...(geo ? { locationLat: geo.lat, locationLng: geo.lng, locationAccuracy: geo.accuracy } : {}),
         },
         { token: getToken() }
       );
       setPlaced(res.order);
+      // Send the eSewa payment screenshot (if any) to the owner. Best-effort:
+      // never block the placed order on it.
+      if (form.paymentMethod === "esewa" && proof?.dataUrl && res.order?.id) {
+        try {
+          await apiPost(`/api/orders/${res.order.id}/payment-proof`, { image: proof.dataUrl });
+        } catch {
+          /* owner can still ask for the screenshot on DM */
+        }
+      }
       clear();
       setStatus("idle");
     } catch (err) {
@@ -234,6 +257,40 @@ export default function CheckoutPage() {
               </label>
             </div>
 
+            <fieldset className="co-pay">
+              <legend className="co-label">Payment</legend>
+              <label className="co-pay-opt">
+                <input type="radio" name="pay" value="cod" checked={form.paymentMethod === "cod"} onChange={set("paymentMethod")} />
+                <span>Cash on delivery</span>
+              </label>
+              <label className="co-pay-opt">
+                <input type="radio" name="pay" value="esewa" checked={form.paymentMethod === "esewa"} onChange={set("paymentMethod")} />
+                <span>eSewa — pay by QR</span>
+              </label>
+
+              {form.paymentMethod === "esewa" && (
+                <div className="co-esewa">
+                  <img
+                    className="co-esewa-qr"
+                    src="/assets/esewa_qr.png"
+                    alt="eSewa QR — Shreyan Prasad Pandey, 9768913498"
+                    width="220"
+                    height="220"
+                  />
+                  <div className="co-esewa-info">
+                    <p><strong>Shreyan Prasad Pandey</strong><br />eSewa · 9768913498</p>
+                    <p>Scan &amp; pay {rupees(subtotal)}, then upload the payment screenshot. We verify before dispatch.</p>
+                    <label className="co-esewa-upload">
+                      <input type="file" accept="image/*" onChange={onPickProof} />
+                      <span>{proof?.name ? `📎 ${proof.name}` : "Upload payment screenshot"}</span>
+                    </label>
+                    {proof?.error && <span className="co-error">{proof.error}</span>}
+                    {proof?.dataUrl && <img className="co-esewa-preview" src={proof.dataUrl} alt="Payment screenshot preview" />}
+                  </div>
+                </div>
+              )}
+            </fieldset>
+
             <label className="of-hp" aria-hidden="true">
               Website<input type="text" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} />
             </label>
@@ -264,6 +321,7 @@ export default function CheckoutPage() {
               ))}
             </ul>
             <div className="cart-summary-row co-sum-grand"><span>Subtotal</span><span>{rupees(subtotal)}</span></div>
+            <p className="co-delivery">Delivery ~2 days · inside &amp; outside the valley.</p>
           </aside>
         </div>
       </section>

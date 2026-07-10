@@ -44,6 +44,26 @@ export function notifyNewOrder(order) {
   sendTelegram(parts.filter(Boolean).join("\n"));
 }
 
+// Forwards an eSewa payment screenshot (data URL) to the owner as a Telegram
+// photo. Fire-and-forget; no-ops if Telegram or the image is missing/invalid.
+export async function notifyPaymentProof(orderId, dataUrl) {
+  const token = config.telegramBotToken;
+  const chatId = config.telegramChatId;
+  if (!token || !chatId) return;
+  const m = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(dataUrl || "");
+  if (!m) return;
+  try {
+    const form = new FormData();
+    form.append("chat_id", String(chatId));
+    form.append("caption", `💸 Payment screenshot — order #${orderId}`);
+    form.append("photo", new Blob([Buffer.from(m[2], "base64")], { type: m[1] }), `order-${orderId}`);
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: "POST", body: form });
+    if (!res.ok) console.error("[telegram] sendPhoto failed:", res.status, await res.text());
+  } catch (err) {
+    console.error("[telegram] sendPhoto error:", err.message);
+  }
+}
+
 export function notifyNewCustomRequest(cr) {
   const parts = [
     `🎨 <b>New custom-print request #${cr.id}</b>`,

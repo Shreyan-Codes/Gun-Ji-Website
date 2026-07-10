@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, json } from "express";
 import { clean, CONTACT_METHODS } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { optionalCustomer } from "../lib/authMiddleware.js";
@@ -6,7 +6,7 @@ import { getSettings } from "../db/settings.js";
 import { listActiveProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
-import { notifyNewOrder, notifyNewCustomRequest } from "../lib/notify.js";
+import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
 import { logOrderToSheet, logCustomRequestToSheet } from "../lib/sheets.js";
 
 const router = Router();
@@ -54,6 +54,20 @@ router.post("/orders", submitLimit, optionalCustomer, async (req, res) => {
   return placeSingleOrder(req, res);
 });
 
+// eSewa payment screenshot → forwarded to the owner (Telegram). Own body parser
+// because the global one caps at 32kb. Rate-limited; image-only; not stored.
+const proofLimit = rateLimit({ name: "proof", windowMs: 10 * 60 * 1000, max: 10 });
+router.post("/orders/:id/payment-proof", proofLimit, json({ limit: "8mb" }), (req, res) => {
+  const id = Number(req.params.id);
+  const image = req.body?.image;
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Bad order id" });
+  if (typeof image !== "string" || !image.startsWith("data:image/") || image.length > 8_000_000) {
+    return res.status(400).json({ error: "Invalid image" });
+  }
+  notifyPaymentProof(id, image); // fire-and-forget
+  res.status(202).json({ ok: true });
+});
+
 const checkoutSpec = {
   name: { required: true, max: 80 },
   contact: { required: true, max: 120 },
@@ -61,6 +75,7 @@ const checkoutSpec = {
   shippingAddress: { max: 300 },
   shippingPhone: { max: 40 },
   note: { max: 1000 },
+  paymentMethod: { enum: ["cod", "esewa", "khalti"], default: "cod" },
   // Optional GPS delivery pin (opt-in "Share my location" button at checkout).
   locationLat: { type: "num", min: -90, max: 90 },
   locationLng: { type: "num", min: -180, max: 180 },
@@ -103,6 +118,7 @@ async function placeCartOrder(req, res) {
       contact: value.contact,
       contactMethod: value.method,
       note: value.note,
+      paymentMethod: value.paymentMethod,
       source: "site",
       items,
       enforceStock: true,

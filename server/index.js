@@ -30,7 +30,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: "32kb" }));
+// Global JSON body parser (small cap). The payment-proof route carries an image
+// data URL, so it parses its own larger body — skip it here.
+app.use((req, res, next) => {
+  if (req.path.endsWith("/payment-proof")) return next();
+  express.json({ limit: "32kb" })(req, res, next);
+});
 
 // Baseline security headers on everything; a strict CSP just for the
 // dashboard (it's fully self-hosted, so 'self' is enough there — the main
