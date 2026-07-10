@@ -98,8 +98,14 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       Also relies on the build-time API fetch succeeding (Render cold start) —
       if it fails, that build ships static routes only; consider committing a
       `products.json` snapshot for build determinism.
-- [ ] **1c (remaining)** `LocalBusiness` schema — **BLOCKED** on real address /
-      phone / hours / geo (open question #3). `PreOrder` availability mapping —
+- [x] **1c LocalBusiness — DONE.** Enriched the existing `ClothingStore` block
+      (a LocalBusiness subtype) in `index.html` in place — no duplicate entity —
+      with `streetAddress: "Mid Baneshwor"`, `addressRegion: "Bagmati"`,
+      `telephone: "+977-9768913498"`, and 24/7 `openingHoursSpecification`. Also
+      corrected the stale `priceRange` (was "Rs. 999 - Rs. 1,599") to "Rs. 699".
+      Appears on every prerendered page (it's in the shared template head).
+- [ ] **1c (remaining)** `geo` coords still optional/omitted (not supplied — do
+      NOT invent; add if Shreyan gives lat/lng). `PreOrder` availability mapping —
       blocked on Phase 3a `stock_status` column.
 
 ### Phases 2–7 — NOT STARTED. See spec. Phase 3+ blocked on open questions (§5).
@@ -172,7 +178,10 @@ working (don't break inbound links) and ADD the new ones, rather than renaming:
 
 1. Real delivery times & charges, inside vs outside the valley? (Phase 3e/4)
 2. Pre-order lead time for custom prints? (Phase 3a copy)
-3. Street address, phone, opening hours, geo coords? (Phase 1c LocalBusiness + Phase 4 NAP)
+3. ~~Street address, phone, opening hours~~ — **ANSWERED 2026-07-10:** address
+   **Mid Baneshwor, Kathmandu** (Bagmati), phone **9768913498** (`tel:+9779768913498`),
+   hours **24/7**. Used in `index.html` LocalBusiness; reuse for Phase 4 footer NAP.
+   Geo lat/lng still not supplied (optional).
 4. eSewa, Khalti, or both? Merchant accounts yet? (Phase 5a)
 5. Custom-print file upload — needed? max size, allowed types, where stored? (Phase 6)
 6. Do you have TikTok / Facebook accounts? (needed for `sameAs`; omitted for now per spec "omit if none")
