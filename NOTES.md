@@ -262,7 +262,25 @@ eSewa QR + let the buyer upload a payment screenshot; he verifies manually.
       are real (IG/WhatsApp) — no empty hrefs. **Email TODO** (no brand domain yet).
       Verified pages render + footer links/tel/map in browser.
 
-### Phase 6 (hardening) — NOT STARTED. Phase 7 (deploy) is Shreyan's.
+### Phase 6 — Backend hardening (AUDIT PASS, no code changes)
+Audited; already solid:
+- SQL: all values are bound params; every `${}` in a query is a whitelisted
+  column name (from ORDER_COL-style maps) or a constant — no user input in SQL.
+- Passwords: `scryptSync` + per-user 16-byte random salt + `timingSafeEqual`
+  (password.js). NOT SHA-256. Session tokens: `randomBytes(32)` base64url, stored
+  SHA-256-hashed, expiry-checked (sessions.js).
+- Rate limits present: auth (login/signup/google 20/15min), track (10/min),
+  submit (8/10min), payment-proof (10/10min), search (60/min).
+- Security headers middleware (X-Content-Type-Options, Referrer-Policy,
+  X-Frame-Options; strict CSP on /admin). `express.json` 32kb (+ payment-proof
+  8mb carve-out). Field validation via validate.js `clean()`.
+- No PII from public GETs (`/api/track` safe subset; customer order GETs are
+  auth-gated; full data only on admin routes).
+- **DEVIATION:** auth uses Bearer tokens in localStorage, not cookies — so the
+  spec's HttpOnly/Secure/SameSite cookie items are N/A (no cookie = no CSRF
+  surface). Frontend/main-site CSP comes from the security-headers branch.
+
+### Phase 7 (deploy) is Shreyan's.
 ### Remaining open questions (§5): delivery charges (Q1), pre-order lead (Q2),
 ### merchant APIs (Q4), file-upload specifics (Q5), brand-domain email.
 
