@@ -4,7 +4,7 @@ import { rateLimit } from "../lib/rateLimit.js";
 import { requireCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
 import { listActiveProducts, listProductsFiltered, searchProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
-import { createOrder, getOrderByTrackingCode } from "../db/orders.js";
+import { createOrder, getOrder, getOrderByTrackingCode } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
 import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
 import { logOrderToSheet, logCustomRequestToSheet } from "../lib/sheets.js";
@@ -119,12 +119,19 @@ router.get("/track/:code", trackLimit, async (req, res) => {
 });
 
 const proofLimit = rateLimit({ name: "proof", windowMs: 10 * 60 * 1000, max: 10 });
-router.post("/orders/:id/payment-proof", proofLimit, json({ limit: "8mb" }), (req, res) => {
+router.post("/orders/:id/payment-proof", proofLimit, json({ limit: "8mb" }), async (req, res) => {
   const id = Number(req.params.id);
   const image = req.body?.image;
   if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Bad order id" });
   if (typeof image !== "string" || !image.startsWith("data:image/") || image.length > 8_000_000) {
     return res.status(400).json({ error: "Invalid image" });
+  }
+  // Only accept proof for a real order that's actually paying by eSewa. Without
+  // this the endpoint would forward an image to the owner's Telegram for any
+  // (even non-existent) order id — a spam / fake-proof vector.
+  const order = await getOrder(id);
+  if (!order || order.paymentMethod !== "esewa") {
+    return res.status(404).json({ error: "No eSewa order with that id." });
   }
   notifyPaymentProof(id, image); // fire-and-forget
   res.status(202).json({ ok: true });

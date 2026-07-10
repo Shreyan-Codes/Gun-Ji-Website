@@ -45,6 +45,8 @@ app.use((req, res, next) => {
   res.set("X-Content-Type-Options", "nosniff");
   res.set("Referrer-Policy", "strict-origin-when-cross-origin");
   res.set("X-Frame-Options", "DENY");
+  // Force HTTPS for a year on this host + subdomains (Render terminates TLS).
+  res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   if (req.path === "/admin" || req.path.startsWith("/admin/")) {
     res.set(
       "Content-Security-Policy",
