@@ -72,6 +72,34 @@ export const listAllProducts = async () => {
   return Promise.all(rows.map((r) => productToJson(r, { admin: true })));
 };
 
+// Shop sort/filter — done in SQL, all values parameterised. ORDER BY comes from
+// a fixed whitelist (never user input). Callers must pre-validate collection
+// against the known editions; size/color are bound params so injection-safe.
+const SORT_SQL = {
+  newest: "p.id DESC",
+  price_asc: "p.price ASC, p.id",
+  price_desc: "p.price DESC, p.id",
+  name_asc: "p.name ASC, p.id",
+};
+
+export async function listProductsFiltered({ sort, collection, size, color, inStock } = {}) {
+  const where = ["p.active = 1"];
+  const params = [];
+  const needVariant = !!(size || color || inStock);
+  if (collection) { where.push("p.edition = ?"); params.push(collection); }
+  if (size) { where.push("v.size = ?"); params.push(size); }
+  if (color) { where.push("v.color = ?"); params.push(color); }
+  if (inStock) where.push("v.stock > 0");
+
+  const orderBy = SORT_SQL[sort] || "p.sort_order, p.id";
+  const sql =
+    "SELECT DISTINCT p.* FROM products p " +
+    (needVariant ? "JOIN product_variants v ON v.product_id = p.id " : "") +
+    `WHERE ${where.join(" AND ")} ORDER BY ${orderBy}`;
+  const rows = await db.prepare(sql).all(params);
+  return Promise.all(rows.map((r) => productToJson(r)));
+}
+
 export async function getProduct(idOrSlug, { admin = false } = {}) {
   const row = typeof idOrSlug === "number" || /^\d+$/.test(idOrSlug)
     ? await selectById.get(Number(idOrSlug))

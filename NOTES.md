@@ -188,9 +188,22 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       - Guest path (localStorage add/render/badge/remove/persist) VERIFIED in
         browser. Logged-in DB sync UNVERIFIED (no local DB/login) — migration
         idempotent, runs on deploy.
-- [ ] **3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
-      Then loop back to Phase 2 (2b header search icon, 2c mega-menu) which depend
-      on these.
+- [x] **3d Shop sort + filter** — DONE. Query-param driven, SQL-side.
+      - `listProductsFiltered` (products.js): parameterised WHERE (collection/size/
+        color/inStock via bound `?`), ORDER BY from a fixed **whitelist** (never
+        user input), variant JOIN only when needed. `GET /api/products` accepts
+        `?sort=&collection=&size=&color=&inStock=1` (validated: sort+collection
+        against known sets, size/color length-capped bound params); no params →
+        unchanged full list.
+      - TeesPage: URL-synced controls (edition chips → `collection`, sort select,
+        size/colour chips, in-stock toggle). Fetches server-filtered; **falls back
+        to client-side filtering** on error or no-filter. Verified in browser
+        (collection→2 cards + `?collection=player`, sort→`&sort=price_desc`).
+      - Uses existing `/tees` (spec's `/shop`); size/colour options derived from
+        catalog variants. Server SQL path unverified vs DB (no local DB); client
+        fallback path verified.
+- [ ] **3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
+      Then loop back to Phase 2 (2b header search icon, 2c mega-menu → `/tees?collection=`).
 
 ### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)
 Shreyan chose: skip eSewa/Khalti merchant integration for now — show his personal

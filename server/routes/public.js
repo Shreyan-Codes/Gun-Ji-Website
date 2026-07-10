@@ -3,7 +3,7 @@ import { clean, CONTACT_METHODS } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { optionalCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
-import { listActiveProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
+import { listActiveProducts, listProductsFiltered, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder, getOrderByTrackingCode } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
 import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
@@ -19,7 +19,24 @@ router.get("/health", async (req, res) => {
 
 router.get("/settings", async (req, res) => res.json(await getSettings()));
 
-router.get("/products", async (req, res) => res.json({ products: await listActiveProducts() }));
+const EDITIONS = new Set(["player", "anime", "desi", "essentials", "custom"]);
+const SORTS = new Set(["newest", "price_asc", "price_desc", "name_asc"]);
+
+router.get("/products", async (req, res) => {
+  const q = req.query;
+  const hasFilter = q.sort || q.collection || q.size || q.color || q.inStock;
+  if (!hasFilter) return res.json({ products: await listActiveProducts() });
+  const str = (v, max) => (typeof v === "string" && v.length > 0 && v.length <= max ? v : undefined);
+  res.json({
+    products: await listProductsFiltered({
+      sort: SORTS.has(q.sort) ? q.sort : undefined,
+      collection: EDITIONS.has(q.collection) ? q.collection : undefined,
+      size: str(q.size, 20),
+      color: str(q.color, 30),
+      inStock: q.inStock === "1" || q.inStock === "true",
+    }),
+  });
+});
 
 router.get("/products/:idOrSlug", async (req, res) => {
   const product = await getProduct(req.params.idOrSlug);

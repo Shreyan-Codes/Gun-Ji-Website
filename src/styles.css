@@ -832,6 +832,30 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .wishlist-rm { background: none; border: none; cursor: pointer; color: var(--bone-dim); font-size: 1rem; padding: 0.4rem; line-height: 1; }
 .wishlist-rm:hover { color: var(--ink); }
 
+/* ---------- shop filter controls (3d) ---------- */
+
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin: 0 0 1.6rem;
+}
+.filter-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.sort-field { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bone-dim); }
+.sort-select {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line-dark-strong);
+  border-radius: 3px;
+  background: var(--bone);
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 40px;
+}
+.chip-sm { padding: 0.35rem 0.7rem; font-size: 0.72rem; min-height: 40px; }
+
 .plate {
   position: absolute;
   top: 0;
