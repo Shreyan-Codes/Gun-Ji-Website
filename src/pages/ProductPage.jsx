@@ -2,10 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { apiGet } from "../lib/api.js";
 import { useCart } from "../context/Cart.jsx";
+import { useSiteData } from "../context/SiteData.jsx";
 import Dev from "../lib/Dev.jsx";
 import { usePageMeta, useJsonLd, SITE_URL } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
+
+// Per-variant stock status, with a fallback for pre-migration data.
+const statusOf = (v) => v?.stockStatus ?? (v?.stock > 0 ? "in_stock" : "out_of_stock");
 
 // Colour name → swatch fill. Unknown colours fall back to a neutral.
 const SWATCH = {
@@ -18,6 +22,7 @@ export default function ProductPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { add } = useCart();
+  const { orderLink } = useSiteData();
 
   const [product, setProduct] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ok | notfound
@@ -65,11 +70,12 @@ export default function ProductPage() {
         priceCurrency: "NPR",
         price: product.price,
         itemCondition: "https://schema.org/NewCondition",
-        // TODO(phase-3a): map variant.stock_status → PreOrder once the
-        // stock_status column exists; for now inStock is a boolean.
-        availability: product.inStock
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
+        availability: (() => {
+          const sts = (product.variants ?? []).map(statusOf);
+          if (sts.includes("in_stock")) return "https://schema.org/InStock";
+          if (sts.includes("pre_order")) return "https://schema.org/PreOrder";
+          return "https://schema.org/OutOfStock";
+        })(),
       },
     }
   );
@@ -116,7 +122,8 @@ export default function ProductPage() {
 
   const isCustom = product.edition === "custom";
   const maxStock = variant?.stock ?? 0;
-  const canAdd = !isCustom && variant && maxStock > 0;
+  const vStatus = variant ? statusOf(variant) : null;
+  const canAdd = !isCustom && variant && vStatus === "in_stock" && maxStock > 0;
 
   function addToCart() {
     if (!canAdd) return;
@@ -184,7 +191,7 @@ export default function ProductPage() {
                       key={v.id}
                       type="button"
                       className={`pp-size ${v.size === size ? "on" : ""}`}
-                      disabled={v.stock <= 0}
+                      disabled={statusOf(v) === "out_of_stock"}
                       aria-pressed={v.size === size}
                       onClick={() => setSize(v.size)}
                     >
@@ -194,32 +201,50 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div className="pp-buy">
-                <div className="pp-qty" role="group" aria-label="Quantity">
-                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease">−</button>
-                  <span>{qty}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQty((q) => Math.min(maxStock || 1, q + 1))}
-                    disabled={qty >= maxStock}
-                    aria-label="Increase"
-                  >+</button>
+              {vStatus === "pre_order" ? (
+                <div className="pp-buy">
+                  <a
+                    className="btn btn-solid"
+                    href={orderLink(`Pre-order: ${product.name} (${size} / ${color})`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Pre-order <span className="arr" aria-hidden="true">↗</span>
+                  </a>
+                  <p className="pp-stock">
+                    Pre-order — ships in {"{{TODO: pre-order lead time}}"} · DM to reserve your {size} / {color}.
+                  </p>
                 </div>
-                <button className="btn btn-line-dark" type="button" onClick={addToCart} disabled={!canAdd}>
-                  {added ? "Added ✓" : "Add to cart"}
-                </button>
-                <button className="btn btn-solid" type="button" onClick={buyNow} disabled={!canAdd}>
-                  Buy now <span className="arr" aria-hidden="true">→</span>
-                </button>
-              </div>
+              ) : (
+                <>
+                  <div className="pp-buy">
+                    <div className="pp-qty" role="group" aria-label="Quantity">
+                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease">−</button>
+                      <span>{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQty((q) => Math.min(maxStock || 1, q + 1))}
+                        disabled={qty >= maxStock}
+                        aria-label="Increase"
+                      >+</button>
+                    </div>
+                    <button className="btn btn-line-dark" type="button" onClick={addToCart} disabled={!canAdd}>
+                      {added ? "Added ✓" : vStatus === "out_of_stock" ? "Out of stock" : "Add to cart"}
+                    </button>
+                    <button className="btn btn-solid" type="button" onClick={buyNow} disabled={!canAdd}>
+                      Buy now <span className="arr" aria-hidden="true">→</span>
+                    </button>
+                  </div>
 
-              <p className="pp-stock">
-                {!variant ? "Pick a size" :
-                  maxStock <= 0 ? "Out of stock — check back after the next drop" :
-                  maxStock <= 5 ? `Only ${maxStock} left in ${size} / ${color}` :
-                  "In stock"}
-              </p>
-              {added && <Link className="mono-link pp-tocart" to="/cart">View cart →</Link>}
+                  <p className="pp-stock">
+                    {!variant ? "Pick a size" :
+                      vStatus === "out_of_stock" ? "Out of stock — check back after the next drop" :
+                      maxStock <= 5 ? `Only ${maxStock} left in ${size} / ${color}` :
+                      "In stock"}
+                  </p>
+                  {added && <Link className="mono-link pp-tocart" to="/cart">View cart →</Link>}
+                </>
+              )}
             </>
           )}
         </div>

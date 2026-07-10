@@ -126,7 +126,38 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       `/shop` = `/tees`; needs `?collection=` filter support (overlaps 3d shop filters).
       Deferred — do alongside 3d.
 
-### Phases 3–7 — NOT STARTED. Phase 3+ blocked on open questions (§5).
+### Phase 3 — Commerce (IN PROGRESS)
+- [x] **3a Stock states (schema + UI)** — Postgres, NOT SQLite.
+      - Built the missing **numbered-migration runner**: `server/db/migrate.js`
+        (applies `server/db/migrations/NNN_*.sql` once each, tracked in
+        `schema_migrations`; non-fatal, stops on error). Wired into
+        `server/db/index.js` after schema init.
+      - `server/db/migrations/001_variant_stock_status.sql`: adds
+        `stock_status TEXT DEFAULT 'in_stock'` + CHECK(in_stock|pre_order|out_of_stock)
+        to `product_variants`, backfills stock=0 → out_of_stock. Idempotent.
+        **DEVIATION:** spec's `stock_qty` NOT added — existing `stock` col already
+        holds qty.
+      - API: `productToJson` exposes `variant.stockStatus` (falls back to
+        stock-derived if column absent → backward compatible).
+      - PDP (`ProductPage.jsx`): buttons per selected variant — in_stock=Add/Buy,
+        out_of_stock=disabled "Out of stock", pre_order=DM "Pre-order" CTA +
+        `{{TODO: pre-order lead time}}` line. Product JSON-LD availability now maps
+        InStock/PreOrder/OutOfStock. Size buttons disabled only when out_of_stock.
+      - Card (`ProductCard.jsx`): "Pre-order"/"Sold out" badge (product-level).
+      - **⚠️ UNVERIFIED vs DB** (no local DATABASE_URL). Migration runs on Render
+        deploy boot (idempotent). Frontend build passes; fallback keeps current
+        behavior if column missing. VERIFY on deploy: set a variant to pre_order /
+        out_of_stock (admin or SQL), check PDP + card + Rich Results.
+      - **FOLLOW-UPS (not done):** (1) out_of_stock "Notify me" email capture
+        (needs table + endpoint). (2) pre_order → cart/checkout path (backend
+        `createOrder` enforceStock would 409 on stock=0; currently pre_order routes
+        to DM instead, so no broken checkout). (3) admin dashboard stock_status
+        editor. (4) real pre-order lead-time copy (Q2, still unanswered).
+
+- [ ] **3b Order tracking** — NOT STARTED. Unblocked. Spec's most-valuable feature.
+- [ ] **3c wishlist / 3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
+
+### Phases 4–7 — NOT STARTED. Blocked on remaining open questions (§5).
 
 ---
 
@@ -194,14 +225,17 @@ working (don't break inbound links) and ADD the new ones, rather than renaming:
 
 ## 5. Open questions for Shreyan (BLOCK Phase 3+ and parts of 1c/4)
 
-1. Real delivery times & charges, inside vs outside the valley? (Phase 3e/4)
+1. ~~Delivery times~~ — **ANSWERED 2026-07-10: 2 days both inside & outside valley.**
+   Charges still unknown. (Phase 3e/4)
 2. Pre-order lead time for custom prints? (Phase 3a copy)
 3. ~~Street address, phone, opening hours~~ — **ANSWERED 2026-07-10:** address
    **Mid Baneshwor, Kathmandu** (Bagmati), phone **9768913498** (`tel:+9779768913498`),
    hours **24/7**. Used in `index.html` LocalBusiness; reuse for Phase 4 footer NAP.
    Geo lat/lng still not supplied (optional).
 4. eSewa, Khalti, or both? Merchant accounts yet? (Phase 5a)
-5. Custom-print file upload — needed? max size, allowed types, where stored? (Phase 6)
+5. Custom-print file upload — Shreyan said "any types" (accepts any design).
+   Still unclear if an actual file-upload feature is wanted vs the current
+   reference-URL field; max size / storage undecided. (Phase 6)
 6. Do you have TikTok / Facebook accounts? (needed for `sameAs`; omitted for now per spec "omit if none")
 7. Confirm the route-naming plan in §4 (keep+add vs rename).
 8. `LocalBusiness`/NAP: is there a physical storefront address to publish, or is it DM/online-only?

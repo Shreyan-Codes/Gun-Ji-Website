@@ -5,6 +5,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import pg from "pg";
 import { config } from "../config.js";
 import { hashPassword } from "../lib/password.js";
+import { runMigrations } from "./migrate.js";
 
 const { Pool, types } = pg;
 
@@ -110,6 +111,13 @@ try {
   console.log("[db] schema initialized successfully");
 } catch (err) {
   console.error("[db] schema initialization failed:", err.message);
+}
+
+// Numbered migrations (idempotent, non-fatal) run after the base schema.
+try {
+  await runMigrations(db);
+} catch (err) {
+  console.error("[db] migrations error:", err.message);
 }
 
 // ---------- boot-time seeding ----------

@@ -665,6 +665,23 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 .product:hover .product-img img { transform: scale(1.055); }
 
+.product-badge {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 3;
+  padding: 0.28rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.product-badge.is-out { background: var(--umber); }
+.product-badge.is-pre { background: var(--brick); }
+
 .plate {
   position: absolute;
   top: 0;

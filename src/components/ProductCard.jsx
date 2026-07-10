@@ -6,6 +6,17 @@ export default function ProductCard({ product }) {
   // numeric id when a slug isn't available (static/offline catalog).
   const to = `/product/${product.slug ?? product.id}`;
 
+  // Product-level stock badge. Empty variants (static fallback) → no badge.
+  const statuses = (product.variants ?? []).map(
+    (v) => v.stockStatus ?? (v.stock > 0 ? "in_stock" : "out_of_stock")
+  );
+  const badge =
+    statuses.length === 0 || statuses.includes("in_stock")
+      ? null
+      : statuses.includes("pre_order")
+        ? "Pre-order"
+        : "Sold out";
+
   return (
     <article className="product reveal">
       <Link className="product-img" to={to} aria-label={typeof product.name === "string" ? product.name : "View tee"}>
@@ -13,6 +24,7 @@ export default function ProductCard({ product }) {
         <span className="plate">
           PL·<span className="dev">{product.num}</span>
         </span>
+        {badge && <span className={`product-badge ${badge === "Sold out" ? "is-out" : "is-pre"}`}>{badge}</span>}
         <span className="stamp dev" aria-hidden="true">जी</span>
       </Link>
       <div className="product-meta">

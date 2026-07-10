@@ -40,7 +40,16 @@ export async function productToJson(row, { admin = false } = {}) {
     orderItem: row.order_item,
     edition: row.edition,
     images: images.map((i) => ({ id: i.id, url: i.url, alt: i.alt, sortOrder: i.sort_order })),
-    variants: variants.map((v) => ({ id: v.id, size: v.size, color: v.color, stock: v.stock, sku: v.sku })),
+    variants: variants.map((v) => ({
+      id: v.id,
+      size: v.size,
+      color: v.color,
+      stock: v.stock,
+      sku: v.sku,
+      // Falls back to a stock-derived status if the column isn't there yet
+      // (pre-migration) so the frontend keeps working either way.
+      stockStatus: v.stock_status ?? (v.stock > 0 ? "in_stock" : "out_of_stock"),
+    })),
     inStock: variants.some((v) => v.stock > 0),
   };
   if (admin) {
