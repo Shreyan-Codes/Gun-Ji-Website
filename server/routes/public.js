@@ -1,7 +1,7 @@
 import { Router, json } from "express";
 import { clean, CONTACT_METHODS } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
-import { optionalCustomer } from "../lib/authMiddleware.js";
+import { requireCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
 import { listActiveProducts, listProductsFiltered, searchProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder, getOrderByTrackingCode } from "../db/orders.js";
@@ -66,7 +66,7 @@ const contactSpec = {
 // POST /api/orders handles two shapes:
 //   { items: [{ variantId, qty }], name, contact, ... }  → cart checkout (stock-enforced)
 //   { productId, size, colour, qty, name, contact, ... }  → legacy single-item
-router.post("/orders", submitLimit, optionalCustomer, async (req, res) => {
+router.post("/orders", submitLimit, requireCustomer, async (req, res) => {
   // Honeypot short-circuit for both paths.
   if (typeof req.body?.website === "string" && req.body.website.trim()) {
     return res.status(201).json({ ok: true });

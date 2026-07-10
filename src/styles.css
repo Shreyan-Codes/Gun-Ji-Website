@@ -144,6 +144,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 
 .sect-head { padding: clamp(4rem, 9vw, 7.5rem) 0 clamp(1.8rem, 4vw, 3rem); }
+.home-featured .sect-head { padding-top: clamp(2.5rem, 5vw, 4.5rem); }
 .sect-head-row {
   display: flex;
   align-items: flex-end;
@@ -2193,6 +2194,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   border-top: 1px solid var(--line-dark);
   padding-top: 1.6rem;
 }
+.ao-head-links { display: flex; align-items: baseline; gap: 1.2rem; }
 .account-orders-head h3 {
   font-family: var(--font-display);
   font-stretch: 125%;

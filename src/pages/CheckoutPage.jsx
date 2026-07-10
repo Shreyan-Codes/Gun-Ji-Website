@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Dev from "../lib/Dev.jsx";
+import AuthPanel from "../components/AuthPanel.jsx";
 import { apiPost } from "../lib/api.js";
 import { useCart } from "../context/Cart.jsx";
 import { useAuth } from "../context/Auth.jsx";
@@ -19,7 +20,7 @@ const methodPlaceholder = {
 
 export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
-  const { customer, getToken } = useAuth();
+  const { customer, ready, getToken } = useAuth();
   const { settings } = useSiteData();
   usePageMeta({ title: "Checkout", path: "/checkout", noindex: true });
 
@@ -172,6 +173,23 @@ export default function CheckoutPage() {
             </div>
             {customer && <p className="co-done-acct">Saved to your account — see it under <Link to="/account">your orders</Link>.</p>}
           </div>
+        </section>
+      </>
+    );
+  }
+
+  // ---------- login required ----------
+  if (ready && !customer) {
+    return (
+      <>
+        <PageHero
+          eyebrowDev="लगइन"
+          eyebrow="Checkout"
+          title="Log in to order"
+          intro="Create a free account or log in first — it links your orders so you can track and reorder easily."
+        />
+        <section className="checkout-page">
+          <AuthPanel />
         </section>
       </>
     );

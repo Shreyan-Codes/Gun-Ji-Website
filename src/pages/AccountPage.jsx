@@ -62,6 +62,11 @@ function OrderHistory() {
           <div className="ao-side">
             {o.total ? <span className="ao-total">{rupees(o.total)}</span> : null}
             <span className={`ao-status s-${o.status}`}>{o.status}</span>
+            {o.trackingCode ? (
+              <Link className="mono-link ao-track" to={`/track?code=${encodeURIComponent(o.trackingCode)}`}>
+                Track →
+              </Link>
+            ) : null}
           </div>
         </li>
       ))}
@@ -97,7 +102,10 @@ function Dashboard() {
 
       <div className="account-orders-head reveal">
         <h3>Your orders</h3>
-        <Link className="mono-link" to="/order">New order →</Link>
+        <div className="ao-head-links">
+          <Link className="mono-link" to="/track">Track order →</Link>
+          <Link className="mono-link" to="/order">New order →</Link>
+        </div>
       </div>
       <OrderHistory />
     </div>

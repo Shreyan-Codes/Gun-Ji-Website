@@ -14,7 +14,7 @@ export default function Home() {
 
   return (
     <>
-      <section className="featured">
+      <section className="featured home-featured">
         <div className="sect-head sect-head-row reveal">
           <div>
             <p className="eyebrow">

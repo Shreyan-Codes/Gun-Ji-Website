@@ -1,7 +1,10 @@
-// Minimal fetch helpers for the GUN-जी API. Every call times out fast and
-// throws ApiError so callers can fall back to static data gracefully.
+// Minimal fetch helpers for the GUN-जी API. Writes fail fast, while safe GET
+// requests get enough time to survive Render Free's occasional cold start.
 
-const TIMEOUT_MS = 6000;
+const WRITE_TIMEOUT_MS = 6000;
+const REMOTE_GET_TIMEOUT_MS = 25_000;
+const REMOTE_GET_ATTEMPTS = 3;
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
 
 // In production (Vercel), point at the Render backend via VITE_API_URL, e.g.
 // https://gunji-api.onrender.com. In dev it's empty, so paths stay relative
@@ -22,31 +25,43 @@ async function request(path, options = {}) {
   const finalHeaders = { Accept: "application/json", ...headers };
   if (token) finalHeaders.Authorization = `Bearer ${token}`;
 
-  let res;
-  try {
-    res = await fetch(API_BASE + path, {
-      ...rest,
-      headers: finalHeaders,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-  } catch {
-    throw new ApiError("Network problem — check your connection.");
-  }
+  // Only retry idempotent remote reads. Retrying a checkout or any other
+  // mutation could submit it twice, so those retain the quick 6s timeout.
+  const isGet = !rest.method || rest.method === "GET";
+  const attempts = isGet && API_BASE ? REMOTE_GET_ATTEMPTS : 1;
+  const timeoutMs = isGet && API_BASE ? REMOTE_GET_TIMEOUT_MS : WRITE_TIMEOUT_MS;
 
-  let data = {};
-  try {
-    data = await res.json();
-  } catch {
-    // non-JSON response body
-  }
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    let res;
+    try {
+      res = await fetch(API_BASE + path, {
+        ...rest,
+        headers: finalHeaders,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch {
+      if (attempt === attempts) throw new ApiError("Network problem — check your connection.");
+      await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+      continue;
+    }
 
-  if (!res.ok) {
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      // non-JSON response body
+    }
+
+    if (res.ok) return data;
+    if (attempt < attempts && RETRYABLE_STATUS.has(res.status)) {
+      await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+      continue;
+    }
     throw new ApiError(data.error || `Request failed (${res.status})`, {
       status: res.status,
       errors: data.errors || {},
     });
   }
-  return data;
 }
 
 // opts may carry { token } to send an Authorization: Bearer header.
