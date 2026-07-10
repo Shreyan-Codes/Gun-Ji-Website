@@ -59,3 +59,5 @@ export const apiPost = (path, body, opts = {}) =>
     headers: { "Content-Type": "application/json", ...opts.headers },
     body: JSON.stringify(body),
   });
+
+export const apiDelete = (path, opts = {}) => request(path, { ...opts, method: "DELETE" });

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { apiGet } from "../lib/api.js";
 import { useCart } from "../context/Cart.jsx";
+import { useWishlist } from "../context/Wishlist.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
 import Dev from "../lib/Dev.jsx";
 import { usePageMeta, useJsonLd, SITE_URL } from "../lib/seo.js";
@@ -22,6 +23,7 @@ export default function ProductPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { add } = useCart();
+  const wishlist = useWishlist();
   const { orderLink } = useSiteData();
 
   const [product, setProduct] = useState(null);
@@ -124,6 +126,7 @@ export default function ProductPage() {
   const maxStock = variant?.stock ?? 0;
   const vStatus = variant ? statusOf(variant) : null;
   const canAdd = !isCustom && variant && vStatus === "in_stock" && maxStock > 0;
+  const saved = variant ? wishlist.has(variant.id) : false;
 
   function addToCart() {
     if (!canAdd) return;
@@ -245,6 +248,31 @@ export default function ProductPage() {
                   {added && <Link className="mono-link pp-tocart" to="/cart">View cart →</Link>}
                 </>
               )}
+
+              <button
+                type="button"
+                className={`pp-wish ${saved ? "is-saved" : ""}`}
+                disabled={!variant}
+                aria-pressed={saved}
+                onClick={() =>
+                  variant &&
+                  wishlist.toggle({
+                    variantId: variant.id,
+                    slug: product.slug,
+                    name: product.name,
+                    img: product.img,
+                    price: product.price,
+                    priceFrom: product.priceFrom,
+                    size: variant.size,
+                    color: variant.color,
+                  })
+                }
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path d="M12 20s-7-4.3-9.2-8.5C1.3 8.5 2.8 5.5 5.8 5.5c1.9 0 3.2 1.2 4.2 2.5 1-1.3 2.3-2.5 4.2-2.5 3 0 4.5 3 3 6C19 15.7 12 20 12 20Z" />
+                </svg>
+                {saved ? "Saved to wishlist" : "Save to wishlist"}
+              </button>
             </>
           )}
         </div>

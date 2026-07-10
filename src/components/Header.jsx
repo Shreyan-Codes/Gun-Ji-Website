@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useSiteData } from "../context/SiteData.jsx";
 import { useAuth } from "../context/Auth.jsx";
 import { useCart } from "../context/Cart.jsx";
+import { useWishlist } from "../context/Wishlist.jsx";
 
 const links = [
   { to: "/editions", en: "Editions", ne: "संग्रह" },
@@ -18,6 +19,7 @@ export default function Header() {
   const { settings } = useSiteData();
   const { customer } = useAuth();
   const { count } = useCart();
+  const { count: wishCount } = useWishlist();
   const accountLabel = customer ? (customer.name?.trim().split(/\s+/)[0] || "Account") : "Log in";
 
   useEffect(() => {
@@ -82,6 +84,13 @@ export default function Header() {
             </svg>
           </span>
           {accountLabel}
+        </NavLink>
+
+        <NavLink className="head-wish" to="/account" aria-label={`Wishlist, ${wishCount} saved`}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M12 20s-7-4.3-9.2-8.5C1.3 8.5 2.8 5.5 5.8 5.5c1.9 0 3.2 1.2 4.2 2.5 1-1.3 2.3-2.5 4.2-2.5 3 0 4.5 3 3 6C19 15.7 12 20 12 20Z" />
+          </svg>
+          {wishCount > 0 && <span className="head-cart-count">{wishCount}</span>}
         </NavLink>
 
         <NavLink className="head-cart" to="/cart" aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`}>

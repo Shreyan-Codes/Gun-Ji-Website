@@ -784,6 +784,54 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .track-items li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0; font-size: 0.92rem; }
 .track-items em { color: var(--bone-dim); font-style: normal; }
 
+/* ---------- wishlist (3c) ---------- */
+
+.head-wish {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--umber);
+  transition: color 0.2s ease;
+}
+.head-wish:hover { color: var(--ink); }
+
+.pp-wish {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.55rem 0.9rem;
+  background: none;
+  border: 1px solid var(--line-dark-strong);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink);
+  min-height: 44px;
+}
+.pp-wish.is-saved { border-color: var(--brick); color: var(--brick); }
+.pp-wish:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.wishlist-sect { margin-top: 2.5rem; }
+.account-sub { font-family: var(--font-display); font-stretch: 125%; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; }
+.wishlist-list { list-style: none; padding: 0; margin: 0; }
+.wishlist-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line-dark);
+}
+.wishlist-thumb { width: 52px; height: 65px; flex: none; overflow: hidden; border: 1px solid var(--line-dark); background: var(--bone-deep); }
+.wishlist-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.wishlist-info { flex: 1; display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.wishlist-info a { text-decoration: none; }
+.wishlist-sub { font-size: 0.8rem; color: var(--bone-dim); }
+.wishlist-price { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; }
+.wishlist-rm { background: none; border: none; cursor: pointer; color: var(--bone-dim); font-size: 1rem; padding: 0.4rem; line-height: 1; }
+.wishlist-rm:hover { color: var(--ink); }
+
 .plate {
   position: absolute;
   top: 0;

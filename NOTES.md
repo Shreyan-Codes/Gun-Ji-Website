@@ -173,7 +173,24 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       - **FOLLOW-UPS:** Track tab in BottomNav + footer link (currently reachable
         via confirmation link / direct /track URL); add "printing" stage if owner
         wants it (needs enum migration + admin option).
-- [ ] **3c wishlist / 3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
+- [x] **3c Wishlist** — DONE.
+      - Migration `004_wishlist.sql`: `wishlist(user_id, variant_id, created_at)`,
+        PK on the pair. `server/db/wishlist.js` (list enriched / add / remove /
+        merge). `server/routes/wishlist.js` (requireCustomer) mounted /api/wishlist.
+      - `src/context/Wishlist.jsx`: guest localStorage (`gunji_wishlist`, stores
+        enough to render); on login merges guest ids → DB then adopts server copy;
+        add/remove hit API best-effort when logged in. `apiDelete` added to api.js.
+      - Header heart + count badge (badge hidden at 0). PDP "Save to wishlist"
+        toggle (variant-level). Account page WishlistSection (list + remove),
+        shown for guests too.
+      - **DEVIATION:** no dedicated `/wishlist` page — header heart links `/account`
+        where the list lives. Variant-level (per spec).
+      - Guest path (localStorage add/render/badge/remove/persist) VERIFIED in
+        browser. Logged-in DB sync UNVERIFIED (no local DB/login) — migration
+        idempotent, runs on deploy.
+- [ ] **3d filters / 3e quick view / 3f search (FTS→tsvector)** — NOT STARTED.
+      Then loop back to Phase 2 (2b header search icon, 2c mega-menu) which depend
+      on these.
 
 ### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)
 Shreyan chose: skip eSewa/Khalti merchant integration for now — show his personal

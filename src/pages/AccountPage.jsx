@@ -6,6 +6,7 @@ import AuthPanel from "../components/AuthPanel.jsx";
 import Dev from "../lib/Dev.jsx";
 import { apiGet } from "../lib/api.js";
 import { useAuth } from "../context/Auth.jsx";
+import { useWishlist } from "../context/Wishlist.jsx";
 import { usePageMeta } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
@@ -103,6 +104,31 @@ function Dashboard() {
   );
 }
 
+function WishlistSection() {
+  const { items, remove } = useWishlist();
+  if (items.length === 0) return null;
+  return (
+    <div className="wishlist-sect">
+      <h2 className="account-sub">Wishlist</h2>
+      <ul className="wishlist-list">
+        {items.map((i) => (
+          <li key={i.variantId} className="wishlist-row">
+            <Link to={`/product/${i.slug}`} className="wishlist-thumb">
+              {i.img ? <img src={i.img} alt="" loading="lazy" /> : null}
+            </Link>
+            <div className="wishlist-info">
+              <Link to={`/product/${i.slug}`}><Dev text={i.name} /></Link>
+              <span className="wishlist-sub">{i.size} / {i.color}</span>
+            </div>
+            <span className="wishlist-price">{i.priceFrom ? "from " : ""}{rupees(i.price)}</span>
+            <button type="button" className="wishlist-rm" onClick={() => remove(i.variantId)} aria-label="Remove from wishlist">✕</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const { customer, ready } = useAuth();
   usePageMeta({ title: "Your Account", path: "/account", noindex: true });
@@ -128,6 +154,7 @@ export default function AccountPage() {
         ) : (
           <AuthPanel />
         )}
+        <WishlistSection />
       </section>
 
       <CtaBand

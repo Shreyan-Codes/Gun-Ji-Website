@@ -7,6 +7,7 @@ import { db } from "./db/index.js";
 import publicRoutes from "./routes/public.js";
 import adminRoutes from "./routes/admin.js";
 import authRoutes from "./routes/auth.js";
+import wishlistRoutes from "./routes/wishlist.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -65,6 +66,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api", publicRoutes);
 
 // Owner dashboard — vanilla HTML/JS served straight from server/admin.
