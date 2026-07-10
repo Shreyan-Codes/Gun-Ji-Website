@@ -82,6 +82,35 @@ const SORT_SQL = {
   name_asc: "p.name ASC, p.id",
 };
 
+// Full-text search over name/description/tag/edition. Uses the tsvector column
+// (migration 005); falls back to ILIKE if that column isn't there yet. Query
+// text is always a bound parameter — never concatenated into SQL.
+export async function searchProducts(q) {
+  const term = String(q || "").trim();
+  if (!term) return [];
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT * FROM products
+         WHERE active = 1 AND search_vector @@ websearch_to_tsquery('english', ?)
+         ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', ?)) DESC
+         LIMIT 20`
+      )
+      .all(term, term);
+    return Promise.all(rows.map((r) => productToJson(r)));
+  } catch {
+    const like = `%${term}%`;
+    const rows = await db
+      .prepare(
+        `SELECT * FROM products
+         WHERE active = 1 AND (name ILIKE ? OR description ILIKE ? OR tag ILIKE ?)
+         ORDER BY sort_order, id LIMIT 20`
+      )
+      .all(like, like, like);
+    return Promise.all(rows.map((r) => productToJson(r)));
+  }
+}
+
 export async function listProductsFiltered({ sort, collection, size, color, inStock } = {}) {
   const where = ["p.active = 1"];
   const params = [];

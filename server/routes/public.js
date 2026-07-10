@@ -3,7 +3,7 @@ import { clean, CONTACT_METHODS } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { optionalCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
-import { listActiveProducts, listProductsFiltered, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
+import { listActiveProducts, listProductsFiltered, searchProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder, getOrderByTrackingCode } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
 import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
@@ -36,6 +36,12 @@ router.get("/products", async (req, res) => {
       inStock: q.inStock === "1" || q.inStock === "true",
     }),
   });
+});
+
+const searchLimit = rateLimit({ name: "search", windowMs: 60 * 1000, max: 60 });
+router.get("/search", searchLimit, async (req, res) => {
+  const q = typeof req.query.q === "string" ? req.query.q.slice(0, 80) : "";
+  res.json({ query: q, results: await searchProducts(q) });
 });
 
 router.get("/products/:idOrSlug", async (req, res) => {

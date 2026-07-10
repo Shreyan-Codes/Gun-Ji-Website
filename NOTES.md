@@ -207,8 +207,17 @@ your reasoning here." Zero new deps have been added. Deviations so far:
       selectors, qty stepper, Add to cart (Cart context), "Full details" → PDP.
       **Focus trap + Escape + backdrop close + body scroll-lock + focus restore
       to trigger** — all verified in browser. Reuses statusOf/swatch from PDP.
-- [ ] **3f search (FTS→tsvector, NOT FTS5)** — NOT STARTED.
-      Then loop back to Phase 2 (2b header search icon, 2c mega-menu → `/tees?collection=`).
+- [~] **3f search — BACKEND DONE, UI PENDING.**
+      - Migration `005_product_search.sql`: `products.search_vector` GENERATED
+        tsvector (name+description+tag+edition) + GIN index. Postgres FTS, NOT
+        SQLite FTS5. Idempotent.
+      - `searchProducts(q)` (products.js): `websearch_to_tsquery` ranked, bound
+        param; ILIKE fallback if the column isn't there yet. `GET /api/search?q=`
+        rate-limited 60/min, q capped 80 chars.
+      - **TODO next session:** frontend — SearchOverlay (debounce 250ms, results,
+        empty-state offering top collections) + header search icon (2b) wiring to
+        it. Backend node --check clean; unverified vs DB.
+      Then loop back to Phase 2 (2b search icon, 2c mega-menu → `/tees?collection=`).
 
 ### Phase 5a — Payments (MANUAL eSewa, merchant APIs deferred)
 Shreyan chose: skip eSewa/Khalti merchant integration for now — show his personal
