@@ -2195,6 +2195,18 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   padding-top: 1.6rem;
 }
 .ao-head-links { display: flex; align-items: baseline; gap: 1.2rem; }
+
+/* Account danger zone — self-serve deletion, tucked below order history. */
+.account-danger { margin-top: 2.4rem; padding-top: 1.4rem; border-top: 1px solid var(--line-dark); }
+.account-del-link {
+  font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.02em;
+  color: var(--bone-dim); background: none; border: none; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px; padding: 0;
+}
+.account-del-link:hover { color: var(--ink); }
+.account-danger-confirm { display: flex; flex-direction: column; gap: 0.9rem; max-width: 34rem; }
+.account-danger-confirm p { font-size: 0.9rem; color: var(--umber); }
+.account-danger-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
 .account-orders-head h3 {
   font-family: var(--font-display);
   font-stretch: 125%;

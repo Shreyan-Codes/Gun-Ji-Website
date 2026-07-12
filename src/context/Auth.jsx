@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { apiGet, apiPost } from "../lib/api.js";
+import { apiGet, apiPost, apiDelete } from "../lib/api.js";
 
 // Customer authentication. Keeps a Bearer token in localStorage (same pattern
 // as the admin panel) and exposes login / signup / Google / logout. The token
@@ -62,9 +62,17 @@ export function AuthProvider({ children }) {
     setCustomer(null);
   }, [getToken]);
 
+  // Delete the account server-side (anonymizes past orders), then clear the
+  // local session. The server also destroys the session, so the token is dead.
+  const deleteAccount = useCallback(async () => {
+    await apiDelete("/api/auth/me", { token: getToken() });
+    localStorage.removeItem(TOKEN_KEY);
+    setCustomer(null);
+  }, [getToken]);
+
   const value = useMemo(
-    () => ({ customer, ready, googleClientId, getToken, signup, login, loginWithGoogle, logout }),
-    [customer, ready, googleClientId, getToken, signup, login, loginWithGoogle, logout]
+    () => ({ customer, ready, googleClientId, getToken, signup, login, loginWithGoogle, logout, deleteAccount }),
+    [customer, ready, googleClientId, getToken, signup, login, loginWithGoogle, logout, deleteAccount]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

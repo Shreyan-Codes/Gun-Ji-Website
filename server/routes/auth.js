@@ -5,7 +5,7 @@ import { rateLimit } from "../lib/rateLimit.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { bearer, requireCustomer } from "../lib/authMiddleware.js";
 import { createSession, destroySession } from "../db/sessions.js";
-import { findUserByEmail, findUserByGoogleId, createUser, attachGoogle, userToJson } from "../db/users.js";
+import { findUserByEmail, findUserByGoogleId, createUser, attachGoogle, userToJson, deleteAccount } from "../db/users.js";
 import { listOrdersByUser } from "../db/orders.js";
 import { verifyGoogleIdToken } from "../lib/googleAuth.js";
 
@@ -89,6 +89,13 @@ router.get("/me", requireCustomer, (req, res) => {
 
 router.get("/orders", requireCustomer, async (req, res) => {
   res.json({ items: await listOrdersByUser(req.user.id) });
+});
+
+// Self-serve account deletion. Anonymizes the user's orders, then removes the
+// account (sessions cascade, so the current token is invalidated too).
+router.delete("/me", requireCustomer, async (req, res) => {
+  await deleteAccount(req.user.id);
+  res.json({ ok: true });
 });
 
 export default router;

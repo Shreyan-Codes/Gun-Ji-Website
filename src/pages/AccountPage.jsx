@@ -74,6 +74,48 @@ function OrderHistory() {
   );
 }
 
+function DeleteAccount() {
+  const { deleteAccount } = useAuth();
+  const [armed, setArmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function confirmDelete() {
+    setBusy(true);
+    setError("");
+    try {
+      await deleteAccount();
+      // deleteAccount clears the session; the page re-renders to the logged-out view.
+    } catch {
+      setBusy(false);
+      setError("Couldn’t delete your account right now — please try again.");
+    }
+  }
+
+  return (
+    <div className="account-danger reveal">
+      {armed ? (
+        <div className="account-danger-confirm">
+          <p>Delete your account for good? Your past orders stay with us (for delivery &amp; records) but are unlinked and stripped of your details. This can’t be undone.</p>
+          <div className="account-danger-actions">
+            <button type="button" className="btn btn-solid btn-sm account-del-yes" onClick={confirmDelete} disabled={busy}>
+              {busy ? "Deleting…" : "Yes, delete my account"}
+            </button>
+            <button type="button" className="btn btn-line-dark btn-sm" onClick={() => setArmed(false)} disabled={busy}>
+              Cancel
+            </button>
+          </div>
+          {error && <p className="co-error" role="alert">{error}</p>}
+        </div>
+      ) : (
+        <button type="button" className="account-del-link" onClick={() => setArmed(true)}>
+          Delete my account
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Dashboard() {
   const { customer, logout } = useAuth();
   return (
@@ -108,6 +150,7 @@ function Dashboard() {
         </div>
       </div>
       <OrderHistory />
+      <DeleteAccount />
     </div>
   );
 }
