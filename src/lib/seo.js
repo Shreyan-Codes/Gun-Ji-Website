@@ -5,7 +5,7 @@
 
 import { useEffect } from "react";
 
-export const SITE_URL = "https://gunji.vercel.app";
+export const SITE_URL = "https://www.gunji.live";
 export const SITE_NAME = "GUN-जी™";
 
 const DEFAULT_TITLE = "Gunji — Oversized Tees & Custom Print | Kathmandu";

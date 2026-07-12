@@ -21,7 +21,7 @@ const ROOT = path.join(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
 
 // ---- must mirror src/lib/seo.js ----
-const SITE_URL = "https://gunji.vercel.app";
+const SITE_URL = "https://www.gunji.live";
 const SITE_NAME = "GUN-जी™";
 const DEFAULT_TITLE = "Gunji — Oversized Tees & Custom Print | Kathmandu";
 const DEFAULT_DESC =
