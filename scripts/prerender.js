@@ -23,9 +23,9 @@ const DIST = path.join(ROOT, "dist");
 // ---- must mirror src/lib/seo.js ----
 const SITE_URL = "https://www.gunji.live";
 const SITE_NAME = "GUN-जी™";
-const DEFAULT_TITLE = "Gunji — Oversized Tees & Custom Print | Kathmandu";
+const DEFAULT_TITLE = "T-Shirts in Nepal — Oversized Tees & Custom Print | Gunji Kathmandu";
 const DEFAULT_DESC =
-  "Premium heavyweight oversized tees printed in Kathmandu, Nepal. Football player editions, anime back prints, देसी Devanagari type — or custom print your own design. Ships across Nepal.";
+  "Buy premium oversized t-shirts in Nepal — football, anime & देसी Devanagari prints, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
 const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_post_02.jpg`;
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;

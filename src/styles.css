@@ -154,6 +154,30 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 .sect-note { margin-top: 1rem; max-width: 52ch; color: var(--umber); }
 
+/* homepage keyword intro (SEO hero) */
+.home-intro { padding: clamp(3rem, 7vw, 5.5rem) var(--pad-x) clamp(0.5rem, 2vw, 1.5rem); }
+.home-intro-title {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 850;
+  font-size: clamp(2.1rem, 5.2vw, 4.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+.home-intro-title .dev { font-size: 0.92em; text-transform: none; letter-spacing: 0; }
+.home-intro-lead {
+  margin-top: 1.5rem;
+  max-width: 56ch;
+  color: var(--umber);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+.home-intro-lead .dev { color: var(--ink); }
+.home-intro .hero-ctas { margin-top: 2rem; }
+.home-intro + .home-featured .sect-head { padding-top: clamp(1.5rem, 3vw, 2.5rem); }
+
 /* ---------- buttons ---------- */
 
 .btn {

@@ -14,6 +14,30 @@ export default function Home() {
 
   return (
     <>
+      <section className="home-intro">
+        <p className="eyebrow">
+          <span className="dev">काठमाडौं</span> · Custom print studio · Nepal
+        </p>
+        <h1 className="home-intro-title">
+          Oversized T-Shirts in Nepal,<br />
+          printed in <span className="dev">काठमाडौं</span> Kathmandu
+        </h1>
+        <p className="home-intro-lead">
+          GUN-जी makes some of the best heavyweight oversized t-shirts in Kathmandu —
+          football player editions, anime back prints, <span className="dev">देसी</span>{" "}
+          Devanagari type, or custom-print your own design. Designed with you, printed by
+          us, and shipped across Nepal.
+        </p>
+        <div className="hero-ctas">
+          <Link className="btn btn-solid" to="/tees">
+            Shop all tees <span className="arr" aria-hidden="true">→</span>
+          </Link>
+          <Link className="btn btn-line-dark" to="/custom-print">
+            Custom print <span className="arr" aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </section>
+
       <section className="featured home-featured">
         <div className="sect-head sect-head-row reveal">
           <div>
