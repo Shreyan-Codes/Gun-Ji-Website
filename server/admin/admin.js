@@ -332,6 +332,7 @@ function productForm(p = {}) {
     <label class="field field-wide"><span class="field-label">Name *</span><input name="name" type="text" required maxlength="120" value="${esc(p.name)}"></label>
     <label class="field field-wide"><span class="field-label">Tag line</span><input name="tag" type="text" maxlength="160" value="${esc(p.tag)}" placeholder="Player Edition — white"></label>
     <label class="field"><span class="field-label">Price (Rs.) *</span><input name="price" type="number" required min="0" max="1000000" value="${p.price ?? ""}"></label>
+    <label class="field"><span class="field-label">Compare-at / “was” (Rs.)</span><input name="compareAt" type="number" min="0" max="1000000" value="${p.compareAt ?? ""}" placeholder="blank = no sale"></label>
     <label class="check-field"><input name="priceFrom" type="checkbox" ${p.priceFrom ? "checked" : ""}> <span class="field-label">“from” price</span></label>
     <label class="field"><span class="field-label">Edition</span><select name="edition">${EDITIONS.map((ed) => `<option ${ed === (p.edition || "essentials") ? "selected" : ""}>${ed}</option>`).join("")}</select></label>
     <label class="field"><span class="field-label">Sort order</span><input name="sortOrder" type="number" min="0" max="1000000" value="${p.sortOrder ?? ""}" placeholder="auto"></label>
@@ -355,7 +356,7 @@ async function renderProducts(panel) {
         <div class="product-name dev">${esc(p.name)}</div>
         <div class="product-tag dev">${esc(p.tag)}</div>
       </div>
-      <span class="product-price">${esc(fmtPrice(p))}</span>
+      <span class="product-price">${esc(fmtPrice(p))}${p.compareAt ? ` <span class="product-was">was ${Number(p.compareAt).toLocaleString("en-IN")}</span>` : ""}</span>
       <span class="product-ed">${esc(p.edition)}</span>
       <div class="row-actions">
         <button class="icon-btn" data-toggle-active="${p.id}" data-active="${p.active ? 1 : 0}">${p.active ? "Hide" : "Show"}</button>

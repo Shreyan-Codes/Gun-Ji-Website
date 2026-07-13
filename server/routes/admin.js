@@ -36,7 +36,11 @@ function pick(spec, body) {
   for (const key of Object.keys(spec)) {
     if (body && Object.hasOwn(body, key)) {
       const rule = spec[key];
-      subset[key] = rule.enum || rule.type === "int" || rule.type === "bool" ? { ...rule, required: true } : rule;
+      // Present int/bool/enum patch fields must be valid (can't blank out price),
+      // EXCEPT nullable ones (e.g. compareAt) which may be cleared with "".
+      subset[key] = (rule.enum || rule.type === "int" || rule.type === "bool") && !rule.nullable
+        ? { ...rule, required: true }
+        : rule;
     }
   }
   return subset;
@@ -200,6 +204,7 @@ const productFields = {
   tag: { max: 160 },
   price: { type: "int", min: 0, max: 1000000 },
   priceFrom: { type: "bool" },
+  compareAt: { type: "int", min: 0, max: 1000000, nullable: true },
   img: { max: 300 },
   alt: { max: 300 },
   orderItem: { max: 160 },
@@ -226,7 +231,7 @@ router.post("/products", async (req, res) => {
 
   const product = await createProduct({
     name: value.name, description: value.description, tag: value.tag, price: value.price,
-    priceFrom: value.priceFrom, edition: value.edition, orderItem: value.orderItem,
+    priceFrom: value.priceFrom, compareAt: value.compareAt, edition: value.edition, orderItem: value.orderItem,
     sortOrder: value.sortOrder === "" ? undefined : value.sortOrder, active: value.active,
   });
   await setPrimaryImage(product.id, value.img, value.alt);
