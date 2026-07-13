@@ -19,13 +19,30 @@ const toDevNum = (n) =>
 const formatPrice = (price, priceFrom) =>
   `${priceFrom ? "from " : ""}Rs. ${Number(price).toLocaleString("en-IN")}`;
 
+const priceOnly = (n) => `Rs. ${Number(n).toLocaleString("en-IN")}`;
+// Discount % off the compare-at ("was") price — null when there's no valid sale.
+const discountPct = (price, was) =>
+  was && was > price ? Math.round((1 - price / was) * 100) : null;
+
 // The static fallback carries prices as display strings ("from Rs. 1,299");
 // pull the number back out so the order page can compute live totals.
 const parseStaticPrice = (str) => ({
   priceValue: Number(String(str).replace(/[^\d]/g, "")) || 0,
   priceFrom: /^\s*from/i.test(str),
 });
-const normalizeStatic = (list) => list.map((p) => ({ ...p, ...parseStaticPrice(p.price) }));
+const normalizeStatic = (list) =>
+  list.map((p) => {
+    const { priceValue, priceFrom } = parseStaticPrice(p.price);
+    const compareAtValue = p.priceWas ? Number(String(p.priceWas).replace(/[^\d]/g, "")) || null : null;
+    return {
+      ...p,
+      priceValue,
+      priceFrom,
+      compareAt: compareAtValue ? priceOnly(compareAtValue) : null,
+      compareAtValue,
+      discountPct: discountPct(priceValue, compareAtValue),
+    };
+  });
 
 // Plate numbers (PL·०१) follow catalog position, so they stay sequential
 // even after products are added/removed in admin.
@@ -67,6 +84,9 @@ export function SiteDataProvider({ children }) {
               price: formatPrice(r.price, r.priceFrom),
               priceValue: r.price,
               priceFrom: r.priceFrom,
+              compareAt: r.compareAt ? priceOnly(r.compareAt) : null,
+              compareAtValue: r.compareAt ?? null,
+              discountPct: discountPct(r.price, r.compareAt),
               img: r.img,
               alt: r.alt,
               orderItem: r.orderItem,

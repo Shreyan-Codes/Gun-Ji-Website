@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
   tag         TEXT NOT NULL DEFAULT '',
   price       INTEGER NOT NULL CHECK (price >= 0),    -- whole rupees
   price_from  INTEGER NOT NULL DEFAULT 0,             -- 1 = show "from Rs. X"
+  compare_at_price INTEGER CHECK (compare_at_price IS NULL OR compare_at_price >= 0), -- struck "was" price; NULL = no sale
   edition     TEXT NOT NULL DEFAULT 'essentials',
   order_item  TEXT NOT NULL DEFAULT '',               -- DM-prefill label
   sort_order  INTEGER NOT NULL DEFAULT 0,

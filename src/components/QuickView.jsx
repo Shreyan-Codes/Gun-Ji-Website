@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import Dev from "../lib/Dev.jsx";
 import { useCart } from "../context/Cart.jsx";
 
-const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 const statusOf = (v) => v?.stockStatus ?? (v?.stock > 0 ? "in_stock" : "out_of_stock");
 const SWATCH = {
   white: "#f4f1ea", bone: "#e2d7c5", black: "#2a2420", brown: "#6f4e37",
@@ -109,7 +108,15 @@ export default function QuickView({ product, onClose }) {
 
         <div className="qv-info">
           <h2 id="qv-title" className="qv-name"><Dev text={product.name} /></h2>
-          <p className="qv-price">{product.priceFrom ? "from " : ""}{rupees(product.price)}</p>
+          <p className="qv-price">
+            {product.price}
+            {product.compareAt && (
+              <>
+                <span className="price-was">{product.compareAt}</span>
+                {product.discountPct ? <span className="price-off">-{product.discountPct}%</span> : null}
+              </>
+            )}
+          </p>
 
           {isCustom ? (
             <Link className="btn btn-solid" to="/custom-print" onClick={onClose}>

@@ -13,7 +13,8 @@ export const products = [
   {
     name: "La Albiceleste ’22",
     tag: "Player Edition — white",
-    price: "Rs. 1,599",
+    price: "Rs. 1,099",
+    priceWas: "Rs. 1,299",
     img: "/assets/gunji_post_01.jpg",
     alt: "La Albiceleste — Argentina World Cup collage tee in white",
     orderItem: "La Albiceleste '22 (white, oversized)",
@@ -22,7 +23,8 @@ export const products = [
   {
     name: "Mbappé № 10",
     tag: "Player Edition — black",
-    price: "Rs. 1,599",
+    price: "Rs. 1,099",
+    priceWas: "Rs. 1,299",
     img: "/assets/gunji_post_07.jpg",
     alt: "Kylian Mbappé number 10 tee in black",
     orderItem: "Mbappé No. 10 (black, oversized)",
@@ -31,7 +33,8 @@ export const products = [
   {
     name: "Jiraiya — Gama Sennin",
     tag: "Anime — white, back print",
-    price: "Rs. 1,499",
+    price: "Rs. 1,099",
+    priceWas: "Rs. 1,299",
     img: "/assets/gunji_post_05.jpg",
     alt: "Jiraiya anime back print tee in white",
     orderItem: "Jiraiya back print (white, oversized)",
@@ -40,7 +43,8 @@ export const products = [
   {
     name: "USE दिमाग",
     tag: "देसी Type — brown",
-    price: "Rs. 1,399",
+    price: "Rs. 1,099",
+    priceWas: "Rs. 1,299",
     img: "/assets/gunji_post_02.jpg",
     alt: "USE दिमाग tee in brown",
     orderItem: "USE Dimaag tee (brown, oversized)",
@@ -49,7 +53,7 @@ export const products = [
   {
     name: "The Essentials",
     tag: "Plain oversized — black / bone / brown",
-    price: "Rs. 999",
+    price: "Rs. 699",
     img: "/assets/gunji_post_09.jpg",
     alt: "Plain oversized tees in bone, brown and black on wooden hangers",
     orderItem: "Essentials plain oversized tee",
@@ -58,7 +62,7 @@ export const products = [
   {
     name: "Your Print Here",
     tag: "Custom — any colour, your design",
-    price: "from Rs. 1,299",
+    price: "from Rs. 699",
     img: "/assets/gunji_post_08.jpg",
     alt: "Custom print tee — special price",
     orderItem: "Custom print tee — my own design",

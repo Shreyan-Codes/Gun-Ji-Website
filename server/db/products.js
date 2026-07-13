@@ -35,6 +35,7 @@ export async function productToJson(row, { admin = false } = {}) {
     tag: row.tag,
     price: row.price,
     priceFrom: !!row.price_from,
+    compareAt: row.compare_at_price ?? null,   // struck "was" price, or null
     img: primary?.url ?? "",   // back-compat single image
     alt: primary?.alt ?? "",
     orderItem: row.order_item,
@@ -144,20 +145,20 @@ export async function createProduct(fields) {
   const maxS = await maxSort.get();
   const sortOrder = fields.sortOrder ?? (maxS?.m ?? 0) + 10;
   const info = await db.prepare(
-    `INSERT INTO products (name, slug, description, tag, price, price_from, edition, order_item, sort_order, active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO products (name, slug, description, tag, price, price_from, compare_at_price, edition, order_item, sort_order, active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     fields.name, slug, fields.description ?? "", fields.tag ?? "", fields.price,
-    fields.priceFrom ?? 0, fields.edition ?? "essentials", fields.orderItem || fields.name,
-    sortOrder, fields.active ?? 1
+    fields.priceFrom ?? 0, fields.compareAt ?? null, fields.edition ?? "essentials",
+    fields.orderItem || fields.name, sortOrder, fields.active ?? 1
   );
   return await getProduct(Number(info.lastInsertRowid), { admin: true });
 }
 
 const COL = {
   name: "name", description: "description", tag: "tag", price: "price",
-  priceFrom: "price_from", edition: "edition", orderItem: "order_item",
-  sortOrder: "sort_order", active: "active",
+  priceFrom: "price_from", compareAt: "compare_at_price", edition: "edition",
+  orderItem: "order_item", sortOrder: "sort_order", active: "active",
 };
 
 export async function updateProduct(id, patch) {

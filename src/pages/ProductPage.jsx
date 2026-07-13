@@ -177,6 +177,12 @@ export default function ProductPage() {
           <h1 className="pp-name"><Dev text={product.name} /></h1>
           <p className="pp-price">
             {product.priceFrom ? "from " : ""}{rupees(product.price)}
+            {product.compareAt && product.compareAt > product.price && (
+              <>
+                <span className="price-was">{rupees(product.compareAt)}</span>
+                <span className="price-off">-{Math.round((1 - product.price / product.compareAt) * 100)}%</span>
+              </>
+            )}
           </p>
           {product.description && <p className="pp-desc">{product.description}</p>}
 

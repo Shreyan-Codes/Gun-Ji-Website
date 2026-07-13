@@ -35,7 +35,15 @@ export default function ProductCard({ product }) {
         <h3><Link className="product-name-link" to={to}><Dev text={product.name} /></Link></h3>
         <p className="product-tag"><Dev text={product.tag} /></p>
         <div className="product-row">
-          <span className="price">{product.price}</span>
+          <span className="price">
+            {product.price}
+            {product.compareAt && (
+              <>
+                <span className="price-was">{product.compareAt}</span>
+                {product.discountPct ? <span className="price-off">-{product.discountPct}%</span> : null}
+              </>
+            )}
+          </span>
           <button type="button" className="mono-link qv-open" onClick={() => setQvOpen(true)}>
             Quick view
           </button>
