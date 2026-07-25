@@ -8,7 +8,7 @@ export default function Hero() {
     <section className="hero">
       <div className="hero-inner">
         <div className="hero-topline fi" style={{ "--d": "0.05s" }}>
-          <span>Custom print studio — <span className="dev">काठमाडौं</span></span>
+          <span>Premium tees — delivery across Nepal</span>
           <a className="mono-link" href={settings.igProfile} target="_blank" rel="noopener noreferrer">
             @gunji.clo1 ↗
           </a>
@@ -22,9 +22,8 @@ export default function Hero() {
               </span>
             </h1>
             <p className="hero-copy fi" style={{ "--d": "0.5s" }}>
-              Heavyweight tees printed in Kathmandu — the signature{" "}
-              <span className="dev">जी</span> logo tee, plain essentials, or whatever's
-              living in your head, printed to order.
+              Premium normal-fit tees at an affordable price — choose white or black,
+              or make your own custom print.
             </p>
             <div className="hero-ctas fi" style={{ "--d": "0.65s" }}>
               <Link className="btn btn-solid" to="/tees">
@@ -47,7 +46,7 @@ export default function Hero() {
               />
             </figure>
             <div className="hero-cap fi" style={{ "--d": "0.9s" }}>
-              <span>Shot — KTM studio</span>
+              <span>Made for Nepal</span>
               <span className="dev">००१</span>
             </div>
           </div>
@@ -55,7 +54,7 @@ export default function Hero() {
 
         <div className="hero-rail fi" style={{ "--d": "0.85s" }}>
           <span>Designed by you <span className="star" aria-hidden="true">✦</span> printed by us</span>
-          <span>KTM · Nepal · 1,400 m</span>
+          <span>Delivery · All across Nepal</span>
         </div>
       </div>
     </section>

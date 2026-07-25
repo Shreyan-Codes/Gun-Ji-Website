@@ -12,7 +12,7 @@ const POLICIES = {
     desc: "How GUN-जी ships across Nepal — timelines, charges and cash on delivery.",
     blocks: [
       ["h", "Timelines"],
-      ["p", "Orders are printed to order. Once confirmed, delivery is about 2 days — inside and outside the Kathmandu valley. {{TODO: confirm exact timelines}}"],
+      ["p", "Orders are printed to order and delivered across Nepal. Delivery time depends on the destination. {{TODO: confirm exact timelines}}"],
       ["h", "Charges"],
       ["p", "Delivery charges depend on location. {{TODO: confirm delivery charges inside vs outside valley}}"],
       ["h", "Cash on delivery"],
@@ -25,7 +25,7 @@ const POLICIES = {
     dev: "फिर्ता",
     eyebrow: "Returns & exchange",
     title: "If it's not right",
-    desc: "Returns and exchange policy for GUN-जी oversized tees.",
+    desc: "Returns and exchange policy for GUN-जी normal-fit t-shirts.",
     blocks: [
       ["h", "Exchanges"],
       ["p", "Wrong size? We'll exchange unworn, unwashed tees with tags on within 7 days of delivery. {{TODO: confirm window}}"],

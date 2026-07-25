@@ -6,7 +6,6 @@ import { apiGet } from "../lib/api.js";
 const rupees = (n) => (typeof n === "number" ? `Rs. ${n.toLocaleString("en-IN")}` : n);
 const TOP = [
   { key: "signature", label: "Signature" },
-  { key: "essentials", label: "Essentials" },
   { key: "custom", label: "Custom Print" },
 ];
 

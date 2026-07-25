@@ -25,9 +25,9 @@ const sendables = [
 export default function CustomPrintPage() {
   const { settings } = useSiteData();
   usePageMeta({
-    title: "Custom T-Shirt Printing in Kathmandu, Nepal",
+    title: "Make Your Own Custom T-Shirt in Nepal",
     description:
-      "Print your own t-shirt design in Kathmandu — send finished artwork, a reference photo, or just an idea. Premium heavyweight oversized tees, any colour. Ships across Nepal.",
+      "Make your own custom t-shirt in Nepal — send finished artwork, a reference photo, or just an idea. Premium tees delivered nationwide.",
     path: "/custom-print",
   });
 

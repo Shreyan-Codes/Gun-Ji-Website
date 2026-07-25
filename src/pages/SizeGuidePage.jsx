@@ -6,9 +6,9 @@ import { usePageMeta } from "../lib/seo.js";
 // so the product page's inline chart stays in sync with this one.
 export default function SizeGuidePage() {
   usePageMeta({
-    title: "Size Guide — Oversized Tee Measurements (cm)",
+    title: "Size Guide — Normal Fit T-Shirt Measurements (cm)",
     description:
-      "GUN-जी oversized t-shirt size chart in centimetres — chest, length, shoulder and sleeve per size. Measured flat.",
+      "GUN-जी normal-fit t-shirt size chart in centimetres for XL, XXL and XXXL. Measured flat.",
     path: "/size-guide",
   });
 

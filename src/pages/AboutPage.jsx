@@ -9,7 +9,7 @@ export default function AboutPage() {
   usePageMeta({
     title: "About — Small Label, Loud Tees",
     description:
-      "GUN-जी is a Kathmandu t-shirt label: heavyweight oversized tees, printed locally, ordered over DM. Born in Kathmandu, printed in Kathmandu.",
+      "GUN-जी is a Nepal-based t-shirt label offering premium tees at affordable prices, with delivery all across Nepal.",
     path: "/about",
   });
   return (
@@ -20,14 +20,13 @@ export default function AboutPage() {
         title="Small label. Loud tees."
         intro={
           <>
-            Born in Kathmandu, printed in Kathmandu. GUN-<span className="dev">जी</span>{" "}
+            Made for Nepal. GUN-<span className="dev">जी</span>{" "}
             exists because a good tee shouldn't need a middleman — just a DM.
           </>
         }
         meta={
           <>
-            <span className="dev">काठमाडौं</span>
-            <span>KTM · Nepal</span>
+            <span>Delivery across Nepal</span>
           </>
         }
       />
@@ -41,16 +40,16 @@ export default function AboutPage() {
             <img src="/assets/gunji_duo_wide.jpg" alt="GUN-जी logo tees in white and black, laid side by side" loading="lazy" />
           </div>
           <figcaption>
-            <span>Signature — both colourways</span>
+            <span>Normal fit — both colourways</span>
             <span className="dev">००१</span>
           </figcaption>
         </figure>
         <figure className="about-photo reveal">
           <div className="arch">
-            <img src="/assets/gunji_post_03.jpg" alt="Plain black GUN-जी tee in a Kathmandu café" loading="lazy" />
+            <img src="/assets/gunji_post_03.jpg" alt="Plain black GUN-जी tee in a café" loading="lazy" />
           </div>
           <figcaption>
-            <span>Everyday fit — essentials</span>
+            <span>Premium everyday fit</span>
             <span className="dev">००२</span>
           </figcaption>
         </figure>

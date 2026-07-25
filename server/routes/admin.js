@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, json } from "express";
 import { config } from "../config.js";
 import { db } from "../db/index.js";
 import { clean, ORDER_STATUSES, CUSTOM_STATUSES, CONTACT_METHODS, EDITIONS } from "../lib/validate.js";
@@ -8,6 +8,7 @@ import { bearer, requireAdmin } from "../lib/authMiddleware.js";
 import { createSession, destroySession } from "../db/sessions.js";
 import { findAdmin } from "../db/users.js";
 import { getSettings, setSetting } from "../db/settings.js";
+import { saveMediaDataUrl } from "../db/media.js";
 import {
   listAllProducts, getProduct, createProduct, updateProduct,
   setProductActive, deleteProduct, addVariant, setPrimaryImage,
@@ -265,14 +266,51 @@ router.delete("/products/:id", async (req, res) => {
 
 // ---------- settings ----------
 
+router.post("/media", json({ limit: "8mb" }), async (req, res) => {
+  try {
+    const media = await saveMediaDataUrl(req.body?.dataUrl);
+    res.status(201).json({
+      ...media,
+      url: `${req.protocol}://${req.get("host")}${media.url}`,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.put("/settings", async (req, res) => {
   const body = req.body || {};
   const digits = typeof body.whatsappNumber === "string" ? body.whatsappNumber.replace(/[^\d]/g, "") : "";
+  const homeGallery = Array.isArray(body.homeGallery)
+    ? body.homeGallery.map((item) => ({
+        src: String(item?.src || "").trim(),
+        alt: String(item?.alt || "").trim(),
+        cap: String(item?.cap || "").trim(),
+      }))
+    : null;
+
+  if (homeGallery) {
+    if (homeGallery.length < 1 || homeGallery.length > 12) {
+      return res.status(400).json({ error: "Homepage gallery needs 1–12 photos" });
+    }
+    const invalidPhoto = homeGallery.find(
+      (item) =>
+        !/^(\/|https:\/\/)/.test(item.src) ||
+        item.src.length > 1000 ||
+        item.alt.length > 300 ||
+        item.cap.length > 120
+    );
+    if (invalidPhoto) {
+      return res.status(400).json({ error: "Check the homepage photo paths and text" });
+    }
+  }
+
   const { ok, errors, value } = clean(
     {
       whatsappNumber: { max: 15, pattern: /^\d{8,15}$/, patternMsg: "8–15 digits, country code first (e.g. 9779812345678)" },
       igDm: { max: 300, pattern: /^https:\/\//, patternMsg: "Must be an https:// link" },
       igProfile: { max: 300, pattern: /^https:\/\//, patternMsg: "Must be an https:// link" },
+      comingSoonImage: { max: 1000, pattern: /^(\/|https:\/\/)/, patternMsg: "Use an /assets path or https:// image URL" },
     },
     { ...body, whatsappNumber: digits }
   );
@@ -281,6 +319,8 @@ router.put("/settings", async (req, res) => {
   if (Object.hasOwn(body, "whatsappNumber")) await setSetting("whatsapp_number", value.whatsappNumber);
   if (value.igDm) await setSetting("ig_dm", value.igDm);
   if (value.igProfile) await setSetting("ig_profile", value.igProfile);
+  if (homeGallery) await setSetting("home_gallery", JSON.stringify(homeGallery));
+  if (value.comingSoonImage) await setSetting("coming_soon_image", value.comingSoonImage);
   res.json(await getSettings());
 });
 

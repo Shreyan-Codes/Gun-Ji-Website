@@ -50,9 +50,9 @@ export default function ProductPage() {
   // Per-product SEO: dynamic title/description + Product structured data so
   // Google can show price and stock status in search results.
   usePageMeta({
-    title: product ? `${product.name} — ${rupees(product.price)} Oversized Tee` : "Tees",
+    title: product ? `${product.name} — ${rupees(product.price)} Normal Fit Tee` : "Tees",
     description: product
-      ? `${product.name} (${product.tag}) — premium heavyweight oversized t-shirt printed in Kathmandu. ${rupees(product.price)}, ships across Nepal. Order online or via DM.`
+      ? `${product.name} (${product.tag}) — a premium normal-fit t-shirt at an affordable price. ${rupees(product.price)}, delivered across Nepal. Order online or via DM.`
       : undefined,
     path: `/product/${slug}`,
     image: product?.img,
@@ -64,7 +64,7 @@ export default function ProductPage() {
       "@type": "Product",
       name: product.name,
       image: [`${SITE_URL}${product.img}`],
-      description: `${product.tag} — premium heavyweight oversized tee, printed in Kathmandu, Nepal.`,
+      description: `${product.tag} — a premium normal-fit t-shirt with delivery across Nepal.`,
       sku: product.slug,
       brand: { "@type": "Brand", name: "Gunji" },
       offers: {
@@ -322,7 +322,7 @@ export default function ProductPage() {
               </button>
 
               <p className="pp-delivery">
-                Delivery ~2 days · inside &amp; outside the valley — <Link to="/policies/shipping">shipping</Link> · <Link to="/size-guide">size guide</Link>
+                Delivery available across Nepal — <Link to="/policies/shipping">shipping</Link> · <Link to="/size-guide">size guide</Link>
               </p>
             </>
           )}

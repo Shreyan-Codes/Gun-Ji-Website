@@ -3,11 +3,9 @@
 // {{TODO: confirm real measurements}} — these are typical values for this cut.
 
 export const SIZE_ROWS = [
-  { size: "S", chest: 54, length: 68, shoulder: 52, sleeve: 22 },
-  { size: "M", chest: 56, length: 70, shoulder: 54, sleeve: 23 },
-  { size: "L", chest: 58, length: 72, shoulder: 56, sleeve: 24 },
   { size: "XL", chest: 60, length: 74, shoulder: 58, sleeve: 25 },
   { size: "XXL", chest: 62, length: 76, shoulder: 60, sleeve: 26 },
+  { size: "XXXL", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
 ];
 
 export const MEASURE_TIPS = [

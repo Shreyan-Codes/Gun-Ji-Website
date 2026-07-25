@@ -1,11 +1,11 @@
 const items = [
   { text: "Designed by You • Printed by Us" },
   { text: "तपाईंको डिजाइन, हाम्रो प्रिन्ट", dev: true },
-  { text: "Heavyweight cotton tees" },
-  { text: "Signature logo tee — white / black" },
-  { text: "Plain cotton essentials" },
-  { text: "More editions coming soon" },
-  { text: "काठमाडौं, नेपाल", dev: true },
+  { text: "Premium cotton t-shirts" },
+  { text: "Normal fit t-shirts — white / black" },
+  { text: "Affordable premium quality" },
+  { text: "Crop t-shirt coming soon" },
+  { text: "नेपालभर डेलिभरी", dev: true },
   { text: "Custom orders via DM" },
 ];
 

@@ -248,7 +248,7 @@ export default function CheckoutPage() {
             </div>
 
             <label className="co-field">
-              <span className="co-label">Delivery address <em>(or “pickup in KTM”)</em></span>
+              <span className="co-label">Delivery address <em>(anywhere in Nepal)</em></span>
               <textarea maxLength={300} rows={2} value={form.shippingAddress} onChange={set("shippingAddress")} placeholder="Tole, city — or arrange on DM" />
             </label>
 

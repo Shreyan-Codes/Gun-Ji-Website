@@ -23,7 +23,7 @@ export default function Footer() {
               <sup>™</sup>
             </p>
             <p className="foot-tagline">
-              Heavyweight custom tees, printed one DM at a time in Kathmandu.
+              Premium t-shirts at affordable prices, delivered across Nepal.
             </p>
           </div>
           <div className="foot-channels">
@@ -49,11 +49,9 @@ export default function Footer() {
 
         <div className="foot-meta">
           <div className="foot-meta-col">
-            <h4>Studio</h4>
+            <h4>Delivery</h4>
             <p>
-              Mid Baneshwor, Kathmandu, Nepal
-              <br />
-              <span className="dev">काठमाडौं, नेपाल</span>
+              Available all across Nepal
               <br />
               <a href="tel:+9779768913498">+977 9768913498</a>
               <br />
@@ -65,15 +63,15 @@ export default function Footer() {
             <p>
               DM first, print after.
               <br />
-              Pickup in KTM · shipping across Nepal.
+              Nationwide delivery across Nepal.
             </p>
           </div>
           <div className="foot-meta-col">
             <h4>Fit</h4>
             <p>
-              Premium heavyweight cotton.
+              Premium normal-fit cotton.
               <br />
-              Black, bone &amp; brown.
+              White &amp; black.
             </p>
           </div>
         </div>
@@ -86,13 +84,6 @@ export default function Footer() {
             <Link to="/size-guide">Size Guide</Link>
             <Link to="/track">Track Order</Link>
           </nav>
-          <iframe
-            className="foot-map"
-            title="GUN-जी studio — Mid Baneshwor, Kathmandu"
-            src="https://www.google.com/maps?q=Mid+Baneshwor,+Kathmandu&output=embed"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
         </div>
 
         <p className="foot-fine">

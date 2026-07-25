@@ -17,15 +17,15 @@ const SORT_OPTS = [
   { key: "price_desc", label: "Price ↓" },
   { key: "name_asc", label: "A–Z" },
 ];
-const SIZE_ORDER = ["S", "M", "L", "XL", "XXL"];
+const SIZE_ORDER = ["XL", "XXL", "XXXL"];
 
 export default function TeesPage() {
   const [params, setParams] = useSearchParams();
   const { products: allProducts, productsRev } = useSiteData();
   usePageMeta({
-    title: "Oversized T-Shirts Catalog — Buy Tees Online Nepal",
+    title: "Premium T-Shirts at Affordable Prices in Nepal",
     description:
-      "Shop premium oversized t-shirts printed in Kathmandu — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Ships across Nepal.",
+      "Shop GUN-जी premium normal-fit t-shirts in white or black at affordable prices, with delivery all across Nepal.",
     path: "/tees",
   });
 
@@ -101,7 +101,7 @@ export default function TeesPage() {
         eyebrowDev="सूची"
         eyebrow="The catalog"
         title="Tees on the rack"
-        intro="Premium heavyweight cotton, printed in Kathmandu. New designs drop regularly — follow the IG to catch them first."
+        intro="Premium normal-fit cotton at affordable prices. Delivery is available all across Nepal."
         meta={`${allProducts.length} designs · ships across Nepal`}
       />
 

@@ -8,9 +8,9 @@ import { useEffect } from "react";
 export const SITE_URL = "https://www.gunji.live";
 export const SITE_NAME = "GUN-जी™";
 
-const DEFAULT_TITLE = "T-Shirts in Nepal — Oversized Tees & Custom Print | Gunji Kathmandu";
+const DEFAULT_TITLE = "Premium T-Shirts at Affordable Prices in Nepal | GUN-जी™";
 const DEFAULT_DESC =
-  "Buy premium oversized t-shirts in Nepal — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
+  "Buy premium normal-fit t-shirts in Nepal at affordable prices. Shop GUN-जी tees in white or black, or make your own custom print, with nationwide delivery.";
 const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_duo_wide.jpg`;
 
 const absolute = (url) => (url && url.startsWith("/") ? `${SITE_URL}${url}` : url || DEFAULT_IMAGE);
@@ -43,7 +43,7 @@ function upsertLink(rel, href) {
  */
 export function usePageMeta({ title, description, path, image, noindex = false } = {}) {
   useEffect(() => {
-    const fullTitle = title ? `${title} · ${SITE_NAME} Kathmandu` : DEFAULT_TITLE;
+    const fullTitle = title ? `${title} · ${SITE_NAME} Nepal` : DEFAULT_TITLE;
     const desc = description || DEFAULT_DESC;
     const canonical = `${SITE_URL}${path ?? window.location.pathname}`;
     const img = absolute(image);

@@ -6,6 +6,7 @@ import {
   IG_DM,
   IG_PROFILE,
 } from "../data/products.jsx";
+import { DEFAULT_COMING_SOON_IMAGE, DEFAULT_HOME_GALLERY } from "../data/homeGallery.js";
 
 // Site data (catalog + contact settings) comes from the backend so the owner
 // can edit tees, prices and the WhatsApp number in /admin without a deploy.
@@ -52,6 +53,8 @@ const fallbackSettings = {
   whatsappNumber: WHATSAPP_NUMBER,
   igDm: IG_DM,
   igProfile: IG_PROFILE,
+  homeGallery: DEFAULT_HOME_GALLERY,
+  comingSoonImage: DEFAULT_COMING_SOON_IMAGE,
 };
 
 const SiteDataContext = createContext({
@@ -106,6 +109,8 @@ export function SiteDataProvider({ children }) {
             whatsappNumber: s.whatsappNumber || "",
             igDm: s.igDm || IG_DM,
             igProfile: s.igProfile || IG_PROFILE,
+            homeGallery: Array.isArray(s.homeGallery) && s.homeGallery.length ? s.homeGallery : DEFAULT_HOME_GALLERY,
+            comingSoonImage: s.comingSoonImage || DEFAULT_COMING_SOON_IMAGE,
           });
         }
       })

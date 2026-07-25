@@ -328,9 +328,49 @@ td .note-line { display: block; font-size: 0.78rem; color: var(--ink-soft); marg
   color: var(--umber);
   white-space: nowrap;
 }
-.settings-form { max-width: 560px; display: flex; flex-direction: column; gap: 1.1rem; }
+.settings-form { max-width: 920px; display: flex; flex-direction: column; gap: 1.1rem; }
 .hint { font-size: 0.78rem; color: var(--umber); }
 .hint code { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink); }
+.gallery-settings {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 1.2rem 0;
+}
+.gallery-settings-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.gallery-settings-head h3 { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: 0.25rem; }
+#gallery-settings-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.gallery-setting-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 0.7rem;
+  background: rgba(255,255,255,0.28);
+}
+.gallery-setting-preview,
+.settings-image-preview {
+  width: 86px;
+  height: 104px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--bone-deep);
+}
+.gallery-setting-fields {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 0.55rem;
+}
+.gallery-setting-fields .field-wide { grid-column: 1 / -1; }
+.gallery-setting-actions { display: flex; flex-direction: column; gap: 0.35rem; }
+.gallery-setting-actions .icon-btn:disabled { opacity: 0.25; cursor: default; }
+.settings-image-preview { width: min(180px, 100%); height: 220px; }
 
 /* ---------- toast ---------- */
 
@@ -352,4 +392,10 @@ td .note-line { display: block; font-size: 0.78rem; color: var(--ink-soft); marg
 @media (max-width: 640px) {
   .panel { padding: 1rem 0.8rem; }
   .topbar { gap: 0.8rem; }
+  .gallery-settings-head { flex-direction: column; }
+  .gallery-setting-row { grid-template-columns: 64px minmax(0, 1fr); align-items: start; }
+  .gallery-setting-preview { width: 64px; height: 82px; }
+  .gallery-setting-fields { grid-template-columns: 1fr; }
+  .gallery-setting-fields .field-wide { grid-column: auto; }
+  .gallery-setting-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
 }

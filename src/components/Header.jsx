@@ -7,16 +7,8 @@ import { useWishlist } from "../context/Wishlist.jsx";
 import SearchOverlay from "./SearchOverlay.jsx";
 
 const links = [
-  { to: "/tees", en: "Tees", ne: "सूची" },
-  { to: "/custom-print", en: "Custom print", ne: "कस्टम" },
+  { to: "/custom-print", en: "Make Yours", ne: "कस्टम" },
   { to: "/about", en: "About", ne: "बारेमा" },
-];
-
-// Mega-menu / mobile category hierarchy → shop collections (query-param filters).
-const categories = [
-  { to: "/tees?collection=signature", label: "Signature Logo Tee", sub: "White · Black" },
-  { to: "/tees?collection=essentials", label: "Essentials", sub: "Plain blanks — black, bone, brown" },
-  { to: "/custom-print", label: "Custom Print", sub: "Your idea, printed" },
 ];
 
 export default function Header() {
@@ -76,29 +68,12 @@ export default function Header() {
         </Link>
 
         <nav className="site-nav" aria-label="Main">
-          {links.map((l) =>
-            l.to === "/tees" ? (
-              <div className="nav-mega-wrap" key={l.to}>
-                <NavLink to={l.to} className="nav-link">
-                  <span className="nav-en">{l.en}</span>
-                  <span className="nav-ne dev" aria-hidden="true">{l.ne}</span>
-                </NavLink>
-                <div className="mega" role="menu">
-                  {categories.map((c) => (
-                    <Link key={c.to} to={c.to} className="mega-link" role="menuitem">
-                      <span className="mega-t">{c.label}</span>
-                      <span className="mega-s">{c.sub}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <NavLink key={l.to} to={l.to} className="nav-link">
-                <span className="nav-en">{l.en}</span>
-                <span className="nav-ne dev" aria-hidden="true">{l.ne}</span>
-              </NavLink>
-            )
-          )}
+          {links.map((l) => (
+            <NavLink key={l.to} to={l.to} className="nav-link">
+              <span className="nav-en">{l.en}</span>
+              <span className="nav-ne dev" aria-hidden="true">{l.ne}</span>
+            </NavLink>
+          ))}
         </nav>
 
         <button type="button" className="head-search" onClick={() => setSearchOpen(true)} aria-label="Search">
@@ -132,10 +107,6 @@ export default function Header() {
           {count > 0 && <span className="head-cart-count">{count}</span>}
         </NavLink>
 
-        <Link className="btn btn-solid btn-sm head-cta" to="/tees">
-          Shop <span className="arr" aria-hidden="true">→</span>
-        </Link>
-
         <button
           type="button"
           className={`burger ${open ? "open" : ""}`}
@@ -156,13 +127,6 @@ export default function Header() {
                 {l.en}
                 <span className="dev" aria-hidden="true">{l.ne}</span>
               </NavLink>
-            </li>
-          ))}
-        </ul>
-        <ul className="menu-cats">
-          {categories.map((c) => (
-            <li key={c.to}>
-              <Link to={c.to} className="menu-cat" tabIndex={open ? 0 : -1}>{c.label}</Link>
             </li>
           ))}
         </ul>

@@ -8,37 +8,28 @@ export const IG_DM = "https://ig.me/m/gunji.clo1";
 export const IG_PROFILE = "https://www.instagram.com/gunji.clo1/";
 
 // Names/tags are plain strings — <Dev> wraps Devanagari runs at render time.
-// The signature logo tee leads (it's the newest studio shoot), then the print
+// The normal-fit tee leads (it's the newest studio shoot), then the print
 // editions. More designs are teased via ComingSoonCard rather than listed here.
 export const products = [
   {
-    name: "GUN-जी Logo Tee — White",
-    tag: "Signature — white",
+    name: "GUN-जी Normal Fit T-Shirt",
+    tag: "Normal fit — white",
     price: "Rs. 1,099",
     priceWas: "Rs. 1,299",
     img: "/assets/gunji_tee_white_front.jpg",
-    alt: "GUN-जी logo t-shirt in white, laid flat",
-    orderItem: "GUN-जी Logo Tee (white)",
+    alt: "GUN-जी normal fit t-shirt in white, laid flat",
+    orderItem: "GUN-जी Normal Fit T-Shirt (white)",
     edition: "signature",
   },
   {
-    name: "GUN-जी Logo Tee — Black",
-    tag: "Signature — black",
+    name: "GUN-जी Normal Fit T-Shirt — Black",
+    tag: "Normal fit — black",
     price: "Rs. 1,099",
     priceWas: "Rs. 1,299",
     img: "/assets/gunji_tee_black_front.jpg",
-    alt: "GUN-जी logo t-shirt in black, laid flat",
-    orderItem: "GUN-जी Logo Tee (black)",
+    alt: "GUN-जी normal fit t-shirt in black, laid flat",
+    orderItem: "GUN-जी Normal Fit T-Shirt (black)",
     edition: "signature",
-  },
-  {
-    name: "The Essentials",
-    tag: "Plain — black / bone / brown",
-    price: "Rs. 699",
-    img: "/assets/gunji_post_09.jpg",
-    alt: "Plain tees in bone, brown and black on wooden hangers",
-    orderItem: "Essentials plain tee",
-    edition: "essentials",
   },
   {
     name: "Your Print Here",
@@ -54,6 +45,5 @@ export const products = [
 export const editionFilters = [
   { key: "all", label: "All tees" },
   { key: "signature", label: "Signature" },
-  { key: "essentials", label: "Essentials" },
   { key: "custom", label: "Custom" },
 ];

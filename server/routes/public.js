@@ -3,6 +3,7 @@ import { clean, CONTACT_METHODS } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { requireCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
+import { getMedia } from "../db/media.js";
 import { listActiveProducts, listProductsFiltered, searchProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder, getOrder, getOrderByTrackingCode } from "../db/orders.js";
 import { createCustomRequest } from "../db/customRequests.js";
@@ -18,6 +19,16 @@ router.get("/health", async (req, res) => {
 });
 
 router.get("/settings", async (req, res) => res.json(await getSettings()));
+
+router.get("/media/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(404).end();
+  const media = await getMedia(id);
+  if (!media) return res.status(404).end();
+  res.set("Content-Type", media.mime_type);
+  res.set("Cache-Control", "public, max-age=31536000, immutable");
+  res.send(media.data);
+});
 
 const EDITIONS = new Set(["signature", "player", "anime", "desi", "essentials", "custom"]);
 const SORTS = new Set(["newest", "price_asc", "price_desc", "name_asc"]);

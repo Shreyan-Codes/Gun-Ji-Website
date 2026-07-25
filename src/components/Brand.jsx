@@ -12,8 +12,8 @@ export default function Brand({ bare = false }) {
         </p>
       )}
       <p className="brand-statement reveal">
-        GUN-<span className="dev">जी</span> is a small Kathmandu label doing one thing
-        properly: heavyweight tees with prints people actually stop you
+        GUN-<span className="dev">जी</span> is a Nepal-based label doing one thing
+        properly: premium tees with prints people actually stop you
         about. No middlemen, no mass drops — every order goes through a DM.
       </p>
       <div className="brand-stats reveal">
@@ -27,7 +27,7 @@ export default function Brand({ bare = false }) {
         </div>
         <div>
           <span className="stat-num">1</span>
-          <span className="stat-label">city — KTM</span>
+          <span className="stat-label">delivery — Nepalwide</span>
         </div>
       </div>
       <a className="mono-link reveal" href={settings.igProfile} target="_blank" rel="noopener noreferrer">

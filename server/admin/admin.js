@@ -460,9 +460,139 @@ async function renderSettings(panel) {
         <span class="field-label">Instagram profile link</span>
         <input name="igProfile" type="url" maxlength="300" value="${esc(s.igProfile)}">
       </label>
+      <section class="gallery-settings">
+        <div class="gallery-settings-head">
+          <div>
+            <h3>Homepage gallery</h3>
+            <p class="hint">Use an existing <code>/assets/…</code> path or a public <code>https://</code> image URL. Drag order is controlled with the arrows.</p>
+          </div>
+          <button type="button" class="btn btn-sm" id="add-gallery-photo">+ Add photo</button>
+        </div>
+        <div id="gallery-settings-list"></div>
+      </section>
+      <label class="field">
+        <span class="field-label">Crop T-Shirt “coming soon” image</span>
+        <input name="comingSoonImage" type="text" maxlength="1000" value="${esc(s.comingSoonImage)}" placeholder="/assets/gunji_coming_soon.jpg">
+      </label>
+      <label class="field upload-field">
+        <span class="field-label">Or upload a new crop-shirt photo</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" id="coming-soon-file">
+      </label>
+      <img class="settings-image-preview" id="coming-soon-preview" src="${esc(s.comingSoonImage)}" alt="Coming-soon image preview">
       <div class="form-foot"><button type="submit" class="btn btn-solid btn-sm">Save settings</button></div>
     </form>
   `;
+
+  const galleryList = $("#gallery-settings-list");
+  let galleryItems = Array.isArray(s.homeGallery) ? s.homeGallery.map((item) => ({ ...item })) : [];
+
+  const readGalleryRows = () =>
+    [...galleryList.querySelectorAll(".gallery-setting-row")].map((row) => ({
+      src: row.querySelector("[data-gallery-src]").value.trim(),
+      cap: row.querySelector("[data-gallery-cap]").value.trim(),
+      alt: row.querySelector("[data-gallery-alt]").value.trim(),
+    }));
+
+  const paintGalleryRows = () => {
+    galleryList.innerHTML = galleryItems.map((item, index) => `
+      <div class="gallery-setting-row">
+        <img class="gallery-setting-preview" src="${esc(item.src)}" alt="" data-gallery-preview>
+        <div class="gallery-setting-fields">
+          <label class="field field-wide">
+            <span class="field-label">Photo ${index + 1} path / URL</span>
+            <input type="text" maxlength="1000" value="${esc(item.src)}" data-gallery-src required>
+          </label>
+          <label class="field">
+            <span class="field-label">Caption</span>
+            <input type="text" maxlength="120" value="${esc(item.cap)}" data-gallery-cap>
+          </label>
+          <label class="field">
+            <span class="field-label">Alt text</span>
+            <input type="text" maxlength="300" value="${esc(item.alt)}" data-gallery-alt>
+          </label>
+          <label class="field field-wide upload-field">
+            <span class="field-label">Upload a replacement photo</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-gallery-file>
+          </label>
+        </div>
+        <div class="gallery-setting-actions">
+          <button type="button" class="icon-btn" data-gallery-move="-1" data-index="${index}" ${index === 0 ? "disabled" : ""} aria-label="Move photo up">↑</button>
+          <button type="button" class="icon-btn" data-gallery-move="1" data-index="${index}" ${index === galleryItems.length - 1 ? "disabled" : ""} aria-label="Move photo down">↓</button>
+          <button type="button" class="icon-btn danger" data-gallery-remove="${index}" aria-label="Remove photo">✕</button>
+        </div>
+      </div>
+    `).join("");
+
+    galleryList.querySelectorAll("[data-gallery-src]").forEach((input) => {
+      input.addEventListener("input", () => {
+        input.closest(".gallery-setting-row").querySelector("[data-gallery-preview]").src = input.value;
+      });
+    });
+    galleryList.querySelectorAll("[data-gallery-file]").forEach((input) => {
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+          input.disabled = true;
+          const url = await uploadImage(file);
+          const row = input.closest(".gallery-setting-row");
+          row.querySelector("[data-gallery-src]").value = url;
+          row.querySelector("[data-gallery-preview]").src = url;
+          toast("Photo uploaded — save settings to publish it");
+        } catch (err) {
+          toast(err.message, true);
+        } finally {
+          input.disabled = false;
+        }
+      });
+    });
+    galleryList.querySelectorAll("[data-gallery-remove]").forEach((button) => {
+      button.addEventListener("click", () => {
+        galleryItems = readGalleryRows();
+        if (galleryItems.length === 1) return toast("Keep at least one gallery photo", true);
+        galleryItems.splice(Number(button.dataset.galleryRemove), 1);
+        paintGalleryRows();
+      });
+    });
+    galleryList.querySelectorAll("[data-gallery-move]").forEach((button) => {
+      button.addEventListener("click", () => {
+        galleryItems = readGalleryRows();
+        const from = Number(button.dataset.index);
+        const to = from + Number(button.dataset.galleryMove);
+        [galleryItems[from], galleryItems[to]] = [galleryItems[to], galleryItems[from]];
+        paintGalleryRows();
+      });
+    });
+  };
+
+  paintGalleryRows();
+  $("#add-gallery-photo").addEventListener("click", () => {
+    galleryItems = readGalleryRows();
+    if (galleryItems.length >= 12) return toast("The gallery supports up to 12 photos", true);
+    galleryItems.push({ src: "", cap: "", alt: "" });
+    paintGalleryRows();
+    galleryList.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  const comingSoonInput = $("#settings-form [name=comingSoonImage]");
+  comingSoonInput.addEventListener("input", () => {
+    $("#coming-soon-preview").src = comingSoonInput.value;
+  });
+  $("#coming-soon-file").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      e.target.disabled = true;
+      const url = await uploadImage(file);
+      comingSoonInput.value = url;
+      $("#coming-soon-preview").src = url;
+      toast("Photo uploaded — save settings to publish it");
+    } catch (err) {
+      toast(err.message, true);
+    } finally {
+      e.target.disabled = false;
+    }
+  });
 
   const waInput = $("#settings-form [name=whatsappNumber]");
   const hint = $("#wa-hint");
@@ -477,7 +607,14 @@ async function renderSettings(panel) {
 
   $("#settings-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const body = Object.fromEntries(new FormData(e.target).entries());
+    const fd = new FormData(e.target);
+    const body = {
+      whatsappNumber: fd.get("whatsappNumber"),
+      igDm: fd.get("igDm"),
+      igProfile: fd.get("igProfile"),
+      comingSoonImage: fd.get("comingSoonImage"),
+      homeGallery: readGalleryRows(),
+    };
     try {
       await api("/admin/settings", { method: "PUT", body });
       toast("Settings saved — live on the site now");
@@ -485,6 +622,23 @@ async function renderSettings(panel) {
       toast(err.message, true);
     }
   });
+}
+
+async function uploadImage(file) {
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+    throw new Error("Use a JPG, PNG, WebP or GIF image");
+  }
+  if (file.size > 6 * 1024 * 1024) {
+    throw new Error("Image must be smaller than 6 MB");
+  }
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read that image"));
+    reader.readAsDataURL(file);
+  });
+  const result = await api("/admin/media", { method: "POST", body: { dataUrl } });
+  return result.url;
 }
 
 /* ---------- delegated row actions (status, note, delete, idea expand) ---------- */

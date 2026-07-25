@@ -9,12 +9,12 @@ const steps = [
   {
     num: "२",
     title: "We print it",
-    desc: "Premium heavyweight tee, colour of your choice — black, bone or brown.",
+    desc: "Premium cotton tee in the colour of your choice.",
   },
   {
     num: "३",
     title: "You wear it",
-    desc: "Pickup or delivery in Kathmandu. Shipping across Nepal.",
+    desc: "Fast, reliable delivery all across Nepal.",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function Custom() {
         <figure className="custom-photo reveal">
           <img
             src="/assets/gunji_post_03.jpg"
-            alt="Plain black GUN-JI tee worn in a Kathmandu café"
+            alt="Plain black GUN-JI tee worn in a café"
             loading="lazy"
           />
         </figure>

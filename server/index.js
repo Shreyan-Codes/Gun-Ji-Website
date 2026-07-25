@@ -32,9 +32,10 @@ app.use((req, res, next) => {
 });
 
 // Global JSON body parser (small cap). The payment-proof route carries an image
-// data URL, so it parses its own larger body — skip it here.
+// data URL, and the admin media uploader carries an image — both parse their
+// own larger bodies, so skip them here.
 app.use((req, res, next) => {
-  if (req.path.endsWith("/payment-proof")) return next();
+  if (req.path.endsWith("/payment-proof") || req.path === "/api/admin/media") return next();
   express.json({ limit: "32kb" })(req, res, next);
 });
 

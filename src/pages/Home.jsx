@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard.jsx";
 import ComingSoonCard from "../components/ComingSoonCard.jsx";
@@ -5,56 +6,63 @@ import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
 import { useSiteData } from "../context/SiteData.jsx";
 import { usePageMeta } from "../lib/seo.js";
-
-// Studio shots of the signature tee. The lede uses the first two; the rest
-// run in the lookbook strip below the grid.
-const LEDE_SHOTS = [
-  {
-    src: "/assets/gunji_tee_white_front.jpg",
-    alt: "GUN-जी logo t-shirt in white, laid flat",
-    cap: "Signature — white",
-  },
-  {
-    src: "/assets/gunji_tee_black_front.jpg",
-    alt: "GUN-जी logo t-shirt in black, laid flat",
-    cap: "Signature — black",
-  },
-];
-
-const LOOKBOOK = [
-  {
-    src: "/assets/gunji_duo_wide.jpg",
-    alt: "GUN-जी logo tees in white and black, laid side by side",
-    cap: "Both colourways",
-    num: "०१",
-  },
-  {
-    src: "/assets/gunji_duo_stack.jpg",
-    alt: "White and black GUN-जी logo tees layered over each other",
-    cap: "Heavyweight cotton",
-    num: "०२",
-  },
-  {
-    src: "/assets/gunji_duo_detail.jpg",
-    alt: "Close-up of the GUN-जी chest print on the white and black tees",
-    cap: "Chest print detail",
-    num: "०३",
-  },
-  {
-    src: "/assets/gunji_duo_street.jpg",
-    alt: "GUN-जी logo tees laid out on turf, shot from above",
-    cap: "Shot in Kathmandu",
-    num: "०४",
-  },
-];
+import { DEFAULT_HOME_GALLERY } from "../data/homeGallery.js";
 
 export default function Home() {
-  const { products, productsRev } = useSiteData();
+  const { products, productsRev, settings } = useSiteData();
+  const galleryRef = useRef(null);
+  const dragRef = useRef(null);
+  const scrollFrame = useRef(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const gallery = settings.homeGallery?.length ? settings.homeGallery : DEFAULT_HOME_GALLERY;
   usePageMeta({ path: "/" }); // homepage keeps the full default title/description
   // Re-observe reveal targets if the API swaps the catalog in after mount.
   useReveal(`home:${productsRev}`);
   // The launch catalog is small enough to show in full on the homepage.
   const featured = products.slice(0, 6);
+
+  const goToSlide = (index) => {
+    const track = galleryRef.current;
+    const slides = track?.querySelectorAll(".home-gallery-slide");
+    if (!track || !slides?.length) return;
+    const next = Math.max(0, Math.min(index, slides.length - 1));
+    track.scrollTo({ left: slides[next].offsetLeft - track.offsetLeft, behavior: "smooth" });
+    setActiveSlide(next);
+  };
+
+  const updateActiveSlide = () => {
+    cancelAnimationFrame(scrollFrame.current);
+    scrollFrame.current = requestAnimationFrame(() => {
+      const track = galleryRef.current;
+      const slides = [...(track?.querySelectorAll(".home-gallery-slide") || [])];
+      if (!track || !slides.length) return;
+      const nearest = slides.reduce(
+        (best, slide, index) => {
+          const distance = Math.abs((slide.offsetLeft - track.offsetLeft) - track.scrollLeft);
+          return distance < best.distance ? { index, distance } : best;
+        },
+        { index: 0, distance: Infinity }
+      );
+      setActiveSlide(nearest.index);
+    });
+  };
+
+  const startDrag = (event) => {
+    if (event.pointerType !== "mouse") return;
+    dragRef.current = { x: event.clientX, scrollLeft: event.currentTarget.scrollLeft };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.currentTarget.classList.add("is-dragging");
+  };
+
+  const dragGallery = (event) => {
+    if (!dragRef.current) return;
+    event.currentTarget.scrollLeft = dragRef.current.scrollLeft - (event.clientX - dragRef.current.x);
+  };
+
+  const endDrag = (event) => {
+    dragRef.current = null;
+    event.currentTarget.classList.remove("is-dragging");
+  };
 
   return (
     <>
@@ -62,17 +70,16 @@ export default function Home() {
         <div className="home-intro-inner">
           <div className="home-intro-copy">
             <p className="eyebrow">
-              <span className="dev">काठमाडौं</span> · Custom print studio · Nepal
+              <span className="dev">नेपाल</span> · Premium tees · Nationwide delivery
             </p>
             <h1 className="home-intro-title">
-              Oversized T-Shirts in Nepal,<br />
-              printed in <span className="dev">काठमाडौं</span> Kathmandu
+              Premium T-Shirts in Nepal,<br />
+              at our most affordable price
             </h1>
             <p className="home-intro-lead">
-              GUN-जी makes some of the best heavyweight t-shirts in Kathmandu —
-              the signature logo tee in white or black, plain cotton essentials, or
-              custom-print your own design. Designed with you, printed by us, and shipped
-              across Nepal.
+              Premium normal-fit t-shirts in white or black, plus custom prints made
+              from your own design. Designed with you, printed by us, and delivered
+              all across Nepal.
             </p>
             <div className="hero-ctas">
               <Link className="btn btn-solid" to="/tees">
@@ -84,19 +91,61 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="home-intro-art">
-            {LEDE_SHOTS.map((shot, i) => (
-              <figure className={`lede-shot lede-shot-${i + 1} clip-reveal`} key={shot.src}>
-                <img
-                  src={shot.src}
-                  alt={shot.alt}
-                  width="1200"
-                  height="1600"
-                  fetchpriority={i === 0 ? "high" : undefined}
-                />
-                <figcaption>{shot.cap}</figcaption>
-              </figure>
-            ))}
+          <div className="home-intro-art clip-reveal">
+            <div
+              className="home-gallery"
+              ref={galleryRef}
+              role="region"
+              aria-roledescription="carousel"
+              aria-label="GUN-जी studio gallery"
+              tabIndex="0"
+              onScroll={updateActiveSlide}
+              onPointerDown={startDrag}
+              onPointerMove={dragGallery}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+            >
+              {gallery.map((shot, i) => (
+                <figure
+                  className="home-gallery-slide"
+                  key={`${shot.src}-${i}`}
+                  aria-label={`${i + 1} of ${gallery.length}`}
+                >
+                  <img
+                    src={shot.src}
+                    alt={shot.alt}
+                    width="1200"
+                    height="1600"
+                    fetchpriority={i === 0 ? "high" : undefined}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    draggable="false"
+                  />
+                  <figcaption>
+                    <span>{shot.cap}</span>
+                    <span>{String(i + 1).padStart(2, "0")} / {String(gallery.length).padStart(2, "0")}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            <div className="home-gallery-controls">
+              <span className="home-gallery-hint">Swipe / drag</span>
+              <div className="home-gallery-dots" aria-label="Choose gallery photo">
+                {gallery.map((shot, i) => (
+                  <button
+                    type="button"
+                    className={i === activeSlide ? "on" : ""}
+                    aria-label={`Show photo ${i + 1}`}
+                    aria-current={i === activeSlide ? "true" : undefined}
+                    onClick={() => goToSlide(i)}
+                    key={`${shot.src}-dot-${i}`}
+                  />
+                ))}
+              </div>
+              <div className="home-gallery-arrows">
+                <button type="button" onClick={() => goToSlide(activeSlide - 1)} disabled={activeSlide === 0} aria-label="Previous photo">←</button>
+                <button type="button" onClick={() => goToSlide(activeSlide + 1)} disabled={activeSlide === gallery.length - 1} aria-label="Next photo">→</button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -118,28 +167,6 @@ export default function Home() {
             <ProductCard product={product} key={product.slug || product.orderItem} />
           ))}
           <ComingSoonCard />
-        </div>
-      </section>
-
-      <section className="lookbook">
-        <div className="sect-head sect-head-row reveal">
-          <div>
-            <p className="eyebrow">
-              <span className="dev">झलक</span> · The lookbook
-            </p>
-            <h2>Shot in the studio</h2>
-          </div>
-        </div>
-        <div className="lookbook-strip">
-          {LOOKBOOK.map((shot) => (
-            <figure className="lookbook-shot reveal" key={shot.src}>
-              <img src={shot.src} alt={shot.alt} loading="lazy" />
-              <figcaption>
-                <span>{shot.cap}</span>
-                <span className="dev" aria-hidden="true">{shot.num}</span>
-              </figcaption>
-            </figure>
-          ))}
         </div>
       </section>
 

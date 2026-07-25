@@ -1,5 +1,5 @@
 /* ============================================================
-   GUN-जी™ — Kathmandu print-studio catalog
+   GUN-जी™ — Nepalwide t-shirt catalog
    Monochrome greyscale palette (coolors: f8f9fa … 212529)
    Display: Archivo (ultra-expanded) — Devanagari: Rozha One
    Body: Instrument Sans — Utility: Fragment Mono
@@ -190,63 +190,39 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .home-intro-copy { min-width: 0; }
 
 .home-intro-art {
-  position: relative;
+  min-width: 0;
   justify-self: end;
-  width: min(100%, 34rem);
-  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  width: min(100%, 38rem);
 }
-/* No overflow:hidden here — the captions hang below the frame on purpose.
-   The img is sized to the figure exactly, so there's nothing to clip. */
-.lede-shot {
-  border: 1px solid var(--line-dark);
-  background: var(--bone-deep);
+.home-gallery {
+  display: flex;
+  gap: clamp(0.65rem, 1.5vw, 1rem);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  cursor: grab;
+  touch-action: pan-y;
 }
-.lede-shot img { width: 100%; height: 100%; object-fit: cover; }
-.lede-shot figcaption {
-  position: absolute;
-  left: 0;
-  bottom: -1.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
-}
-/* big white shot; the black one overlaps its lower-right corner */
-.lede-shot-1 { position: relative; width: 78%; aspect-ratio: 4 / 5; }
-.lede-shot-2 {
-  position: absolute;
-  right: 0;
-  bottom: clamp(2.5rem, 6vw, 4.5rem);
-  width: 46%;
-  aspect-ratio: 3 / 4;
-  animation-delay: 0.6s;
-  box-shadow: -0.9rem 0 0 0 var(--bone);
-}
-.lede-shot-2 figcaption { left: auto; right: 0; text-align: right; }
-
-/* ---------- homepage lookbook strip ---------- */
-
-.lookbook { padding: 0 var(--pad-x) clamp(3.5rem, 7vw, 6rem); }
-.lookbook .sect-head { padding-top: clamp(1rem, 3vw, 2.5rem); }
-.lookbook-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(0.8rem, 2vw, 1.6rem);
-}
-.lookbook-shot {
+.home-gallery::-webkit-scrollbar { display: none; }
+.home-gallery:focus-visible { outline: 2px solid var(--brick); outline-offset: 4px; }
+.home-gallery.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.home-gallery-slide {
+  flex: 0 0 88%;
+  min-width: 0;
   overflow: hidden;
+  scroll-snap-align: start;
   border: 1px solid var(--line-dark);
   background: var(--bone-deep);
 }
-.lookbook-shot img {
+.home-gallery-slide img {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
-  transition: transform 0.7s var(--ease-out);
+  pointer-events: none;
 }
-.lookbook-shot:hover img { transform: scale(1.05); }
-.lookbook-shot figcaption {
+.home-gallery-slide figcaption {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -259,16 +235,57 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   text-transform: uppercase;
   color: var(--bone-dim);
 }
-.lookbook-shot figcaption .dev {
-  letter-spacing: 0;
-  font-size: 0.85rem;
-  color: var(--mustard);
+.home-gallery-controls {
+  min-height: 2.7rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.75rem;
+}
+.home-gallery-hint {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+.home-gallery-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.home-gallery-dots button {
+  width: 1.2rem;
+  height: 2px;
+  padding: 0;
+  border: 0;
+  background: var(--line-dark-strong);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+.home-gallery-dots button.on { width: 2.25rem; background: var(--brick); }
+.home-gallery-arrows { display: flex; gap: 0.35rem; }
+.home-gallery-arrows button {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-dark-strong);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.home-gallery-arrows button:disabled { opacity: 0.3; cursor: default; }
+@media (prefers-reduced-motion: reduce) {
+  .home-gallery { scroll-behavior: auto; }
 }
 
 /* Phones open straight on the studio shots — the lede copy block is hidden so
    the photos are the first thing you see. The <h1> is NOT display:none'd but
    collapsed to a screen-reader-only box instead: Google indexes mobile-first,
-   so the page must keep its "t-shirts in Nepal / Kathmandu" heading on phones.
+   so the page must keep its premium t-shirts heading on phones.
    Tablets and up (>640px) still get the full copy block. */
 @media (max-width: 640px) {
   .home-intro-copy .eyebrow,
@@ -2062,8 +2079,6 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 
   .home-intro-inner { grid-template-columns: 1fr; row-gap: clamp(2.5rem, 6vw, 3.5rem); }
   .home-intro-art { justify-self: center; width: min(100%, 30rem); }
-
-  .lookbook-strip { grid-template-columns: repeat(2, 1fr); }
 
   .product-grid { grid-template-columns: repeat(2, 1fr); }
 
