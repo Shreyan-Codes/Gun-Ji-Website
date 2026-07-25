@@ -13,8 +13,9 @@ export default function ProductCard({ product }) {
   const statuses = (product.variants ?? []).map(
     (v) => v.stockStatus ?? (v.stock > 0 ? "in_stock" : "out_of_stock")
   );
-  const badge =
-    statuses.length === 0 || statuses.includes("in_stock")
+  const badge = product.edition === "custom"
+    ? "Made to order"
+    : statuses.length === 0 || statuses.includes("in_stock")
       ? null
       : statuses.includes("pre_order")
         ? "Pre-order"

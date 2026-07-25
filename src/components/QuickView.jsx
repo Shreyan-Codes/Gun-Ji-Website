@@ -82,7 +82,8 @@ export default function QuickView({ product, onClose }) {
     add(
       {
         variantId: variant.id, productId: product.id, slug: product.slug, name: product.name,
-        img: images[0], size: variant.size, color: variant.color, price: product.price, maxStock: variant.stock,
+        img: images[0], size: variant.size, color: variant.color,
+        price: product.priceValue ?? product.price, maxStock: variant.stock,
       },
       qty
     );

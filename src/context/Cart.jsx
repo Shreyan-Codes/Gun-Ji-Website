@@ -7,10 +7,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 const CartContext = createContext(null);
 const KEY = "gunji_cart";
 
+function numericPrice(value) {
+  const direct = Number(value);
+  if (Number.isFinite(direct)) return direct;
+  return Number(String(value ?? "").replace(/[^\d.]/g, "")) || 0;
+}
+
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY));
-    return Array.isArray(raw) ? raw : [];
+    return Array.isArray(raw)
+      ? raw.map((item) => ({ ...item, price: numericPrice(item.price) }))
+      : [];
   } catch {
     return [];
   }

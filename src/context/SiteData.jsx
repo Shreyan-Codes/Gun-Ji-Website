@@ -92,6 +92,7 @@ export function SiteDataProvider({ children }) {
               discountPct: discountPct(r.price, r.compareAt),
               img: r.img,
               alt: r.alt,
+              images: Array.isArray(r.images) ? r.images : [],
               orderItem: r.orderItem,
               edition: r.edition,
               inStock: r.inStock,

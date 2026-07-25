@@ -13,17 +13,17 @@ const SIZES = ["XL", "XXL", "XXXL"];
 // site teases them via ComingSoonCard instead of listing them.
 // [name, tag, price, priceFrom, compareAt, edition, images[[url, alt]], orderItem, colours[], stockPerVariant]
 const CATALOG = [
-  ["GUN-जी Normal Fit T-Shirt", "Normal fit — white", 1099, 0, 1299, "signature",
+  ["GUN-जी Normal Fit T-Shirt", "Normal fit — white", 699, 0, 999, "signature",
     [["/assets/gunji_tee_white_front.jpg", "GUN-जी normal fit t-shirt in white, laid flat"],
      ["/assets/gunji_duo_stack.jpg", "White and black GUN-जी logo tees layered over each other"],
      ["/assets/gunji_duo_detail.jpg", "Close-up of the GUN-जी chest print"]],
     "GUN-जी Normal Fit T-Shirt (white)", ["White"], 12],
-  ["GUN-जी Normal Fit T-Shirt — Black", "Normal fit — black", 1099, 0, 1299, "signature",
+  ["GUN-जी Normal Fit T-Shirt — Black", "Normal fit — black", 699, 0, 999, "signature",
     [["/assets/gunji_tee_black_front.jpg", "GUN-जी normal fit t-shirt in black, laid flat"],
      ["/assets/gunji_duo_street.jpg", "GUN-जी logo tees laid out on turf, shot from above"],
      ["/assets/gunji_duo_detail.jpg", "Close-up of the GUN-जी chest print"]],
     "GUN-जी Normal Fit T-Shirt (black)", ["Black"], 12],
-  ["Your Print Here", "Custom — any colour, your design", 699, 1, null, "custom",
+  ["Your Print Here", "Custom — any colour, your design", 1099, 1, 1299, "custom",
     [["/assets/gunji_post_08.jpg", "Custom print tee — special price"]],
     "Custom print tee — my own design", ["As shown"], 0],
 ];

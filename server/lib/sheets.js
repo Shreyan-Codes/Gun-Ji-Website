@@ -5,14 +5,24 @@ import { config } from "../config.js";
 // keys needed — the backend just POSTs JSON. Fire-and-forget; silently no-ops
 // until GSHEET_WEBHOOK_URL is set, so orders never fail if it's unconfigured.
 
+// Google Sheets treats strings beginning with these characters as formulas.
+// Prefix customer-controlled values with an apostrophe so a name, address or
+// custom-print idea can never execute when the webhook appends the row.
+const safeSheetCell = (value) =>
+  typeof value === "string" && /^\s*[=+\-@]/.test(value) ? `'${value}` : value;
+
 async function postToSheet(payload) {
   const url = config.sheetsWebhookUrl;
   if (!url) return; // not configured — skip quietly
   try {
+    const safePayload = {
+      ...payload,
+      row: Array.isArray(payload.row) ? payload.row.map(safeSheetCell) : payload.row,
+    };
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(safePayload),
       redirect: "follow", // Apps Script bounces through a 302
     });
     if (!res.ok) console.error("[sheets] append failed:", res.status);
