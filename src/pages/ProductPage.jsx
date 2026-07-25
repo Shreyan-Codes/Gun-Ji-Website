@@ -247,7 +247,8 @@ export default function ProductPage() {
                   <div className="pp-sizeguide-body">
                     <SizeChart highlight={size} />
                     <p className="pp-sizeguide-note">
-                      Measured flat across the garment. Between
+                      Approximate common unisex measurements, rounded to the nearest
+                      centimetre. Measure a favourite t-shirt flat to compare. Between
                       sizes? Size up for a boxier fit.
                     </p>
                   </div>

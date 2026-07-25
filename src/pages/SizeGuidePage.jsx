@@ -18,13 +18,15 @@ export default function SizeGuidePage() {
         eyebrowDev="नाप"
         eyebrow="Size guide"
         title="Find your fit"
-        intro="Available sizes are S, M and L. Exact measurements can vary slightly by production batch."
+        intro="Available sizes are S, M and L. Use these common unisex measurements as a fit reference."
       />
 
       <section className="sizeguide">
         <SizeChart how />
         <p className="sizeguide-note">
-          Need exact measurements or help choosing?{" "}
+          These are approximate reference measurements, rounded to the nearest centimetre.
+          Actual GUN-जी measurements can vary by production batch. Compare them with a
+          t-shirt you already like, or{" "}
           <a href="https://ig.me/m/gunji.clo1" target="_blank" rel="noopener noreferrer">DM us</a> your height &amp; usual fit.
         </p>
       </section>

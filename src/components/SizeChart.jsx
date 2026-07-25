@@ -10,21 +10,17 @@ export default function SizeChart({ highlight = "", how = false }) {
         <table className="size-table">
           <thead>
             <tr>
-              <th>Size</th>
-              <th>Chest (cm)</th>
-              <th>Length (cm)</th>
-              <th>Shoulder (cm)</th>
-              <th>Sleeve (cm)</th>
+              <th scope="col">Size</th>
+              <th scope="col">Chest width (cm)</th>
+              <th scope="col">Length (cm)</th>
             </tr>
           </thead>
           <tbody>
             {SIZE_ROWS.map((r) => (
               <tr key={r.size} className={r.size === highlight ? "is-picked" : undefined}>
                 <th scope="row">{r.size}</th>
-                <td>{r.chest}</td>
+                <td>{r.chestWidth}</td>
                 <td>{r.length}</td>
-                <td>{r.shoulder}</td>
-                <td>{r.sleeve}</td>
               </tr>
             ))}
           </tbody>

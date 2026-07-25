@@ -1,18 +1,16 @@
 // Single source of truth for every customer-facing size picker and size chart.
-// Exact garment measurements have not been confirmed for the current batch, so
-// keep them blank rather than showing made-up measurements.
+// These rounded reference measurements follow a common unisex classic-fit tee.
+// They are not batch-specific measurements for GUN-JI garments.
 
 export const T_SHIRT_SIZES = ["S", "M", "L"];
 
 export const SIZE_ROWS = [
-  { size: "S", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
-  { size: "M", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
-  { size: "L", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
+  { size: "S", chestWidth: 46, length: 71 },
+  { size: "M", chestWidth: 51, length: 74 },
+  { size: "L", chestWidth: 56, length: 76 },
 ];
 
 export const MEASURE_TIPS = [
-  ["Chest", "measure flat across, one armpit to the other, then double it."],
+  ["Chest width", "lay the t-shirt flat and measure from armpit to armpit. Do not double it."],
   ["Length", "from the highest shoulder point straight down to the hem."],
-  ["Shoulder", "seam to seam across the back."],
-  ["Sleeve", "from the shoulder seam to the sleeve opening."],
 ];
