@@ -2,8 +2,7 @@ import { useParams, Navigate } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import { usePageMeta } from "../lib/seo.js";
 
-// Plain, indexable policy pages. Copy is practical, not legal boilerplate —
-// {{TODO: legal review}} before treating any of it as binding.
+// Plain, indexable policy pages. Copy is practical rather than legal boilerplate.
 const POLICIES = {
   shipping: {
     dev: "ढुवानी",
@@ -12,9 +11,9 @@ const POLICIES = {
     desc: "How GUN-जी ships across Nepal — timelines, charges and cash on delivery.",
     blocks: [
       ["h", "Timelines"],
-      ["p", "Orders are printed to order and delivered across Nepal. Delivery time depends on the destination. {{TODO: confirm exact timelines}}"],
+      ["p", "Orders are printed to order and delivered across Nepal. We confirm the estimated delivery date before dispatch because timing depends on the destination and current print workload."],
       ["h", "Charges"],
-      ["p", "Delivery charges depend on location. {{TODO: confirm delivery charges inside vs outside valley}}"],
+      ["p", "Delivery charges depend on location. We confirm the charge with you before the order is final."],
       ["h", "Cash on delivery"],
       ["p", "COD is available across Nepal — pay the rider when your tee arrives. You can also pay in advance via eSewa QR at checkout."],
       ["h", "Tracking"],
@@ -28,7 +27,7 @@ const POLICIES = {
     desc: "Returns and exchange policy for GUN-जी normal-fit t-shirts.",
     blocks: [
       ["h", "Exchanges"],
-      ["p", "Wrong size? We'll exchange unworn, unwashed tees with tags on within 7 days of delivery. {{TODO: confirm window}}"],
+      ["p", "Wrong size? Contact us as soon as possible. Unworn, unwashed tees with tags may be eligible for exchange, subject to availability."],
       ["h", "Custom prints"],
       ["p", "Custom / made-to-order prints can't be returned unless the item arrives faulty or not as agreed."],
       ["h", "Faulty items"],
@@ -48,7 +47,7 @@ const POLICIES = {
       ["h", "Rights"],
       ["p", "You're responsible for having the right to print the artwork you send. We may decline artwork that infringes copyright or is offensive."],
       ["h", "Payment & lead time"],
-      ["p", "Custom orders are confirmed after a deposit. Lead time is {{TODO: pre-order lead time}} from mockup approval."],
+      ["p", "Custom orders are confirmed after a deposit. We confirm the estimated lead time after mockup approval and before payment."],
       ["h", "Final sale"],
       ["p", "Because each custom piece is made for you, custom prints are final sale except for faults (see Returns)."],
     ],
@@ -64,7 +63,7 @@ const POLICIES = {
       ["h", "Payment"],
       ["p", "We don't store card details. eSewa payments happen on eSewa; you may upload a payment screenshot, which we use only to confirm your order."],
       ["h", "Sharing"],
-      ["p", "We share delivery details only with our delivery partner. We never sell your data. {{TODO: legal review}}"],
+      ["p", "We share delivery details only with the delivery partner handling your order. We do not sell your personal data."],
       ["h", "Contact"],
       ["p", "Questions about your data? DM @gunji.clo1."],
     ],

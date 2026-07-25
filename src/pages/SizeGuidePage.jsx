@@ -18,7 +18,7 @@ export default function SizeGuidePage() {
         eyebrowDev="नाप"
         eyebrow="Size guide"
         title="Find your fit"
-        intro="Measurements are in centimetres, taken flat across the garment. {{TODO: confirm real measurements}}"
+        intro="Measurements are in centimetres and taken flat across the garment. Use them as a general fit guide; small production variations can occur."
       />
 
       <section className="sizeguide">

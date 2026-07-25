@@ -262,7 +262,7 @@ export default function ProductPage() {
                     Pre-order <span className="arr" aria-hidden="true">↗</span>
                   </a>
                   <p className="pp-stock">
-                    Pre-order — ships in {"{{TODO: pre-order lead time}}"} · DM to reserve your {size} / {color}.
+                    Pre-order timing is confirmed by DM before payment · Reserve your {size} / {color}.
                   </p>
                 </div>
               ) : (

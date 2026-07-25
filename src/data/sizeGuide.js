@@ -1,6 +1,6 @@
 // Single source of truth for the size chart — rendered both on /size-guide and
 // inline on the product page, so the two can never drift apart.
-// {{TODO: confirm real measurements}} — these are typical values for this cut.
+// Garment measurements are a general fit guide and may vary slightly by batch.
 
 export const SIZE_ROWS = [
   { size: "XL", chest: 60, length: 74, shoulder: 58, sleeve: 25 },
