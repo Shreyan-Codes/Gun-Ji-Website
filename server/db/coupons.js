@@ -1,4 +1,7 @@
 import { db } from "./index.js";
+import { calculateCouponDiscount, couponDiscountBase } from "../lib/couponDiscount.js";
+
+export { calculateCouponDiscount } from "../lib/couponDiscount.js";
 
 const CODE_RE = /^[A-Z0-9][A-Z0-9_-]{2,31}$/;
 
@@ -14,14 +17,6 @@ export function normalizeCouponCode(value) {
   return String(value || "").trim().toUpperCase();
 }
 
-export function calculateCouponDiscount(coupon, subtotal) {
-  const amount = Math.max(0, Math.trunc(Number(subtotal) || 0));
-  const raw = coupon.discount_type === "percent"
-    ? Math.floor(amount * coupon.discount_value / 100)
-    : coupon.discount_value;
-  return Math.min(amount, Math.max(0, raw));
-}
-
 function couponToJson(row) {
   if (!row) return null;
   return {
@@ -32,6 +27,7 @@ function couponToJson(row) {
     discountValue: row.discount_value,
     minOrderAmount: row.min_order_amount,
     maxUses: row.max_uses,
+    maxDiscountItems: row.max_discount_items,
     usesCount: row.uses_count,
     validFrom: row.valid_from,
     validUntil: row.valid_until,
@@ -75,12 +71,14 @@ async function getUsableCoupon(code, subtotal, { lock = false } = {}) {
   return row;
 }
 
-export async function quoteCoupon(code, subtotal) {
+export async function quoteCoupon(code, subtotal, items) {
   const row = await getUsableCoupon(code, subtotal);
-  const discount = calculateCouponDiscount(row, subtotal);
+  const discountBase = couponDiscountBase(row, subtotal, items);
+  const discount = calculateCouponDiscount(row, subtotal, items);
   return {
     coupon: couponToJson(row),
     subtotal,
+    discountBase,
     discount,
     total: subtotal - discount,
   };
@@ -88,10 +86,10 @@ export async function quoteCoupon(code, subtotal) {
 
 // Must be called inside the order transaction. SELECT ... FOR UPDATE makes the
 // max-uses check and increment atomic even when checkouts arrive together.
-export async function redeemCoupon(code, subtotal) {
+export async function redeemCoupon(code, subtotal, items) {
   if (!normalizeCouponCode(code)) return null;
   const row = await getUsableCoupon(code, subtotal, { lock: true });
-  const discount = calculateCouponDiscount(row, subtotal);
+  const discount = calculateCouponDiscount(row, subtotal, items);
   await db.prepare(
     "UPDATE coupons SET uses_count = uses_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
   ).run(row.id);
@@ -108,11 +106,11 @@ export async function createCoupon(input) {
   if (!CODE_RE.test(code)) throw new CouponError("Use 3–32 letters, numbers, hyphens or underscores.");
   const info = await db.prepare(
     `INSERT INTO coupons
-      (code, description, discount_type, discount_value, min_order_amount, max_uses, valid_from, valid_until, active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      (code, description, discount_type, discount_value, min_order_amount, max_uses, max_discount_items, valid_from, valid_until, active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     code, input.description, input.discountType, input.discountValue,
-    input.minOrderAmount, input.maxUses, input.validFrom, input.validUntil,
+    input.minOrderAmount, input.maxUses, input.maxDiscountItems, input.validFrom, input.validUntil,
     input.active ? 1 : 0
   );
   return couponToJson(await db.prepare("SELECT * FROM coupons WHERE id = ?").get(info.lastInsertRowid));
@@ -125,6 +123,7 @@ const COUPON_COL = {
   discountValue: "discount_value",
   minOrderAmount: "min_order_amount",
   maxUses: "max_uses",
+  maxDiscountItems: "max_discount_items",
   validFrom: "valid_from",
   validUntil: "valid_until",
   active: "active",

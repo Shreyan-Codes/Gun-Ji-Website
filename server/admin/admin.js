@@ -469,7 +469,7 @@ async function renderCoupons(panel) {
     : state.editingCoupon === 0
       ? {
           id: null, code: "", description: "", discountType: "percent",
-          discountValue: 10, minOrderAmount: 0, maxUses: null,
+          discountValue: 10, minOrderAmount: 0, maxUses: null, maxDiscountItems: null,
           validFrom: null, validUntil: null, active: true,
         }
       : items.find((coupon) => coupon.id === state.editingCoupon);
@@ -484,6 +484,7 @@ async function renderCoupons(panel) {
       <label class="field"><span class="field-label">Discount value *</span><input name="discountValue" type="number" required min="1" max="1000000" value="${editing.discountValue}"></label>
       <label class="field"><span class="field-label">Minimum order (Rs.)</span><input name="minOrderAmount" type="number" min="0" max="10000000" value="${editing.minOrderAmount}"></label>
       <label class="field"><span class="field-label">Maximum uses</span><input name="maxUses" type="number" min="1" max="1000000" value="${editing.maxUses ?? ""}" placeholder="Unlimited"></label>
+      <label class="field"><span class="field-label">T-shirts discounted per order</span><input name="maxDiscountItems" type="number" min="1" max="1000000" value="${editing.maxDiscountItems ?? ""}" placeholder="Unlimited"></label>
       <label class="field"><span class="field-label">Starts</span><input name="validFrom" type="datetime-local" value="${fmtDateInput(editing.validFrom)}"></label>
       <label class="field"><span class="field-label">Ends</span><input name="validUntil" type="datetime-local" value="${fmtDateInput(editing.validUntil)}"></label>
       <label class="check-field"><input name="active" type="checkbox" ${editing.active ? "checked" : ""}> Active</label>
@@ -504,7 +505,7 @@ async function renderCoupons(panel) {
     return `
       <tr>
         <td><strong class="coupon-code">${esc(coupon.code)}</strong><span class="sub">${esc(coupon.description)}</span></td>
-        <td>${value}<span class="sub">Min. Rs. ${Number(coupon.minOrderAmount).toLocaleString("en-IN")}</span></td>
+        <td>${value}<span class="sub">Min. Rs. ${Number(coupon.minOrderAmount).toLocaleString("en-IN")} · ${coupon.maxDiscountItems === null ? "all tees" : `${coupon.maxDiscountItems} tee${coupon.maxDiscountItems === 1 ? "" : "s"} per order`}</span></td>
         <td>${coupon.usesCount}${coupon.maxUses === null ? "" : ` / ${coupon.maxUses}`}<span class="sub">${windowText}</span></td>
         <td><span class="coupon-state coupon-state-${status.replace(" ", "-")}">${status}</span></td>
         <td><div class="row-actions">

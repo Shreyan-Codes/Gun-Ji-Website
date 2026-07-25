@@ -53,12 +53,13 @@ export default function CheckoutPage() {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const discount = couponQuote?.discount || 0;
   const checkoutTotal = subtotal - discount;
+  const cartSignature = items.map((item) => `${item.variantId}:${item.qty}`).join("|");
 
   useEffect(() => {
     setCouponQuote(null);
     setCouponError("");
     setCouponStatus("idle");
-  }, [subtotal]);
+  }, [subtotal, cartSignature]);
 
   async function applyCoupon() {
     const code = couponCode.trim().toUpperCase();
@@ -402,7 +403,10 @@ export default function CheckoutPage() {
               <label className="co-label" htmlFor="coupon-code">Coupon code</label>
               {couponQuote ? (
                 <div className="co-coupon-applied">
-                  <span><strong>{couponQuote.coupon.code}</strong> applied</span>
+                  <span>
+                    <strong>{couponQuote.coupon.code}</strong> applied
+                    {couponQuote.coupon.maxDiscountItems === 1 && <small> · discount on 1 T-shirt</small>}
+                  </span>
                   <button type="button" onClick={removeCoupon}>Remove</button>
                 </div>
               ) : (

@@ -180,6 +180,7 @@ const couponFields = {
   discountValue: { type: "int", min: 1, max: 1000000 },
   minOrderAmount: { type: "int", min: 0, max: 10000000 },
   maxUses: { type: "int", min: 1, max: 1000000, nullable: true },
+  maxDiscountItems: { type: "int", min: 1, max: 1000000, nullable: true },
   validFrom: { max: 40 },
   validUntil: { max: 40 },
   active: { type: "bool" },
@@ -231,6 +232,7 @@ router.post("/coupons", async (req, res) => {
       discountValue: { ...couponFields.discountValue, required: true },
       minOrderAmount: { ...couponFields.minOrderAmount, default: 0 },
       maxUses: couponFields.maxUses,
+      maxDiscountItems: couponFields.maxDiscountItems,
       active: { ...couponFields.active, default: 1 },
     },
     req.body

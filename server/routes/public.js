@@ -118,7 +118,7 @@ router.post("/coupons/validate", couponLimit, requireCustomer, async (req, res) 
   }
   const subtotal = cart.items.reduce((sum, item) => sum + item.priceAtPurchase * item.quantity, 0);
   try {
-    res.json(await quoteCoupon(code, subtotal));
+    res.json(await quoteCoupon(code, subtotal, cart.items));
   } catch (err) {
     if (err instanceof CouponError) return res.status(400).json({ error: err.message, code: err.code });
     throw err;

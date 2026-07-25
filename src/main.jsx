@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import App from "./App.jsx";
 import { SiteDataProvider } from "./context/SiteData.jsx";
 import { AuthProvider } from "./context/Auth.jsx";
@@ -16,6 +17,7 @@ createRoot(document.getElementById("root")).render(
           <CartProvider>
             <WishlistProvider>
               <App />
+              <Analytics />
             </WishlistProvider>
           </CartProvider>
         </SiteDataProvider>

@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   discount_value   INTEGER NOT NULL CHECK (discount_value > 0),
   min_order_amount INTEGER NOT NULL DEFAULT 0 CHECK (min_order_amount >= 0),
   max_uses         INTEGER CHECK (max_uses IS NULL OR max_uses > 0),
+  max_discount_items INTEGER CONSTRAINT coupons_max_discount_items_check
+                     CHECK (max_discount_items IS NULL OR max_discount_items > 0),
   uses_count       INTEGER NOT NULL DEFAULT 0 CHECK (uses_count >= 0),
   valid_from       TIMESTAMPTZ,
   valid_until      TIMESTAMPTZ,

@@ -97,7 +97,7 @@ export async function createOrder({
   const subtotal = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
 
   return tx(async () => {
-    const redemption = await redeemCoupon(couponCode, subtotal);
+    const redemption = await redeemCoupon(couponCode, subtotal, items);
     const discount = redemption?.discount ?? 0;
     const total = subtotal - discount;
     const info = await insertOrder.run(
