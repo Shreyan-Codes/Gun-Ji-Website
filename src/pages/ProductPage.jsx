@@ -103,7 +103,10 @@ export default function ProductPage() {
     setColor(firstColor);
   }, [product]);
   useEffect(() => {
-    const firstInStock = sizesForColor.find((v) => v.stock > 0) || sizesForColor[0];
+    const firstInStock =
+      sizesForColor.find((v) => statusOf(v) === "in_stock" && v.stock > 0) ||
+      sizesForColor.find((v) => statusOf(v) === "pre_order") ||
+      sizesForColor[0];
     setSize(firstInStock?.size ?? "");
     setQty(1);
     setAdded(false);

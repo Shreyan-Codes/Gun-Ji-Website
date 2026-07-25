@@ -51,7 +51,7 @@ export async function productToJson(row, { admin = false } = {}) {
       // (pre-migration) so the frontend keeps working either way.
       stockStatus: v.stock_status ?? (v.stock > 0 ? "in_stock" : "out_of_stock"),
     })),
-    inStock: variants.some((v) => v.stock > 0),
+    inStock: variants.some((v) => v.stock_status === "in_stock" && v.stock > 0),
   };
   if (admin) {
     out.description = row.description;
@@ -119,7 +119,7 @@ export async function listProductsFiltered({ sort, collection, size, color, inSt
   if (collection) { where.push("p.edition = ?"); params.push(collection); }
   if (size) { where.push("v.size = ?"); params.push(size); }
   if (color) { where.push("v.color = ?"); params.push(color); }
-  if (inStock) where.push("v.stock > 0");
+  if (inStock) where.push("v.stock_status = 'in_stock' AND v.stock > 0");
 
   const orderBy = SORT_SQL[sort] || "p.sort_order, p.id";
   const sql =

@@ -75,7 +75,11 @@ export default function TeesPage() {
     let list = collection === "all" ? allProducts : allProducts.filter((p) => p.edition === collection);
     if (size) list = list.filter((p) => (p.variants || []).some((v) => v.size === size));
     if (color) list = list.filter((p) => (p.variants || []).some((v) => v.color === color));
-    if (inStock) list = list.filter((p) => (p.variants || []).some((v) => v.stock > 0));
+    if (inStock) {
+      list = list.filter((p) =>
+        (p.variants || []).some((v) => v.stockStatus === "in_stock" && v.stock > 0)
+      );
+    }
     if (sort === "price_asc") list = [...list].sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
     else if (sort === "name_asc") list = [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
