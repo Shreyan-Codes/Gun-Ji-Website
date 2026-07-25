@@ -227,7 +227,7 @@ export const getVariantById = async (id) => (await selectVariantById.get(id)) ||
 // Variant joined with the parent product — used at checkout to snapshot the
 // price/name and check the product is still active.
 const selectVariantWithProduct = db.prepare(
-  `SELECT v.id AS variant_id, v.product_id, v.size, v.color, v.stock, v.sku,
+  `SELECT v.id AS variant_id, v.product_id, v.size, v.color, v.stock, v.stock_status, v.sku,
           p.name AS product_name, p.order_item, p.price, p.active AS product_active
      FROM product_variants v JOIN products p ON p.id = v.product_id
     WHERE v.id = ?`
@@ -235,21 +235,38 @@ const selectVariantWithProduct = db.prepare(
 export const getVariantWithProduct = async (id) => (await selectVariantWithProduct.get(id)) || null;
 
 export async function addVariant(productId, { size, color, stock = 0, sku = null }) {
+  const safeStock = Math.max(0, stock);
   const info = await db.prepare(
-    "INSERT INTO product_variants (product_id, size, color, stock, sku) VALUES (?, ?, ?, ?, ?)"
-  ).run(productId, size, color, stock, sku);
+    "INSERT INTO product_variants (product_id, size, color, stock, stock_status, sku) VALUES (?, ?, ?, ?, ?, ?)"
+  ).run(productId, size, color, safeStock, safeStock > 0 ? "in_stock" : "out_of_stock", sku);
   return Number(info.lastInsertRowid);
 }
 
 export async function setVariantStock(id, stock) {
-  const info = await db.prepare("UPDATE product_variants SET stock = ? WHERE id = ?").run(Math.max(0, stock), id);
+  const safeStock = Math.max(0, stock);
+  const info = await db.prepare(
+    `UPDATE product_variants
+        SET stock = ?,
+            stock_status = CASE
+              WHEN stock_status = 'pre_order' THEN 'pre_order'
+              WHEN ? > 0 THEN 'in_stock'
+              ELSE 'out_of_stock'
+            END
+      WHERE id = ?`
+  ).run(safeStock, safeStock, id);
   return info.changes > 0;
 }
 
 // Decrements stock only if enough is available; returns true if it did.
 export async function decrementStock(variantId, qty) {
   const info = await db.prepare(
-    "UPDATE product_variants SET stock = stock - ? WHERE id = ? AND stock >= ?"
-  ).run(qty, variantId, qty);
+    `UPDATE product_variants
+        SET stock = stock - ?,
+            stock_status = CASE
+              WHEN stock - ? = 0 THEN 'out_of_stock'
+              ELSE stock_status
+            END
+      WHERE id = ? AND stock_status = 'in_stock' AND stock >= ?`
+  ).run(qty, qty, variantId, qty);
   return info.changes > 0;
 }

@@ -88,6 +88,10 @@ async function resolveCartItems(raw) {
       problems.push({ variantId, error: "No longer available" });
       continue;
     }
+    if (v.stock_status !== "in_stock") {
+      problems.push({ variantId, stock: v.stock, error: "Out of stock" });
+      continue;
+    }
     if (v.stock < qty) {
       problems.push({ variantId, stock: v.stock, error: v.stock > 0 ? `Only ${v.stock} left` : "Out of stock" });
       continue;
