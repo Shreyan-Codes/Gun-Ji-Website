@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import ProductCard from "../components/ProductCard.jsx";
+import ComingSoonCard from "../components/ComingSoonCard.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
 import { editionFilters } from "../data/products.jsx";
@@ -24,7 +25,7 @@ export default function TeesPage() {
   usePageMeta({
     title: "Oversized T-Shirts Catalog — Buy Tees Online Nepal",
     description:
-      "Shop premium oversized t-shirts printed in Kathmandu — football player editions, anime back prints, देसी Devanagari type and plain essentials. Ships across Nepal.",
+      "Shop premium oversized t-shirts printed in Kathmandu — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Ships across Nepal.",
     path: "/tees",
   });
 
@@ -82,6 +83,9 @@ export default function TeesPage() {
   }, [allProducts, collection, size, color, inStock, sort]);
 
   const shown = Array.isArray(results) ? results : clientFiltered;
+  // The coming-soon tile only belongs on the unfiltered rack — it would read as
+  // a false match once someone narrows by edition, size or colour.
+  const showSoon = collection === "all" && !size && !color && !inStock;
   useReveal(`${collection}:${sort}:${size}:${color}:${inStock}:${productsRev}:${shown.length}`);
 
   const update = (key, val) => {
@@ -97,7 +101,7 @@ export default function TeesPage() {
         eyebrowDev="सूची"
         eyebrow="The catalog"
         title="Tees on the rack"
-        intro="All tees are premium oversized fit. Prices are launch placeholders — DM for the real tag."
+        intro="Premium heavyweight cotton, printed in Kathmandu. New designs drop regularly — follow the IG to catch them first."
         meta={`${allProducts.length} designs · ships across Nepal`}
       />
 
@@ -153,6 +157,7 @@ export default function TeesPage() {
             {shown.map((product) => (
               <ProductCard product={product} key={product.slug || product.orderItem} />
             ))}
+            {showSoon && <ComingSoonCard />}
           </div>
         ) : (
           <p className="empty-note">Nothing matches those filters — try clearing a few.</p>

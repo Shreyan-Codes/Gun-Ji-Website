@@ -22,9 +22,9 @@ export default function Hero() {
               </span>
             </h1>
             <p className="hero-copy fi" style={{ "--d": "0.5s" }}>
-              Heavyweight oversized tees printed in Kathmandu — football icons, anime
-              back prints, <span className="dev">देसी</span> type, or whatever's living
-              in your head.
+              Heavyweight tees printed in Kathmandu — the signature{" "}
+              <span className="dev">जी</span> logo tee, plain essentials, or whatever's
+              living in your head, printed to order.
             </p>
             <div className="hero-ctas fi" style={{ "--d": "0.65s" }}>
               <Link className="btn btn-solid" to="/tees">
@@ -39,16 +39,16 @@ export default function Hero() {
           <div className="hero-photo">
             <figure className="hero-arch clip-reveal">
               <img
-                src="/assets/gunji_post_02.jpg"
-                alt="USE दिमाग brown oversized tee, shot on a Kathmandu street"
-                width="1024"
-                height="1365"
+                src="/assets/gunji_tee_white_front.jpg"
+                alt="GUN-जी logo t-shirt in white, laid flat"
+                width="1200"
+                height="1600"
                 fetchpriority="high"
               />
             </figure>
             <div className="hero-cap fi" style={{ "--d": "0.9s" }}>
-              <span>Shot — Ason, KTM</span>
-              <span className="dev">००२</span>
+              <span>Shot — KTM studio</span>
+              <span className="dev">००१</span>
             </div>
           </div>
         </div>

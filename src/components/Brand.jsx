@@ -13,7 +13,7 @@ export default function Brand({ bare = false }) {
       )}
       <p className="brand-statement reveal">
         GUN-<span className="dev">जी</span> is a small Kathmandu label doing one thing
-        properly: heavyweight oversized tees with prints people actually stop you
+        properly: heavyweight tees with prints people actually stop you
         about. No middlemen, no mass drops — every order goes through a DM.
       </p>
       <div className="brand-stats reveal">

@@ -25,8 +25,8 @@ const SITE_URL = "https://www.gunji.live";
 const SITE_NAME = "GUN-जी™";
 const DEFAULT_TITLE = "T-Shirts in Nepal — Oversized Tees & Custom Print | Gunji Kathmandu";
 const DEFAULT_DESC =
-  "Buy premium oversized t-shirts in Nepal — football, anime & देसी Devanagari prints, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
-const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_post_02.jpg`;
+  "Buy premium oversized t-shirts in Nepal — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
+const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_duo_wide.jpg`;
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 const pageTitle = (t) => (t ? `${t} · ${SITE_NAME} Kathmandu` : DEFAULT_TITLE);
@@ -39,18 +39,12 @@ const STATIC_ROUTES = [
     path: "/tees",
     title: "Oversized T-Shirts Catalog — Buy Tees Online Nepal",
     description:
-      "Shop premium oversized t-shirts printed in Kathmandu — football player editions, anime back prints, देसी Devanagari type and plain essentials. Ships across Nepal.",
+      "Shop premium oversized t-shirts printed in Kathmandu — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Ships across Nepal.",
     changefreq: "weekly",
     priority: "0.9",
   },
-  {
-    path: "/editions",
-    title: "Editions — Player, Anime, देसी Type & Custom Tees",
-    description:
-      "Four GUN-जी editions: football player edition tees, anime back prints, देसी Devanagari type, and fully custom prints — all premium oversized fit, printed in Kathmandu.",
-    changefreq: "monthly",
-    priority: "0.8",
-  },
+  // /editions was retired — vercel.json 301s it to /tees, so it's deliberately
+  // absent here (no prerendered page, and dropped from sitemap.xml).
   {
     path: "/custom-print",
     title: "Custom T-Shirt Printing in Kathmandu, Nepal",

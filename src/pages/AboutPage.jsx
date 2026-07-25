@@ -1,7 +1,6 @@
 import PageHero from "../components/PageHero.jsx";
 import Hero from "../components/Hero.jsx";
 import Ticker from "../components/Ticker.jsx";
-import Editions from "../components/Editions.jsx";
 import Brand from "../components/Brand.jsx";
 import CtaBand from "../components/CtaBand.jsx";
 import { usePageMeta } from "../lib/seo.js";
@@ -35,15 +34,14 @@ export default function AboutPage() {
 
       <Ticker />
       <Hero />
-      <Editions />
 
       <section className="about-photos">
         <figure className="about-photo reveal">
           <div className="arch">
-            <img src="/assets/gunji_post_02.jpg" alt="USE दिमाग tee on a Kathmandu street" loading="lazy" />
+            <img src="/assets/gunji_duo_wide.jpg" alt="GUN-जी logo tees in white and black, laid side by side" loading="lazy" />
           </div>
           <figcaption>
-            <span>On the street — Ason, KTM</span>
+            <span>Signature — both colourways</span>
             <span className="dev">००१</span>
           </figcaption>
         </figure>

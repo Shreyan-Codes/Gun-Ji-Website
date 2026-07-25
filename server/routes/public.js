@@ -19,7 +19,7 @@ router.get("/health", async (req, res) => {
 
 router.get("/settings", async (req, res) => res.json(await getSettings()));
 
-const EDITIONS = new Set(["player", "anime", "desi", "essentials", "custom"]);
+const EDITIONS = new Set(["signature", "player", "anime", "desi", "essentials", "custom"]);
 const SORTS = new Set(["newest", "price_asc", "price_desc", "name_asc"]);
 
 router.get("/products", async (req, res) => {

@@ -5,6 +5,7 @@ import { useCart } from "../context/Cart.jsx";
 import { useWishlist } from "../context/Wishlist.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
 import Dev from "../lib/Dev.jsx";
+import SizeChart from "../components/SizeChart.jsx";
 import { usePageMeta, useJsonLd, SITE_URL } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
@@ -213,7 +214,10 @@ export default function ProductPage() {
               </div>
 
               <div className="pp-field">
-                <span className="pp-label">Size</span>
+                <span className="pp-label">
+                  Size
+                  <Link className="pp-size-link" to="/size-guide">Full size guide →</Link>
+                </span>
                 <div className="pp-sizes">
                   {sizesForColor.map((v) => (
                     <button
@@ -228,6 +232,23 @@ export default function ProductPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Measurements inline, collapsed by default — the shopper can
+                    check the fit without leaving the page (and losing their
+                    picked size/colour). Highlights the row they've selected. */}
+                <details className="pp-sizeguide">
+                  <summary>
+                    <span>Size guide — measurements in cm</span>
+                    <span className="pp-sizeguide-caret" aria-hidden="true">▾</span>
+                  </summary>
+                  <div className="pp-sizeguide-body">
+                    <SizeChart highlight={size} />
+                    <p className="pp-sizeguide-note">
+                      Measured flat across the garment. Between
+                      sizes? Size up for a boxier fit.
+                    </p>
+                  </div>
+                </details>
               </div>
 
               {vStatus === "pre_order" ? (

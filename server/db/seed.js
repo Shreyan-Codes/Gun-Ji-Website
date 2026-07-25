@@ -8,21 +8,27 @@ import { createProduct, addImage, addVariant } from "./products.js";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 
-// [name, tag, price, priceFrom, edition, image, alt, orderItem, colours[], stockPerVariant]
+// The signature logo tee in two colourways, plain essentials, and custom print.
+// The illustrated print editions (player / anime / देसी) are not stocked — the
+// site teases them via ComingSoonCard instead of listing them.
+// [name, tag, price, priceFrom, compareAt, edition, images[[url, alt]], orderItem, colours[], stockPerVariant]
 const CATALOG = [
-  ["La Albiceleste ’22", "Player Edition — white", 1599, 0, "player", "/assets/gunji_post_01.jpg",
-    "La Albiceleste — Argentina World Cup collage tee in white", "La Albiceleste '22 (white, oversized)", ["White"], 12],
-  ["Mbappé № 10", "Player Edition — black", 1599, 0, "player", "/assets/gunji_post_07.jpg",
-    "Kylian Mbappé number 10 tee in black", "Mbappé No. 10 (black, oversized)", ["Black"], 12],
-  ["Jiraiya — Gama Sennin", "Anime — white, back print", 1499, 0, "anime", "/assets/gunji_post_05.jpg",
-    "Jiraiya anime back print tee in white", "Jiraiya back print (white, oversized)", ["White"], 10],
-  ["USE दिमाग", "देसी Type — brown", 1399, 0, "desi", "/assets/gunji_post_02.jpg",
-    "USE दिमाग tee in brown", "USE Dimaag tee (brown, oversized)", ["Brown"], 10],
-  ["The Essentials", "Plain oversized — black / bone / brown", 999, 0, "essentials", "/assets/gunji_post_09.jpg",
-    "Plain oversized tees in bone, brown and black on wooden hangers", "Essentials plain oversized tee",
-    ["Black", "Bone", "Brown"], 20],
-  ["Your Print Here", "Custom — any colour, your design", 1299, 1, "custom", "/assets/gunji_post_08.jpg",
-    "Custom print tee — special price", "Custom print tee — my own design", ["As shown"], 0],
+  ["GUN-जी Logo Tee — White", "Signature — white", 1099, 0, 1299, "signature",
+    [["/assets/gunji_tee_white_front.jpg", "GUN-जी logo t-shirt in white, laid flat"],
+     ["/assets/gunji_duo_stack.jpg", "White and black GUN-जी logo tees layered over each other"],
+     ["/assets/gunji_duo_detail.jpg", "Close-up of the GUN-जी chest print"]],
+    "GUN-जी Logo Tee (white)", ["White"], 12],
+  ["GUN-जी Logo Tee — Black", "Signature — black", 1099, 0, 1299, "signature",
+    [["/assets/gunji_tee_black_front.jpg", "GUN-जी logo t-shirt in black, laid flat"],
+     ["/assets/gunji_duo_street.jpg", "GUN-जी logo tees laid out on turf, shot from above"],
+     ["/assets/gunji_duo_detail.jpg", "Close-up of the GUN-जी chest print"]],
+    "GUN-जी Logo Tee (black)", ["Black"], 12],
+  ["The Essentials", "Plain — black / bone / brown", 699, 0, null, "essentials",
+    [["/assets/gunji_post_09.jpg", "Plain tees in bone, brown and black on wooden hangers"]],
+    "Essentials plain tee", ["Black", "Bone", "Brown"], 20],
+  ["Your Print Here", "Custom — any colour, your design", 699, 1, null, "custom",
+    [["/assets/gunji_post_08.jpg", "Custom print tee — special price"]],
+    "Custom print tee — my own design", ["As shown"], 0],
 ];
 
 async function runSeed() {
@@ -43,9 +49,14 @@ async function runSeed() {
   let variants = 0;
   for (let i = 0; i < CATALOG.length; i++) {
     const row = CATALOG[i];
-    const [name, tag, price, priceFrom, edition, img, alt, orderItem, colours, stock] = row;
-    const product = await createProduct({ name, tag, price, priceFrom, edition, orderItem, sortOrder: (i + 1) * 10 });
-    await addImage(product.id, { url: img, alt });
+    const [name, tag, price, priceFrom, compareAt, edition, images, orderItem, colours, stock] = row;
+    const product = await createProduct({
+      name, tag, price, priceFrom, compareAt, edition, orderItem, sortOrder: (i + 1) * 10,
+    });
+    for (let j = 0; j < images.length; j++) {
+      const [url, alt] = images[j];
+      await addImage(product.id, { url, alt, sortOrder: j });
+    }
     for (const color of colours) {
       for (const size of SIZES) {
         const sku = `GJ-${product.id}-${size}-${color.slice(0, 2).toUpperCase()}`;

@@ -4,7 +4,6 @@ import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import Home from "./pages/Home.jsx";
-import EditionsPage from "./pages/EditionsPage.jsx";
 import TeesPage from "./pages/TeesPage.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CustomPrintPage from "./pages/CustomPrintPage.jsx";
@@ -33,7 +32,9 @@ export default function App() {
       <main id="top">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/editions" element={<EditionsPage />} />
+          {/* /editions was retired — vercel.json 301s it in prod; this covers
+              dev and any host without the redirect rule. */}
+          <Route path="/editions" element={<Navigate to="/tees" replace />} />
           <Route path="/tees" element={<TeesPage />} />
           <Route path="/product/:slug" element={<ProductPage />} />
           <Route path="/custom-print" element={<CustomPrintPage />} />

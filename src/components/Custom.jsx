@@ -9,7 +9,7 @@ const steps = [
   {
     num: "२",
     title: "We print it",
-    desc: "Premium oversized tee, colour of your choice — black, bone or brown.",
+    desc: "Premium heavyweight tee, colour of your choice — black, bone or brown.",
   },
   {
     num: "३",

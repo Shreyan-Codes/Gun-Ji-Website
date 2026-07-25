@@ -10,8 +10,8 @@ export const SITE_NAME = "GUN-जी™";
 
 const DEFAULT_TITLE = "T-Shirts in Nepal — Oversized Tees & Custom Print | Gunji Kathmandu";
 const DEFAULT_DESC =
-  "Buy premium oversized t-shirts in Nepal — football, anime & देसी Devanagari prints, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
-const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_post_02.jpg`;
+  "Buy premium oversized t-shirts in Nepal — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
+const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_duo_wide.jpg`;
 
 const absolute = (url) => (url && url.startsWith("/") ? `${SITE_URL}${url}` : url || DEFAULT_IMAGE);
 

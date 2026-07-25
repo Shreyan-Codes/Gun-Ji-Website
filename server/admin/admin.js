@@ -5,7 +5,7 @@ const TOKEN_KEY = "gunji_admin_token";
 const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 const CUSTOM_STATUSES = ["new", "discussing", "printing", "delivered", "declined"];
 const METHODS = ["instagram", "whatsapp", "phone", "email"];
-const EDITIONS = ["player", "anime", "desi", "essentials", "custom"];
+const EDITIONS = ["signature", "player", "anime", "desi", "essentials", "custom"];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -242,7 +242,7 @@ async function renderOrders(panel) {
       <button class="btn btn-solid btn-sm" id="add-order-btn">+ Log a DM order</button>
     </div>
     <form id="order-form" class="form-card ${state.showOrderForm ? "" : "hidden"}">
-      <label class="field field-wide"><span class="field-label">Item *</span><input name="item" type="text" required maxlength="160" placeholder="Jiraiya back print (white, oversized)"></label>
+      <label class="field field-wide"><span class="field-label">Item *</span><input name="item" type="text" required maxlength="160" placeholder="GUN-जी Logo Tee (white)"></label>
       <label class="field"><span class="field-label">Customer *</span><input name="name" type="text" required maxlength="80"></label>
       <label class="field"><span class="field-label">Contact *</span><input name="contact" type="text" required maxlength="120" placeholder="@handle or 98…"></label>
       <label class="field"><span class="field-label">Via</span><select name="method">${METHODS.map((m) => `<option>${m}</option>`).join("")}</select></label>
@@ -336,7 +336,7 @@ function productForm(p = {}) {
     <label class="check-field"><input name="priceFrom" type="checkbox" ${p.priceFrom ? "checked" : ""}> <span class="field-label">“from” price</span></label>
     <label class="field"><span class="field-label">Edition</span><select name="edition">${EDITIONS.map((ed) => `<option ${ed === (p.edition || "essentials") ? "selected" : ""}>${ed}</option>`).join("")}</select></label>
     <label class="field"><span class="field-label">Sort order</span><input name="sortOrder" type="number" min="0" max="1000000" value="${p.sortOrder ?? ""}" placeholder="auto"></label>
-    <label class="field field-wide"><span class="field-label">Image path *</span><input name="img" type="text" required maxlength="300" value="${esc(p.img)}" placeholder="/assets/gunji_post_01.jpg"></label>
+    <label class="field field-wide"><span class="field-label">Image path *</span><input name="img" type="text" required maxlength="300" value="${esc(p.img)}" placeholder="/assets/gunji_tee_white_front.jpg"></label>
     <label class="field field-wide"><span class="field-label">Alt text</span><input name="alt" type="text" maxlength="300" value="${esc(p.alt)}"></label>
     <label class="field field-wide"><span class="field-label">Order line (prefills the DM)</span><input name="orderItem" type="text" maxlength="160" value="${esc(p.orderItem)}" placeholder="defaults to the name"></label>
     <div class="form-foot">

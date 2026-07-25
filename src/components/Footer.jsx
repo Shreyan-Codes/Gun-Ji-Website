@@ -73,7 +73,7 @@ export default function Footer() {
             <p>
               Premium heavyweight cotton.
               <br />
-              Oversized — black, bone &amp; brown.
+              Black, bone &amp; brown.
             </p>
           </div>
         </div>

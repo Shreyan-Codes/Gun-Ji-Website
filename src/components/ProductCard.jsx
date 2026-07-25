@@ -36,12 +36,14 @@ export default function ProductCard({ product }) {
         <p className="product-tag"><Dev text={product.tag} /></p>
         <div className="product-row">
           <span className="price">
-            {product.price}
+            <span className="price-now">{product.price}</span>
             {product.compareAt && (
-              <>
+              // Grouped so the struck price and the % badge always wrap together
+              // onto the same line in the narrow 2-up phone grid.
+              <span className="price-cut">
                 <span className="price-was">{product.compareAt}</span>
                 {product.discountPct ? <span className="price-off">-{product.discountPct}%</span> : null}
-              </>
+              </span>
             )}
           </span>
           <button type="button" className="mono-link qv-open" onClick={() => setQvOpen(true)}>

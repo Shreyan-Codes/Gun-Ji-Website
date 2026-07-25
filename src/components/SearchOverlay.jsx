@@ -5,9 +5,9 @@ import { apiGet } from "../lib/api.js";
 
 const rupees = (n) => (typeof n === "number" ? `Rs. ${n.toLocaleString("en-IN")}` : n);
 const TOP = [
-  { key: "player", label: "Player Edition" },
-  { key: "anime", label: "Anime" },
-  { key: "desi", label: "देसी Type", dev: true },
+  { key: "signature", label: "Signature" },
+  { key: "essentials", label: "Essentials" },
+  { key: "custom", label: "Custom Print" },
 ];
 
 // Search overlay: debounced (250ms) query to /api/search, results list, and an

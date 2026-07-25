@@ -7,7 +7,6 @@ import { useWishlist } from "../context/Wishlist.jsx";
 import SearchOverlay from "./SearchOverlay.jsx";
 
 const links = [
-  { to: "/editions", en: "Editions", ne: "संग्रह" },
   { to: "/tees", en: "Tees", ne: "सूची" },
   { to: "/custom-print", en: "Custom print", ne: "कस्टम" },
   { to: "/about", en: "About", ne: "बारेमा" },
@@ -15,9 +14,8 @@ const links = [
 
 // Mega-menu / mobile category hierarchy → shop collections (query-param filters).
 const categories = [
-  { to: "/tees?collection=player", label: "Player Editions", sub: "Messi · Mbappé · Ronaldo" },
-  { to: "/tees?collection=anime", label: "Anime Back Prints", sub: "Main-character energy" },
-  { to: "/tees?collection=desi", label: "देसी Type", sub: "Devanagari with attitude" },
+  { to: "/tees?collection=signature", label: "Signature Logo Tee", sub: "White · Black" },
+  { to: "/tees?collection=essentials", label: "Essentials", sub: "Plain blanks — black, bone, brown" },
   { to: "/custom-print", label: "Custom Print", sub: "Your idea, printed" },
 ];
 

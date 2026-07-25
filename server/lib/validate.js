@@ -57,4 +57,6 @@ export function clean(spec, input = {}) {
 export const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 export const CUSTOM_STATUSES = ["new", "discussing", "printing", "delivered", "declined"];
 export const CONTACT_METHODS = ["instagram", "whatsapp", "phone", "email"];
-export const EDITIONS = ["player", "anime", "desi", "essentials", "custom"];
+// "signature" is the live logo-tee line; player/anime/desi/essentials are kept
+// so the deactivated placeholder products stay editable in /admin.
+export const EDITIONS = ["signature", "player", "anime", "desi", "essentials", "custom"];
