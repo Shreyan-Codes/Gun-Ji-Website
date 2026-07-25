@@ -12,6 +12,8 @@ export const IG_PROFILE = "https://www.instagram.com/gunji.clo1/";
 // editions. More designs are teased via ComingSoonCard rather than listed here.
 export const products = [
   {
+    id: 7,
+    slug: "origin-tee",
     name: "GUN-जी Normal Fit T-Shirt",
     tag: "Normal fit — white",
     price: "Rs. 1,099",
@@ -22,6 +24,8 @@ export const products = [
     edition: "signature",
   },
   {
+    id: 8,
+    slug: "origin-tee-black",
     name: "GUN-जी Normal Fit T-Shirt — Black",
     tag: "Normal fit — black",
     price: "Rs. 1,099",
@@ -32,6 +36,8 @@ export const products = [
     edition: "signature",
   },
   {
+    id: 6,
+    slug: "your-print-here",
     name: "Your Print Here",
     tag: "Custom — any colour, your design",
     price: "from Rs. 699",
