@@ -348,26 +348,34 @@ export default function CheckoutPage() {
 
             <fieldset className="co-pay">
               <legend className="co-label">Payment</legend>
-              <label className="co-pay-opt">
-                <input type="radio" name="pay" value="cod" checked={form.paymentMethod === "cod"} onChange={set("paymentMethod")} />
-                <span>Cash on delivery</span>
-              </label>
-              <label className="co-pay-opt">
-                <input type="radio" name="pay" value="esewa" checked={form.paymentMethod === "esewa"} onChange={set("paymentMethod")} />
-                <span>eSewa — pay by QR</span>
-              </label>
+              <div className="co-pay-opts">
+                <label className={`co-pay-opt ${form.paymentMethod === "cod" ? "is-on" : ""}`}>
+                  <input type="radio" name="pay" value="cod" checked={form.paymentMethod === "cod"} onChange={set("paymentMethod")} />
+                  <span className="co-pay-body">
+                    <span className="co-pay-name">Cash on delivery</span>
+                    <span className="co-pay-sub">Pay the rider when it arrives</span>
+                  </span>
+                </label>
+                <label className={`co-pay-opt ${form.paymentMethod === "esewa" ? "is-on" : ""}`}>
+                  <input type="radio" name="pay" value="esewa" checked={form.paymentMethod === "esewa"} onChange={set("paymentMethod")} />
+                  <span className="co-pay-body">
+                    <span className="co-pay-name">eSewa</span>
+                    <span className="co-pay-sub">Scan the QR &amp; upload the receipt</span>
+                  </span>
+                </label>
+              </div>
 
               {form.paymentMethod === "esewa" && (
                 <div className="co-esewa">
                   <img
                     className="co-esewa-qr"
                     src="/assets/esewa_qr.png"
-                    alt="eSewa QR — Shreyan Prasad Pandey, 9768913498"
+                    alt="eSewa payment QR code"
                     width="220"
-                    height="220"
+                    height="217"
                   />
                   <div className="co-esewa-info">
-                    <p><strong>Shreyan Prasad Pandey</strong><br />eSewa · 9768913498</p>
+                    <p className="co-esewa-id">eSewa ID <strong>9768913498</strong></p>
                     <p>Scan &amp; pay {rupees(checkoutTotal)}, then upload the payment screenshot. We verify before dispatch.</p>
                     <label className="co-esewa-upload">
                       <input type="file" accept="image/*" onChange={onPickProof} />

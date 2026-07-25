@@ -257,6 +257,39 @@ export async function setVariantStock(id, stock) {
   return info.changes > 0;
 }
 
+// Sets the availability of one size/colour directly, independent of quantity.
+// Marking out_of_stock zeroes the quantity so the two can't disagree (the
+// public API treats a variant as buyable only when status is in_stock AND
+// stock > 0). Coming back in_stock needs a quantity, so it defaults to 1 when
+// none is on the row.
+export async function setVariantStatus(id, status, stock = null) {
+  const sql =
+    status === "out_of_stock"
+      ? `UPDATE product_variants SET stock_status = 'out_of_stock', stock = 0 WHERE id = ?`
+      : status === "pre_order"
+        ? `UPDATE product_variants SET stock_status = 'pre_order' WHERE id = ?`
+        // ::int casts are required — Postgres can't infer the type of a bare
+        // placeholder inside CASE and errors with "could not determine data
+        // type of parameter".
+        : `UPDATE product_variants
+              SET stock_status = 'in_stock',
+                  stock = CASE
+                            WHEN ?::int IS NOT NULL THEN ?::int
+                            WHEN stock > 0 THEN stock
+                            ELSE 1
+                          END
+            WHERE id = ?`;
+  const params =
+    status === "in_stock" ? [stock, stock, id] : [id];
+  const info = await db.prepare(sql).run(...params);
+  return info.changes > 0;
+}
+
+export async function deleteVariant(id) {
+  const info = await db.prepare("DELETE FROM product_variants WHERE id = ?").run(id);
+  return info.changes > 0;
+}
+
 // Decrements stock only if enough is available; returns true if it did.
 export async function decrementStock(variantId, qty) {
   const info = await db.prepare(

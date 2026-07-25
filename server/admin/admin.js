@@ -6,6 +6,12 @@ const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancell
 const CUSTOM_STATUSES = ["new", "discussing", "printing", "delivered", "declined"];
 const METHODS = ["instagram", "whatsapp", "phone", "email"];
 const EDITIONS = ["signature", "player", "anime", "desi", "custom"];
+const SIZES = ["S", "M", "L"];
+const STOCK_STATUSES = [
+  ["in_stock", "In stock"],
+  ["out_of_stock", "Out of stock"],
+  ["pre_order", "Pre-order"],
+];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -354,7 +360,48 @@ function productForm(p = {}) {
       <button type="submit" class="btn btn-solid btn-sm">${isNew ? "Add tee" : "Save changes"}</button>
       <button type="button" class="btn btn-sm" id="cancel-product-btn">Cancel</button>
     </div>
-  </form>`;
+  </form>
+  ${isNew ? "" : variantPanel(p)}`;
+}
+
+/* ---------- per size × colour stock ---------- */
+
+// Grid of every size/colour on a product with its availability. Saves on change
+// (no separate submit) because it's a single field per row.
+function variantPanel(p) {
+  const variants = p.variants || [];
+  const rows = variants.map((v) => {
+    const status = v.stockStatus || (v.stock > 0 ? "in_stock" : "out_of_stock");
+    return `
+      <div class="variant-row ${status === "out_of_stock" ? "is-out" : ""}">
+        <span class="variant-name"><strong>${esc(v.color)}</strong> · ${esc(v.size)}</span>
+        <select class="variant-status" data-variant="${v.id}">
+          ${STOCK_STATUSES.map(([val, label]) =>
+            `<option value="${val}" ${val === status ? "selected" : ""}>${label}</option>`).join("")}
+        </select>
+        <input class="variant-qty" type="number" min="0" max="100000" value="${v.stock ?? 0}"
+               data-variant-qty="${v.id}" aria-label="Quantity for ${esc(v.color)} ${esc(v.size)}">
+        <button type="button" class="icon-btn danger" data-del-variant="${v.id}" title="Remove this size/colour">✕</button>
+      </div>`;
+  }).join("");
+
+  const colours = [...new Set(variants.map((v) => v.color))];
+
+  return `
+  <div class="variant-card" data-product="${p.id}">
+    <div class="variant-head">
+      <h3 class="variant-title">Stock — by size &amp; colour</h3>
+      <span class="variant-note">Set any size of any colour to “Out of stock”. Saves instantly.</span>
+    </div>
+    <div class="variant-rows">${rows || `<p class="empty-note">No sizes yet — add one below.</p>`}</div>
+    <div class="variant-add">
+      <select id="variant-add-size">${SIZES.map((s) => `<option>${s}</option>`).join("")}</select>
+      <input id="variant-add-color" type="text" maxlength="40" placeholder="Colour (e.g. Black)"
+             list="variant-colours" value="${esc(colours[0] || "")}">
+      <datalist id="variant-colours">${colours.map((c) => `<option value="${esc(c)}"></option>`).join("")}</datalist>
+      <button type="button" class="btn btn-sm" id="variant-add-btn">+ Add size/colour</button>
+    </div>
+  </div>`;
 }
 
 async function renderProducts(panel) {
@@ -423,9 +470,75 @@ async function renderProducts(panel) {
   if (state.editingProduct === 0) bindProductForm();
 }
 
+// Re-renders just the variant panel in place, so editing stock never wipes
+// unsaved edits in the product form above it.
+function refreshVariantPanel(product) {
+  const card = $(".variant-card");
+  if (!card) return;
+  card.outerHTML = variantPanel(product);
+  bindVariantPanel();
+}
+
+function bindVariantPanel() {
+  const card = $(".variant-card");
+  if (!card) return;
+  const productId = card.dataset.product;
+
+  async function save(variantId, body, okMsg) {
+    try {
+      const { item } = await api(`/admin/variants/${variantId}`, { method: "PATCH", body });
+      toast(okMsg);
+      refreshVariantPanel(item);
+    } catch (err) {
+      toast(err.message, true);
+    }
+  }
+
+  card.querySelectorAll("[data-variant]").forEach((sel) => {
+    sel.addEventListener("change", () => save(sel.dataset.variant, { stockStatus: sel.value }, "Stock updated"));
+  });
+
+  card.querySelectorAll("[data-variant-qty]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const qty = Number(input.value);
+      if (!Number.isInteger(qty) || qty < 0) return toast("Quantity must be 0 or more", true);
+      save(input.dataset.variantQty, { stock: qty }, "Quantity updated");
+    });
+  });
+
+  card.querySelectorAll("[data-del-variant]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Remove this size/colour completely?")) return;
+      try {
+        const { item } = await api(`/admin/variants/${btn.dataset.delVariant}`, { method: "DELETE" });
+        toast("Removed");
+        refreshVariantPanel(item);
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  $("#variant-add-btn")?.addEventListener("click", async () => {
+    const color = $("#variant-add-color").value.trim();
+    if (!color) return toast("Enter a colour", true);
+    try {
+      const { item } = await api(`/admin/products/${productId}/variants`, {
+        method: "POST",
+        body: { size: $("#variant-add-size").value, color, stock: 0 },
+      });
+      toast("Size added");
+      refreshVariantPanel(item);
+    } catch (err) {
+      toast(err.message, true);
+    }
+  });
+}
+
 function bindProductForm() {
   const form = $("#product-form");
   if (!form) return;
+  bindVariantPanel();
   $("#cancel-product-btn").addEventListener("click", () => {
     state.editingProduct = null;
     renderPanel();

@@ -292,6 +292,52 @@ td .note-line { display: block; font-size: 0.78rem; color: var(--ink-soft); marg
 .check-field { display: flex; align-items: center; gap: 0.45rem; padding-top: 1.2rem; }
 .check-field input { width: auto; }
 
+/* ---------- per size × colour stock ---------- */
+
+.variant-card {
+  border: 1px solid var(--ink);
+  background: var(--bone-deep);
+  padding: 1.1rem;
+  margin-bottom: 1.2rem;
+}
+.variant-head { margin-bottom: 0.8rem; }
+.variant-title { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.variant-note { display: block; margin-top: 0.2rem; font-size: 0.78rem; color: var(--umber); }
+
+.variant-rows { display: flex; flex-direction: column; gap: 0.5rem; }
+.variant-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 9.5rem 6rem auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  background: var(--bone);
+  border: 1px solid var(--line);
+}
+/* out-of-stock rows read as struck-through at a glance */
+.variant-row.is-out { opacity: 0.62; }
+.variant-row.is-out .variant-name { text-decoration: line-through; }
+.variant-name { font-size: 0.88rem; overflow-wrap: anywhere; }
+.variant-status, .variant-qty { width: 100%; }
+
+.variant-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+}
+.variant-add select { width: 5rem; }
+.variant-add input { width: 12rem; }
+
+@media (max-width: 620px) {
+  .variant-row { grid-template-columns: minmax(0, 1fr) auto; grid-auto-rows: min-content; }
+  .variant-status { grid-column: 1 / -1; }
+  .variant-qty { grid-column: 1; }
+}
+
 /* ---------- products ---------- */
 
 .product-rows { display: flex; flex-direction: column; gap: 0.6rem; }

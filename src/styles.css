@@ -931,8 +931,43 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   gap: 0.6rem;
 }
 .co-pay legend { padding: 0 0.4rem; }
-.co-pay-opt { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; min-height: 44px; }
-.co-pay-opt input { width: 18px; height: 18px; accent-color: var(--brick); }
+
+/* Selectable cards, side by side. */
+.co-pay-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.co-pay-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-height: 44px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.co-pay-opt:hover { border-color: var(--line-dark-strong); }
+.co-pay-opt.is-on { border-color: var(--ink); background: var(--band); }
+.co-pay-opt:focus-within { outline: 2px solid var(--brick); outline-offset: 1px; }
+
+/* Qualified with .co-form so it outranks the generic `.co-form input
+   { width: 100% }` rule further down — same specificity, and that one wins on
+   source order, which is what stretched these radios across the fieldset. */
+.co-form .co-pay-opt input[type="radio"] {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  margin-top: 0.15rem;
+  padding: 0;
+  border: 0;
+  accent-color: var(--brick);
+}
+.co-pay-body { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.co-pay-name { font-size: 0.95rem; line-height: 1.25; }
+.co-pay-sub { font-size: 0.75rem; line-height: 1.35; color: var(--bone-dim); }
+
+@media (max-width: 560px) {
+  .co-pay-opts { grid-template-columns: 1fr; }
+}
 
 .co-esewa {
   display: flex;
@@ -951,6 +986,8 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   object-fit: contain;
 }
 .co-esewa-info { flex: 1 1 220px; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; }
+.co-esewa-id { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.04em; color: var(--bone-dim); }
+.co-esewa-id strong { color: var(--ink); letter-spacing: 0.06em; }
 .co-esewa-upload {
   display: inline-flex;
   align-items: center;

@@ -13,6 +13,7 @@ import { normalizeGallery } from "../lib/gallery.js";
 import {
   listAllProducts, getProduct, createProduct, updateProduct,
   setProductActive, deleteProduct, addVariant, setPrimaryImage,
+  findVariant, getVariantById, setVariantStock, setVariantStatus, deleteVariant,
 } from "../db/products.js";
 import { adminListOrders, createOrder, updateOrder, deleteOrder } from "../db/orders.js";
 import { listCustomRequests, updateCustomRequest, deleteCustomRequest } from "../db/customRequests.js";
@@ -371,6 +372,67 @@ router.delete("/products/:id", async (req, res) => {
   const done = req.query.hard === "1" ? await deleteProduct(id) : await setProductActive(id, false);
   if (!done) return res.status(404).json({ error: "Not found" });
   res.json({ ok: true });
+});
+
+// ---------- variants (per size × colour availability) ----------
+
+const VARIANT_STATUSES = ["in_stock", "pre_order", "out_of_stock"];
+
+// Patch spec — pick() narrows it to the keys actually sent, so a status-only
+// flip doesn't need a quantity and vice versa.
+const variantPatchFields = {
+  stockStatus: { enum: VARIANT_STATUSES },
+  stock: { type: "int", min: 0, max: 100000 },
+};
+
+// Add a size/colour combination to a product.
+router.post("/products/:id/variants", async (req, res) => {
+  const id = idParam(req, res);
+  if (id === null) return;
+  if (!(await getProduct(id, { admin: true }))) return res.status(404).json({ error: "Not found" });
+
+  const { ok, errors, value } = clean(
+    {
+      size: { required: true, enum: T_SHIRT_SIZES },
+      color: { required: true, max: 40 },
+      stock: { type: "int", min: 0, max: 100000, default: 0 },
+    },
+    req.body
+  );
+  if (!ok) return res.status(400).json({ error: "Check the fields", errors });
+
+  if (await findVariant(id, value.size, value.color)) {
+    return res.status(409).json({ error: `${value.color} / ${value.size} already exists` });
+  }
+  await addVariant(id, { size: value.size, color: value.color, stock: value.stock });
+  res.status(201).json({ item: await getProduct(id, { admin: true }) });
+});
+
+// Flip one size/colour in or out of stock (and optionally set the quantity).
+router.patch("/variants/:id", async (req, res) => {
+  const id = idParam(req, res);
+  if (id === null) return;
+  const variant = await getVariantById(id);
+  if (!variant) return res.status(404).json({ error: "Not found" });
+
+  const { ok, errors, value } = clean(pick(variantPatchFields, req.body), req.body);
+  if (!ok) return res.status(400).json({ error: "Check the fields", errors });
+
+  if (Object.hasOwn(req.body, "stockStatus")) {
+    await setVariantStatus(id, value.stockStatus, Object.hasOwn(req.body, "stock") ? value.stock : null);
+  } else if (Object.hasOwn(req.body, "stock")) {
+    await setVariantStock(id, value.stock);
+  }
+  res.json({ item: await getProduct(variant.product_id, { admin: true }) });
+});
+
+router.delete("/variants/:id", async (req, res) => {
+  const id = idParam(req, res);
+  if (id === null) return;
+  const variant = await getVariantById(id);
+  if (!variant) return res.status(404).json({ error: "Not found" });
+  await deleteVariant(id);
+  res.json({ item: await getProduct(variant.product_id, { admin: true }) });
 });
 
 // ---------- settings ----------
