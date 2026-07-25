@@ -95,6 +95,7 @@ export function SiteDataProvider({ children }) {
               orderItem: r.orderItem,
               edition: r.edition,
               inStock: r.inStock,
+              variants: Array.isArray(r.variants) ? r.variants : [],
             }))
           )
         );

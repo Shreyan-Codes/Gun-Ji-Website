@@ -17,7 +17,7 @@ const SORT_OPTS = [
   { key: "price_desc", label: "Price ↓" },
   { key: "name_asc", label: "A–Z" },
 ];
-const SIZE_ORDER = ["XL", "XXL", "XXXL"];
+const SIZE_ORDER = ["S", "M", "L", "XL", "XXL", "XXXL"];
 
 export default function TeesPage() {
   const [params, setParams] = useSearchParams();
