@@ -61,6 +61,7 @@ function OrderHistory() {
           </div>
           <div className="ao-side">
             {o.total ? <span className="ao-total">{rupees(o.total)}</span> : null}
+            {o.discount ? <span className="ao-coupon">{o.couponCode} · −{rupees(o.discount)}</span> : null}
             <span className={`ao-status s-${o.status}`}>{o.status}</span>
             {o.trackingCode ? (
               <Link className="mono-link ao-track" to={`/track?code=${encodeURIComponent(o.trackingCode)}`}>

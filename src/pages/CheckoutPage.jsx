@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Dev from "../lib/Dev.jsx";
@@ -40,6 +40,10 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [placed, setPlaced] = useState(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponQuote, setCouponQuote] = useState(null);
+  const [couponStatus, setCouponStatus] = useState("idle");
+  const [couponError, setCouponError] = useState("");
 
   // Opt-in GPS delivery pin. geo = { lat, lng, accuracy } once shared.
   const [geo, setGeo] = useState(null);
@@ -47,6 +51,45 @@ export default function CheckoutPage() {
   const [geoError, setGeoError] = useState("");
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const discount = couponQuote?.discount || 0;
+  const checkoutTotal = subtotal - discount;
+
+  useEffect(() => {
+    setCouponQuote(null);
+    setCouponError("");
+    setCouponStatus("idle");
+  }, [subtotal]);
+
+  async function applyCoupon() {
+    const code = couponCode.trim().toUpperCase();
+    if (!code || couponStatus === "checking") return;
+    setCouponStatus("checking");
+    setCouponError("");
+    try {
+      const quote = await apiPost(
+        "/api/coupons/validate",
+        {
+          code,
+          items: items.map((i) => ({ variantId: i.variantId, qty: i.qty })),
+        },
+        { token: getToken() }
+      );
+      setCouponCode(quote.coupon.code);
+      setCouponQuote(quote);
+      setCouponStatus("applied");
+    } catch (err) {
+      setCouponQuote(null);
+      setCouponStatus("error");
+      setCouponError(err.message || "That coupon could not be applied.");
+    }
+  }
+
+  function removeCoupon() {
+    setCouponCode("");
+    setCouponQuote(null);
+    setCouponStatus("idle");
+    setCouponError("");
+  }
 
   function onPickProof(e) {
     const file = e.target.files?.[0];
@@ -108,6 +151,7 @@ export default function CheckoutPage() {
           shippingPhone: form.shippingPhone,
           note: form.note,
           paymentMethod: form.paymentMethod,
+          couponCode: couponQuote?.coupon?.code || "",
           website: form.website,
           ...(geo ? { locationLat: geo.lat, locationLng: geo.lng, locationAccuracy: geo.accuracy } : {}),
         },
@@ -118,7 +162,11 @@ export default function CheckoutPage() {
       // never block the placed order on it.
       if (form.paymentMethod === "esewa" && proof?.dataUrl && res.order?.id) {
         try {
-          await apiPost(`/api/orders/${res.order.id}/payment-proof`, { image: proof.dataUrl });
+          await apiPost(
+            `/api/orders/${res.order.id}/payment-proof`,
+            { image: proof.dataUrl },
+            { token: getToken() }
+          );
         } catch {
           /* owner can still ask for the screenshot on DM */
         }
@@ -163,6 +211,12 @@ export default function CheckoutPage() {
                 </li>
               ))}
             </ul>
+            {placed.discount > 0 && (
+              <>
+                <div className="co-done-price"><span>Subtotal</span><span>{rupees(placed.subtotal)}</span></div>
+                <div className="co-done-price co-discount"><span>Coupon · {placed.couponCode}</span><span>−{rupees(placed.discount)}</span></div>
+              </>
+            )}
             <div className="co-done-total"><span>Total</span><span>{rupees(placed.total)}</span></div>
             <p>We’ll confirm delivery &amp; payment on your {form.method === "instagram" ? "Instagram" : form.method === "whatsapp" ? "WhatsApp" : "message"} shortly.</p>
             <div className="co-done-actions">
@@ -303,7 +357,7 @@ export default function CheckoutPage() {
                   />
                   <div className="co-esewa-info">
                     <p><strong>Shreyan Prasad Pandey</strong><br />eSewa · 9768913498</p>
-                    <p>Scan &amp; pay {rupees(subtotal)}, then upload the payment screenshot. We verify before dispatch.</p>
+                    <p>Scan &amp; pay {rupees(checkoutTotal)}, then upload the payment screenshot. We verify before dispatch.</p>
                     <label className="co-esewa-upload">
                       <input type="file" accept="image/*" onChange={onPickProof} />
                       <span>{proof?.name ? `📎 ${proof.name}` : "Upload payment screenshot"}</span>
@@ -320,7 +374,7 @@ export default function CheckoutPage() {
             </label>
 
             <button className="btn btn-solid co-submit" type="submit" disabled={status === "sending"}>
-              {status === "sending" ? "Placing…" : `Place order · ${rupees(subtotal)}`}
+              {status === "sending" ? "Placing…" : `Place order · ${rupees(checkoutTotal)}`}
               <span className="arr" aria-hidden="true">→</span>
             </button>
             {status === "error" && (
@@ -344,7 +398,42 @@ export default function CheckoutPage() {
                 </li>
               ))}
             </ul>
-            <div className="cart-summary-row co-sum-grand"><span>Subtotal</span><span>{rupees(subtotal)}</span></div>
+            <div className="co-coupon">
+              <label className="co-label" htmlFor="coupon-code">Coupon code</label>
+              {couponQuote ? (
+                <div className="co-coupon-applied">
+                  <span><strong>{couponQuote.coupon.code}</strong> applied</span>
+                  <button type="button" onClick={removeCoupon}>Remove</button>
+                </div>
+              ) : (
+                <div className="co-coupon-entry">
+                  <input
+                    id="coupon-code"
+                    type="text"
+                    maxLength={32}
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        applyCoupon();
+                      }
+                    }}
+                    placeholder="Enter code"
+                    autoComplete="off"
+                  />
+                  <button className="btn btn-line-dark btn-sm" type="button" onClick={applyCoupon} disabled={!couponCode.trim() || couponStatus === "checking"}>
+                    {couponStatus === "checking" ? "Checking…" : "Apply"}
+                  </button>
+                </div>
+              )}
+              {couponError && <span className="co-error">{couponError}</span>}
+            </div>
+            <div className="cart-summary-row"><span>Subtotal</span><span>{rupees(subtotal)}</span></div>
+            {discount > 0 && (
+              <div className="cart-summary-row co-discount"><span>Coupon discount</span><span>−{rupees(discount)}</span></div>
+            )}
+            <div className="cart-summary-row co-sum-grand"><span>Total</span><span>{rupees(checkoutTotal)}</span></div>
             <p className="co-delivery">Delivery ~2 days · inside &amp; outside the valley.</p>
             <p className="co-policies">
               <Link to="/policies/shipping">Shipping</Link> · <Link to="/policies/returns">Returns</Link> · <Link to="/size-guide">Size guide</Link>

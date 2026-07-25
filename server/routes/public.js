@@ -6,12 +6,14 @@ import { getSettings } from "../db/settings.js";
 import { getMedia } from "../db/media.js";
 import { listActiveProducts, listProductsFiltered, searchProducts, getProduct, getProductRow, findVariant, getVariantWithProduct } from "../db/products.js";
 import { createOrder, getOrder, getOrderByTrackingCode } from "../db/orders.js";
+import { CouponError, quoteCoupon } from "../db/coupons.js";
 import { createCustomRequest } from "../db/customRequests.js";
 import { notifyNewOrder, notifyNewCustomRequest, notifyPaymentProof } from "../lib/notify.js";
 import { logOrderToSheet, logCustomRequestToSheet } from "../lib/sheets.js";
 
 const router = Router();
 const submitLimit = rateLimit({ name: "submit", windowMs: 10 * 60 * 1000, max: 8 });
+const couponLimit = rateLimit({ name: "coupon", windowMs: 60 * 1000, max: 20 });
 
 router.get("/health", async (req, res) => {
   const products = await listActiveProducts();
@@ -30,7 +32,7 @@ router.get("/media/:id", async (req, res) => {
   res.send(media.data);
 });
 
-const EDITIONS = new Set(["signature", "player", "anime", "desi", "essentials", "custom"]);
+const EDITIONS = new Set(["signature", "player", "anime", "desi", "custom"]);
 const SORTS = new Set(["newest", "price_asc", "price_desc", "name_asc"]);
 
 router.get("/products", async (req, res) => {
@@ -62,6 +64,61 @@ router.get("/products/:idOrSlug", async (req, res) => {
     return res.status(404).json({ error: "Product not found" });
   }
   res.json({ product });
+});
+
+async function resolveCartItems(raw) {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return { items: [], problems: [], error: "Your cart is empty" };
+  }
+  if (raw.length > 20) {
+    return { items: [], problems: [], error: "That's a lot of tees — please DM us for a bulk order." };
+  }
+
+  const items = [];
+  const problems = [];
+  for (const line of raw) {
+    const variantId = Number(line?.variantId);
+    const qty = Number(line?.qty);
+    if (!Number.isInteger(variantId) || variantId < 1 || !Number.isInteger(qty) || qty < 1 || qty > 99) {
+      problems.push({ variantId: line?.variantId ?? null, error: "Invalid item" });
+      continue;
+    }
+    const v = await getVariantWithProduct(variantId);
+    if (!v || !v.product_active) {
+      problems.push({ variantId, error: "No longer available" });
+      continue;
+    }
+    if (v.stock < qty) {
+      problems.push({ variantId, stock: v.stock, error: v.stock > 0 ? `Only ${v.stock} left` : "Out of stock" });
+      continue;
+    }
+    items.push({
+      variantId,
+      productId: v.product_id,
+      productName: v.order_item || v.product_name,
+      size: v.size,
+      color: v.color,
+      quantity: qty,
+      priceAtPurchase: v.price,
+    });
+  }
+  return { items, problems, error: "" };
+}
+
+router.post("/coupons/validate", couponLimit, requireCustomer, async (req, res) => {
+  const code = typeof req.body?.code === "string" ? req.body.code : "";
+  const cart = await resolveCartItems(req.body?.items);
+  if (cart.error) return res.status(400).json({ error: cart.error });
+  if (cart.problems.length) {
+    return res.status(409).json({ error: "Some items need a look", items: cart.problems });
+  }
+  const subtotal = cart.items.reduce((sum, item) => sum + item.priceAtPurchase * item.quantity, 0);
+  try {
+    res.json(await quoteCoupon(code, subtotal));
+  } catch (err) {
+    if (err instanceof CouponError) return res.status(400).json({ error: err.message, code: err.code });
+    throw err;
+  }
 });
 
 const contactSpec = {
@@ -130,18 +187,22 @@ router.get("/track/:code", trackLimit, async (req, res) => {
 });
 
 const proofLimit = rateLimit({ name: "proof", windowMs: 10 * 60 * 1000, max: 10 });
-router.post("/orders/:id/payment-proof", proofLimit, json({ limit: "8mb" }), async (req, res) => {
+router.post("/orders/:id/payment-proof", proofLimit, requireCustomer, json({ limit: "8mb" }), async (req, res) => {
   const id = Number(req.params.id);
   const image = req.body?.image;
   if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Bad order id" });
-  if (typeof image !== "string" || !image.startsWith("data:image/") || image.length > 8_000_000) {
+  if (
+    typeof image !== "string" ||
+    !/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=\s]+$/.test(image) ||
+    image.length > 8_000_000
+  ) {
     return res.status(400).json({ error: "Invalid image" });
   }
   // Only accept proof for a real order that's actually paying by eSewa. Without
   // this the endpoint would forward an image to the owner's Telegram for any
   // (even non-existent) order id — a spam / fake-proof vector.
   const order = await getOrder(id);
-  if (!order || order.paymentMethod !== "esewa") {
+  if (!order || order.userId !== req.user.id || order.paymentMethod !== "esewa") {
     return res.status(404).json({ error: "No eSewa order with that id." });
   }
   notifyPaymentProof(id, image); // fire-and-forget
@@ -155,6 +216,7 @@ const checkoutSpec = {
   shippingAddress: { max: 300 },
   shippingPhone: { max: 40 },
   note: { max: 1000 },
+  couponCode: { max: 32 },
   paymentMethod: { enum: ["cod", "esewa", "khalti"], default: "cod" },
   // Optional GPS delivery pin (opt-in "Share my location" button at checkout).
   locationLat: { type: "num", min: -90, max: 90 },
@@ -166,26 +228,8 @@ async function placeCartOrder(req, res) {
   const { ok, errors, value } = clean(checkoutSpec, req.body);
   if (!ok) return res.status(400).json({ error: "Check your details", errors });
 
-  const raw = req.body.items;
-  if (raw.length > 20) return res.status(400).json({ error: "That's a lot of tees — please DM us for a bulk order." });
-
-  const items = [];
-  const problems = [];
-  for (const line of raw) {
-    const variantId = Number(line?.variantId);
-    const qty = Number(line?.qty);
-    if (!Number.isInteger(variantId) || variantId < 1 || !Number.isInteger(qty) || qty < 1 || qty > 99) {
-      problems.push({ variantId: line?.variantId ?? null, error: "Invalid item" });
-      continue;
-    }
-    const v = await getVariantWithProduct(variantId);
-    if (!v || !v.product_active) { problems.push({ variantId, error: "No longer available" }); continue; }
-    if (v.stock < qty) { problems.push({ variantId, stock: v.stock, error: v.stock > 0 ? `Only ${v.stock} left` : "Out of stock" }); continue; }
-    items.push({
-      variantId, productId: v.product_id, productName: v.order_item || v.product_name,
-      size: v.size, color: v.color, quantity: qty, priceAtPurchase: v.price,
-    });
-  }
+  const { items, problems, error: cartError } = await resolveCartItems(req.body.items);
+  if (cartError) return res.status(400).json({ error: cartError });
   if (problems.length) return res.status(409).json({ error: "Some items need a look", items: problems });
   if (items.length === 0) return res.status(400).json({ error: "Your cart is empty" });
 
@@ -199,6 +243,7 @@ async function placeCartOrder(req, res) {
       contactMethod: value.method,
       note: value.note,
       paymentMethod: value.paymentMethod,
+      couponCode: value.couponCode,
       source: "site",
       items,
       enforceStock: true,
@@ -213,6 +258,9 @@ async function placeCartOrder(req, res) {
   } catch (err) {
     if (String(err.message).startsWith("OUT_OF_STOCK")) {
       return res.status(409).json({ error: "An item just sold out — please review your cart." });
+    }
+    if (err instanceof CouponError) {
+      return res.status(400).json({ error: err.message, code: err.code });
     }
     throw err;
   }

@@ -27,7 +27,7 @@ export function logOrderToSheet(order) {
     .join(", ");
   postToSheet({
     sheet: "Orders",
-    headers: ["Time", "Order #", "Name", "Method", "Contact", "Items", "Total (Rs.)", "Address", "Map pin", "Status"],
+    headers: ["Time", "Order #", "Name", "Method", "Contact", "Items", "Subtotal (Rs.)", "Coupon", "Discount (Rs.)", "Total (Rs.)", "Address", "Map pin", "Status"],
     row: [
       new Date().toISOString(),
       order.id,
@@ -35,6 +35,9 @@ export function logOrderToSheet(order) {
       order.method || "",
       order.contact || "",
       items,
+      Number(order.subtotal || order.total || 0),
+      order.couponCode || "",
+      Number(order.discount || 0),
       Number(order.total || 0),
       order.shippingAddress || "",
       order.locationUrl || "",

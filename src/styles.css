@@ -2680,6 +2680,23 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .co-sum-sub { font-size: 0.72rem; color: var(--umber); }
 .co-sum-total { font-family: var(--font-mono); font-size: 0.8rem; }
 .co-sum-grand { border-top: 1px solid var(--line-dark); padding-top: 0.9rem; font-weight: 700; }
+.co-coupon { display: flex; flex-direction: column; gap: 0.45rem; border-top: 1px solid var(--line-dark); padding: 0.9rem 0; }
+.co-coupon-entry { display: grid; grid-template-columns: 1fr auto; gap: 0.45rem; }
+.co-coupon-entry input {
+  min-width: 0; width: 100%; border: 1px solid var(--line-dark); background: var(--bone);
+  padding: 0.65em 0.75em; font-family: var(--font-mono); text-transform: uppercase;
+}
+.co-coupon-entry input:focus { outline: 2px solid var(--brick); outline-offset: 1px; }
+.co-coupon-applied {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.7rem;
+  border: 1px solid var(--mustard); background: rgba(209, 158, 63, 0.12);
+  padding: 0.6rem 0.7rem; font-family: var(--font-mono); font-size: 0.72rem;
+}
+.co-coupon-applied button {
+  border: 0; background: none; color: var(--brick); text-decoration: underline;
+  font: inherit; cursor: pointer; padding: 0;
+}
+.co-discount { color: var(--brick); }
 
 .co-done {
   max-width: 46rem; border: 1px solid var(--line-dark-strong); background: var(--bone-deep);
@@ -2694,6 +2711,8 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 .co-done-items li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--line-dark); font-size: 0.9rem; }
 .co-done-items em { font-style: normal; color: var(--umber); font-size: 0.85em; }
 .co-done-total { display: flex; justify-content: space-between; width: 100%; font-family: var(--font-mono); font-weight: 700; padding-top: 0.3rem; }
+.co-done-price { display: flex; justify-content: space-between; width: 100%; font-family: var(--font-mono); font-size: 0.82rem; }
+.ao-coupon { font-family: var(--font-mono); font-size: 0.65rem; color: var(--brick); }
 .co-done p { color: var(--umber); }
 .co-done-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .co-done-acct { font-size: 0.82rem; }

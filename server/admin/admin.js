@@ -5,7 +5,7 @@ const TOKEN_KEY = "gunji_admin_token";
 const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 const CUSTOM_STATUSES = ["new", "discussing", "printing", "delivered", "declined"];
 const METHODS = ["instagram", "whatsapp", "phone", "email"];
-const EDITIONS = ["signature", "player", "anime", "desi", "essentials", "custom"];
+const EDITIONS = ["signature", "player", "anime", "desi", "custom"];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -16,6 +16,7 @@ const state = {
   stats: null,
   showOrderForm: false,
   editingProduct: null, // product id, or 0 for "new"
+  editingCoupon: null, // coupon id, or 0 for "new"
 };
 
 /* ---------- tiny utils ---------- */
@@ -40,6 +41,14 @@ function fmtWhen(iso) {
 
 function fmtPrice(p) {
   return `${p.priceFrom ? "from " : ""}Rs. ${Number(p.price).toLocaleString("en-IN")}`;
+}
+
+function fmtDateInput(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
 }
 
 function contactHref(method, contact) {
@@ -182,6 +191,7 @@ async function renderPanel() {
     if (state.tab === "orders") await renderOrders(panel);
     else if (state.tab === "requests") await renderRequests(panel);
     else if (state.tab === "products") await renderProducts(panel);
+    else if (state.tab === "coupons") await renderCoupons(panel);
     else await renderSettings(panel);
   } catch (err) {
     panel.innerHTML = `<p class="empty-note">${esc(err.message)}</p>`;
@@ -225,6 +235,7 @@ async function renderOrders(panel) {
       <td class="cell-when">${fmtWhen(o.createdAt)}</td>
       <td>${esc(o.item)}<span class="sub">${o.qty} pc${o.qty > 1 ? "s" : ""}${o.size ? ` · ${esc(o.size)}` : ""}${o.colour ? ` · ${esc(o.colour)}` : ""}</span>
         ${o.total ? `<span class="order-total">Rs. ${Number(o.total).toLocaleString("en-IN")}${o.qty > 1 ? ` <span class="sub-inline">(${o.qty} × ${Number(o.unitPrice).toLocaleString("en-IN")})</span>` : ""}</span>` : ""}
+        ${o.discount ? `<span class="sub coupon-order-note">${esc(o.couponCode)} · −Rs. ${Number(o.discount).toLocaleString("en-IN")}</span>` : ""}
         ${o.note ? `<span class="note-line">“${esc(o.note)}”</span>` : ""}</td>
       <td>${contactCell(o)}${o.locationUrl ? `<span class="sub"><a class="contact-link" href="${esc(o.locationUrl)}" target="_blank" rel="noopener noreferrer">📍 delivery pin${o.location && o.location.accuracy ? ` (±${o.location.accuracy}m)` : ""} ↗</a></span>` : ""}${o.customerEmail ? `<span class="acct-badge" title="Placed while logged in">◆ ${esc(o.customerEmail)}</span>` : ""}</td>
       <td>${statusSelect("order", o.id, o.status, ORDER_STATUSES)}
@@ -334,7 +345,7 @@ function productForm(p = {}) {
     <label class="field"><span class="field-label">Price (Rs.) *</span><input name="price" type="number" required min="0" max="1000000" value="${p.price ?? ""}"></label>
     <label class="field"><span class="field-label">Compare-at / “was” (Rs.)</span><input name="compareAt" type="number" min="0" max="1000000" value="${p.compareAt ?? ""}" placeholder="blank = no sale"></label>
     <label class="check-field"><input name="priceFrom" type="checkbox" ${p.priceFrom ? "checked" : ""}> <span class="field-label">“from” price</span></label>
-    <label class="field"><span class="field-label">Edition</span><select name="edition">${EDITIONS.map((ed) => `<option ${ed === (p.edition || "essentials") ? "selected" : ""}>${ed}</option>`).join("")}</select></label>
+    <label class="field"><span class="field-label">Edition</span><select name="edition">${EDITIONS.map((ed) => `<option ${ed === (p.edition || "signature") ? "selected" : ""}>${ed}</option>`).join("")}</select></label>
     <label class="field"><span class="field-label">Sort order</span><input name="sortOrder" type="number" min="0" max="1000000" value="${p.sortOrder ?? ""}" placeholder="auto"></label>
     <label class="field field-wide"><span class="field-label">Image path *</span><input name="img" type="text" required maxlength="300" value="${esc(p.img)}" placeholder="/assets/gunji_tee_white_front.jpg"></label>
     <label class="field field-wide"><span class="field-label">Alt text</span><input name="alt" type="text" maxlength="300" value="${esc(p.alt)}"></label>
@@ -434,6 +445,145 @@ function bindProductForm() {
       state.editingProduct = null;
       toast(id ? "Tee updated" : "Tee added");
       await refresh();
+    } catch (err) {
+      toast(err.message, true);
+    }
+  });
+}
+
+/* ---------- coupons tab ---------- */
+
+function couponStatus(coupon) {
+  const now = Date.now();
+  if (!coupon.active) return "inactive";
+  if (coupon.validFrom && new Date(coupon.validFrom).getTime() > now) return "scheduled";
+  if (coupon.validUntil && new Date(coupon.validUntil).getTime() <= now) return "expired";
+  if (coupon.maxUses !== null && coupon.usesCount >= coupon.maxUses) return "used up";
+  return "live";
+}
+
+async function renderCoupons(panel) {
+  const { items } = await api("/admin/coupons");
+  const editing = state.editingCoupon === null
+    ? null
+    : state.editingCoupon === 0
+      ? {
+          id: null, code: "", description: "", discountType: "percent",
+          discountValue: 10, minOrderAmount: 0, maxUses: null,
+          validFrom: null, validUntil: null, active: true,
+        }
+      : items.find((coupon) => coupon.id === state.editingCoupon);
+
+  const form = editing ? `
+    <form id="coupon-form" class="form-card coupon-form" data-id="${editing.id || ""}">
+      <label class="field"><span class="field-label">Code *</span><input name="code" type="text" required maxlength="32" value="${esc(editing.code)}" placeholder="GUNJI10"></label>
+      <label class="field field-wide"><span class="field-label">Description</span><input name="description" type="text" maxlength="240" value="${esc(editing.description)}" placeholder="Launch offer"></label>
+      <label class="field"><span class="field-label">Discount type *</span>
+        <select name="discountType"><option value="percent" ${editing.discountType === "percent" ? "selected" : ""}>Percentage</option><option value="fixed" ${editing.discountType === "fixed" ? "selected" : ""}>Fixed rupees</option></select>
+      </label>
+      <label class="field"><span class="field-label">Discount value *</span><input name="discountValue" type="number" required min="1" max="1000000" value="${editing.discountValue}"></label>
+      <label class="field"><span class="field-label">Minimum order (Rs.)</span><input name="minOrderAmount" type="number" min="0" max="10000000" value="${editing.minOrderAmount}"></label>
+      <label class="field"><span class="field-label">Maximum uses</span><input name="maxUses" type="number" min="1" max="1000000" value="${editing.maxUses ?? ""}" placeholder="Unlimited"></label>
+      <label class="field"><span class="field-label">Starts</span><input name="validFrom" type="datetime-local" value="${fmtDateInput(editing.validFrom)}"></label>
+      <label class="field"><span class="field-label">Ends</span><input name="validUntil" type="datetime-local" value="${fmtDateInput(editing.validUntil)}"></label>
+      <label class="check-field"><input name="active" type="checkbox" ${editing.active ? "checked" : ""}> Active</label>
+      <div class="form-foot">
+        <button type="submit" class="btn btn-solid btn-sm">${editing.id ? "Save coupon" : "Create coupon"}</button>
+        <button type="button" class="btn btn-sm" id="cancel-coupon-btn">Cancel</button>
+      </div>
+    </form>` : "";
+
+  const rows = items.map((coupon) => {
+    const status = couponStatus(coupon);
+    const value = coupon.discountType === "percent"
+      ? `${coupon.discountValue}%`
+      : `Rs. ${Number(coupon.discountValue).toLocaleString("en-IN")}`;
+    const windowText = coupon.validUntil
+      ? `Ends ${fmtWhen(coupon.validUntil)}`
+      : coupon.validFrom ? `Starts ${fmtWhen(coupon.validFrom)}` : "No expiry";
+    return `
+      <tr>
+        <td><strong class="coupon-code">${esc(coupon.code)}</strong><span class="sub">${esc(coupon.description)}</span></td>
+        <td>${value}<span class="sub">Min. Rs. ${Number(coupon.minOrderAmount).toLocaleString("en-IN")}</span></td>
+        <td>${coupon.usesCount}${coupon.maxUses === null ? "" : ` / ${coupon.maxUses}`}<span class="sub">${windowText}</span></td>
+        <td><span class="coupon-state coupon-state-${status.replace(" ", "-")}">${status}</span></td>
+        <td><div class="row-actions">
+          <button class="icon-btn" data-edit-coupon="${coupon.id}">✎ edit</button>
+          <button class="icon-btn" data-toggle-coupon="${coupon.id}" data-active="${coupon.active ? "1" : "0"}">${coupon.active ? "Pause" : "Activate"}</button>
+          <button class="icon-btn danger" data-delete-coupon="${coupon.id}">✕</button>
+        </div></td>
+      </tr>`;
+  }).join("");
+
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div><h2 class="panel-title">Coupon codes</h2><p class="hint">Discounts are checked against live prices again when the order is placed.</p></div>
+      <button class="btn btn-solid btn-sm" id="add-coupon-btn">+ New coupon</button>
+    </div>
+    ${form}
+    ${items.length
+      ? `<div class="table-wrap"><table><thead><tr><th>Code</th><th>Discount</th><th>Uses</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="empty-note">No coupon codes yet — create the first one.</p>`}
+  `;
+
+  $("#add-coupon-btn").addEventListener("click", () => {
+    state.editingCoupon = 0;
+    renderPanel();
+  });
+  panel.querySelectorAll("[data-edit-coupon]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.editingCoupon = Number(button.dataset.editCoupon);
+      renderPanel();
+    });
+  });
+  panel.querySelectorAll("[data-toggle-coupon]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        await api(`/admin/coupons/${button.dataset.toggleCoupon}`, {
+          method: "PATCH",
+          body: { active: button.dataset.active !== "1" },
+        });
+        toast(button.dataset.active === "1" ? "Coupon paused" : "Coupon activated");
+        await renderPanel();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+  panel.querySelectorAll("[data-delete-coupon]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!confirm("Delete this coupon? Past orders keep their coupon snapshot.")) return;
+      try {
+        await api(`/admin/coupons/${button.dataset.deleteCoupon}`, { method: "DELETE" });
+        toast("Coupon deleted");
+        await renderPanel();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  });
+
+  if (!editing) return;
+  $("#cancel-coupon-btn").addEventListener("click", () => {
+    state.editingCoupon = null;
+    renderPanel();
+  });
+  $("#coupon-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const fd = new FormData(event.target);
+    const body = Object.fromEntries(fd.entries());
+    body.active = fd.has("active");
+    body.validFrom = body.validFrom ? new Date(body.validFrom).toISOString() : "";
+    body.validUntil = body.validUntil ? new Date(body.validUntil).toISOString() : "";
+    const id = event.target.dataset.id;
+    try {
+      await api(id ? `/admin/coupons/${id}` : "/admin/coupons", {
+        method: id ? "PATCH" : "POST",
+        body,
+      });
+      state.editingCoupon = null;
+      toast(id ? "Coupon updated" : "Coupon created");
+      await renderPanel();
     } catch (err) {
       toast(err.message, true);
     }

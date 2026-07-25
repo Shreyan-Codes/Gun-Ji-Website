@@ -111,6 +111,7 @@ try {
   console.log("[db] schema initialized successfully");
 } catch (err) {
   console.error("[db] schema initialization failed:", err.message);
+  throw err;
 }
 
 // Numbered migrations (idempotent, non-fatal) run after the base schema.
@@ -118,6 +119,7 @@ try {
   await runMigrations(db);
 } catch (err) {
   console.error("[db] migrations error:", err.message);
+  throw err;
 }
 
 // ---------- boot-time seeding ----------

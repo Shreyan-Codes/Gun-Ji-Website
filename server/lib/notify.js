@@ -39,6 +39,9 @@ export function notifyNewOrder(order) {
     lines,
     `<b>Total: ${rupees(order.total)}</b>`,
   ];
+  if (order.discount) {
+    parts.splice(3, 0, `🏷 ${esc(order.couponCode)}: −${rupees(order.discount)} (from ${rupees(order.subtotal)})`);
+  }
   if (order.shippingAddress) parts.push(`🏠 ${esc(order.shippingAddress)}`);
   if (order.locationUrl) parts.push(`📍 <a href="${esc(order.locationUrl)}">Open delivery pin</a>`);
   sendTelegram(parts.filter(Boolean).join("\n"));

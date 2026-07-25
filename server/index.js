@@ -57,6 +57,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Authentication and admin responses can contain tokens or customer data.
+// Explicitly prevent browser/proxy caching at every hop.
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/auth") || req.path.startsWith("/api/admin")) {
+    res.set("Cache-Control", "no-store");
+    res.set("Pragma", "no-cache");
+  }
+  next();
+});
+
 // Compact request log for API traffic only (static noise stays out).
 app.use((req, res, next) => {
   if (!req.path.startsWith("/api")) return next();
@@ -143,9 +153,9 @@ if (config.heartbeatUrl) {
 
 function shutdown(signal) {
   console.log(`[gunji] ${signal} — shutting down`);
-  server.close(() => {
+  server.close(async () => {
     try {
-      db.close();
+      await db.close();
     } catch {
       // already closed
     }

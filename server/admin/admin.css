@@ -63,7 +63,7 @@ input, select, textarea { font: inherit; color: inherit; }
   letter-spacing: 0.14em;
   color: var(--umber);
 }
-input[type="text"], input[type="password"], input[type="number"], input[type="url"], select, textarea {
+input[type="text"], input[type="password"], input[type="number"], input[type="url"], input[type="datetime-local"], select, textarea {
   background: rgba(255, 255, 255, 0.45);
   border: 1px solid var(--line);
   padding: 0.55em 0.7em;
@@ -328,6 +328,22 @@ td .note-line { display: block; font-size: 0.78rem; color: var(--ink-soft); marg
   color: var(--umber);
   white-space: nowrap;
 }
+.coupon-code { font-family: var(--font-mono); letter-spacing: 0.08em; }
+.coupon-order-note { color: var(--brick) !important; }
+.coupon-state {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--line);
+  padding: 0.25em 0.55em;
+}
+.coupon-state-live { color: #27663f; border-color: #27663f; }
+.coupon-state-inactive,
+.coupon-state-expired,
+.coupon-state-used-up { color: var(--umber); }
+.coupon-state-scheduled { color: var(--brick); border-color: var(--brick); }
 .settings-form { max-width: 920px; display: flex; flex-direction: column; gap: 1.1rem; }
 .hint { font-size: 0.78rem; color: var(--umber); }
 .hint code { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink); }

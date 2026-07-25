@@ -15,6 +15,7 @@ import {
 } from "../db/products.js";
 import { adminListOrders, createOrder, updateOrder, deleteOrder } from "../db/orders.js";
 import { listCustomRequests, updateCustomRequest, deleteCustomRequest } from "../db/customRequests.js";
+import { CouponError, listCoupons, createCoupon, updateCoupon, deleteCoupon } from "../db/coupons.js";
 
 const router = Router();
 const loginLimit = rateLimit({ name: "login", windowMs: 15 * 60 * 1000, max: 5 });
@@ -170,6 +171,109 @@ router.delete("/orders/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- coupons ----------
+
+const couponFields = {
+  code: { max: 32 },
+  description: { max: 240 },
+  discountType: { enum: ["percent", "fixed"] },
+  discountValue: { type: "int", min: 1, max: 1000000 },
+  minOrderAmount: { type: "int", min: 0, max: 10000000 },
+  maxUses: { type: "int", min: 1, max: 1000000, nullable: true },
+  validFrom: { max: 40 },
+  validUntil: { max: 40 },
+  active: { type: "bool" },
+};
+
+function normalizeCouponInput(value) {
+  for (const key of ["validFrom", "validUntil"]) {
+    if (!Object.hasOwn(value, key)) continue;
+    if (!value[key]) {
+      value[key] = null;
+    } else {
+      const timestamp = Date.parse(value[key]);
+      if (!Number.isFinite(timestamp)) return { error: { [key]: "Use a valid date and time" } };
+      value[key] = new Date(timestamp).toISOString();
+    }
+  }
+  return { value };
+}
+
+function couponRuleError(value) {
+  if (value.discountType === "percent" && value.discountValue > 100) {
+    return { discountValue: "Percentage cannot be more than 100" };
+  }
+  if (value.validFrom && value.validUntil && new Date(value.validUntil) <= new Date(value.validFrom)) {
+    return { validUntil: "End time must be after the start time" };
+  }
+  return null;
+}
+
+function sendCouponError(res, err) {
+  if (err instanceof CouponError) return res.status(400).json({ error: err.message });
+  if (err?.code === "23505") return res.status(409).json({ error: "That coupon code already exists" });
+  if (err?.code === "23514" || err?.code === "22007") {
+    return res.status(400).json({ error: "Check the coupon values" });
+  }
+  throw err;
+}
+
+router.get("/coupons", async (req, res) => {
+  res.json({ items: await listCoupons() });
+});
+
+router.post("/coupons", async (req, res) => {
+  const { ok, errors, value } = clean(
+    {
+      ...couponFields,
+      code: { ...couponFields.code, required: true },
+      discountType: { ...couponFields.discountType, required: true },
+      discountValue: { ...couponFields.discountValue, required: true },
+      minOrderAmount: { ...couponFields.minOrderAmount, default: 0 },
+      maxUses: couponFields.maxUses,
+      active: { ...couponFields.active, default: 1 },
+    },
+    req.body
+  );
+  if (!ok) return res.status(400).json({ error: "Check the fields", errors });
+  const normalized = normalizeCouponInput(value);
+  if (normalized.error) return res.status(400).json({ error: "Check the fields", errors: normalized.error });
+  const ruleError = couponRuleError(value);
+  if (ruleError) return res.status(400).json({ error: "Check the fields", errors: ruleError });
+  try {
+    res.status(201).json({ item: await createCoupon(value) });
+  } catch (err) {
+    return sendCouponError(res, err);
+  }
+});
+
+router.patch("/coupons/:id", async (req, res) => {
+  const id = idParam(req, res);
+  if (id === null) return;
+  const spec = pick(couponFields, req.body);
+  const { ok, errors, value } = clean(spec, req.body);
+  if (!ok) return res.status(400).json({ error: "Check the fields", errors });
+  const normalized = normalizeCouponInput(value);
+  if (normalized.error) return res.status(400).json({ error: "Check the fields", errors: normalized.error });
+  const current = (await listCoupons()).find((coupon) => coupon.id === id);
+  if (!current) return res.status(404).json({ error: "Not found" });
+  const ruleError = couponRuleError({ ...current, ...value });
+  if (ruleError) return res.status(400).json({ error: "Check the fields", errors: ruleError });
+  try {
+    const item = await updateCoupon(id, value);
+    res.json({ item });
+  } catch (err) {
+    return sendCouponError(res, err);
+  }
+});
+
+router.delete("/coupons/:id", async (req, res) => {
+  const id = idParam(req, res);
+  if (id === null) return;
+  if (!(await deleteCoupon(id))) return res.status(404).json({ error: "Not found" });
+  res.json({ ok: true });
+});
+
 // ---------- custom requests ----------
 
 const customPatchFields = { status: { enum: CUSTOM_STATUSES }, adminNote: { max: 1000 } };
@@ -223,7 +327,7 @@ router.post("/products", async (req, res) => {
       name: { ...productFields.name, required: true },
       price: { ...productFields.price, required: true },
       img: { ...productFields.img, required: true },
-      edition: { ...productFields.edition, default: "essentials" },
+      edition: { ...productFields.edition, default: "signature" },
       active: { ...productFields.active, default: 1 },
     },
     req.body

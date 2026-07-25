@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { db, tx } from "./index.js";
 import { decrementStock } from "./products.js";
+import { redeemCoupon } from "./coupons.js";
 
 // Public order-tracking code, e.g. GJ-9F3A2B7C10. 5 bytes = 2^40 space, so
 // collisions are negligible at this volume; the UNIQUE index is the backstop.
@@ -14,8 +15,8 @@ const genTrackingCode = () => "GJ-" + randomBytes(5).toString("hex").toUpperCase
 const selectOrder = db.prepare("SELECT * FROM orders WHERE id = ?");
 const selectItems = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
 const insertOrder = db.prepare(
-  `INSERT INTO orders (user_id, status, total, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy, payment_method, tracking_code)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  `INSERT INTO orders (user_id, status, subtotal, discount, total, coupon_id, coupon_code, shipping_name, shipping_address, shipping_phone, contact, contact_method, note, admin_note, source, location_lat, location_lng, location_accuracy, payment_method, tracking_code)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
 const insertItem = db.prepare(
   `INSERT INTO order_items (order_id, variant_id, product_id, product_name, size, color, quantity, price_at_purchase)
@@ -47,7 +48,10 @@ export async function orderToJson(row) {
     paymentMethod: row.payment_method ?? "cod",
     paymentStatus: row.payment_status ?? "unpaid",
     status: row.status,
+    subtotal: row.subtotal ?? row.total,
+    discount: row.discount ?? 0,
     total: row.total,
+    couponCode: row.coupon_code ?? null,
     shippingName: row.shipping_name,
     shippingAddress: row.shipping_address,
     shippingPhone: row.shipping_phone,
@@ -87,13 +91,18 @@ export async function createOrder({
   source = "site", items = [], enforceStock = false,
   locationLat = null, locationLng = null, locationAccuracy = null,
   paymentMethod = "cod",
+  couponCode = "",
 }) {
   if (items.length === 0) throw new Error("An order needs at least one item");
-  const total = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
+  const subtotal = items.reduce((sum, it) => sum + it.priceAtPurchase * it.quantity, 0);
 
   return tx(async () => {
+    const redemption = await redeemCoupon(couponCode, subtotal);
+    const discount = redemption?.discount ?? 0;
+    const total = subtotal - discount;
     const info = await insertOrder.run(
-      userId, status, total, shippingName, shippingAddress, shippingPhone,
+      userId, status, subtotal, discount, total, redemption?.id ?? null, redemption?.code ?? null,
+      shippingName, shippingAddress, shippingPhone,
       contact, contactMethod, note, adminNote, source,
       locationLat, locationLng, locationAccuracy, paymentMethod, genTrackingCode()
     );

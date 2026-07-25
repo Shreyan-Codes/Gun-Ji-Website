@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 // *.sql files in filename order, once each, tracked in schema_migrations.
 // Never edit an applied migration — always add a new numbered file.
 //
-// Runs at boot after schema.sql. Non-fatal: a failing migration is logged and
-// stops the run (so later migrations don't apply out of order) without crashing
-// the API. Migration SQL must be idempotent (see 001).
+// Runs at boot after schema.sql. A failed migration aborts startup: serving an
+// API against a partially upgraded schema is more dangerous than being offline.
+// Migration SQL must be idempotent (see 001).
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = path.join(__dirname, "migrations");
@@ -33,7 +33,7 @@ export async function runMigrations(db) {
       console.log(`[db] migration applied: ${file}`);
     } catch (err) {
       console.error(`[db] migration FAILED (${file}): ${err.message}`);
-      break;
+      throw err;
     }
   }
 }

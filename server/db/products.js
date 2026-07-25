@@ -149,7 +149,7 @@ export async function createProduct(fields) {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     fields.name, slug, fields.description ?? "", fields.tag ?? "", fields.price,
-    fields.priceFrom ?? 0, fields.compareAt ?? null, fields.edition ?? "essentials",
+    fields.priceFrom ?? 0, fields.compareAt ?? null, fields.edition ?? "signature",
     fields.orderItem || fields.name, sortOrder, fields.active ?? 1
   );
   return await getProduct(Number(info.lastInsertRowid), { admin: true });
