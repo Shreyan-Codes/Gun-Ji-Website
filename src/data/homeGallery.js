@@ -16,4 +16,27 @@ export const DEFAULT_HOME_GALLERY = [
   },
 ];
 
+export const DEFAULT_STUDIO_GALLERY = [
+  {
+    src: "/assets/gunji_post_01.jpg",
+    alt: "Model wearing a custom GUN-जी printed t-shirt",
+    cap: "Custom print — your story",
+  },
+  {
+    src: "/assets/gunji_post_02.jpg",
+    alt: "Model wearing a GUN-जी printed t-shirt in Nepal",
+    cap: "Made to be worn",
+  },
+  {
+    src: "/assets/gunji_post_03.jpg",
+    alt: "Model showcasing a custom printed GUN-जी t-shirt",
+    cap: "Your idea, on a tee",
+  },
+  {
+    src: "/assets/gunji_post_04.jpg",
+    alt: "Model styled in a custom GUN-जी t-shirt",
+    cap: "From screen to street",
+  },
+];
+
 export const DEFAULT_COMING_SOON_IMAGE = "/assets/gunji_coming_soon.jpg";

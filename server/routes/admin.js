@@ -9,6 +9,7 @@ import { createSession, destroySession } from "../db/sessions.js";
 import { findAdmin } from "../db/users.js";
 import { getSettings, setSetting } from "../db/settings.js";
 import { saveMediaDataUrl } from "../db/media.js";
+import { normalizeGallery } from "../lib/gallery.js";
 import {
   listAllProducts, getProduct, createProduct, updateProduct,
   setProductActive, deleteProduct, addVariant, setPrimaryImage,
@@ -389,29 +390,10 @@ router.post("/media", json({ limit: "8mb" }), async (req, res) => {
 router.put("/settings", async (req, res) => {
   const body = req.body || {};
   const digits = typeof body.whatsappNumber === "string" ? body.whatsappNumber.replace(/[^\d]/g, "") : "";
-  const homeGallery = Array.isArray(body.homeGallery)
-    ? body.homeGallery.map((item) => ({
-        src: String(item?.src || "").trim(),
-        alt: String(item?.alt || "").trim(),
-        cap: String(item?.cap || "").trim(),
-      }))
-    : null;
-
-  if (homeGallery) {
-    if (homeGallery.length < 1 || homeGallery.length > 12) {
-      return res.status(400).json({ error: "Homepage gallery needs 1–12 photos" });
-    }
-    const invalidPhoto = homeGallery.find(
-      (item) =>
-        !/^(\/|https:\/\/)/.test(item.src) ||
-        item.src.length > 1000 ||
-        item.alt.length > 300 ||
-        item.cap.length > 120
-    );
-    if (invalidPhoto) {
-      return res.status(400).json({ error: "Check the homepage photo paths and text" });
-    }
-  }
+  const homeGallery = normalizeGallery(body, "homeGallery", "Homepage gallery");
+  if (homeGallery.error) return res.status(400).json({ error: homeGallery.error });
+  const studioGallery = normalizeGallery(body, "studioGallery", "Photo studio gallery");
+  if (studioGallery.error) return res.status(400).json({ error: studioGallery.error });
 
   const { ok, errors, value } = clean(
     {
@@ -427,7 +409,8 @@ router.put("/settings", async (req, res) => {
   if (Object.hasOwn(body, "whatsappNumber")) await setSetting("whatsapp_number", value.whatsappNumber);
   if (value.igDm) await setSetting("ig_dm", value.igDm);
   if (value.igProfile) await setSetting("ig_profile", value.igProfile);
-  if (homeGallery) await setSetting("home_gallery", JSON.stringify(homeGallery));
+  if (homeGallery.items) await setSetting("home_gallery", JSON.stringify(homeGallery.items));
+  if (studioGallery.items) await setSetting("studio_gallery", JSON.stringify(studioGallery.items));
   if (value.comingSoonImage) await setSetting("coming_soon_image", value.comingSoonImage);
   res.json(await getSettings());
 });

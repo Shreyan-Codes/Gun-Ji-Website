@@ -615,11 +615,21 @@ async function renderSettings(panel) {
         <div class="gallery-settings-head">
           <div>
             <h3>Homepage gallery</h3>
-            <p class="hint">Use an existing <code>/assets/…</code> path or a public <code>https://</code> image URL. Drag order is controlled with the arrows.</p>
+            <p class="hint">These photos appear in the swipeable landing-page hero. Use the arrows to control their order.</p>
           </div>
-          <button type="button" class="btn btn-sm" id="add-gallery-photo">+ Add photo</button>
+          <button type="button" class="btn btn-sm" id="add-home-gallery-photo">+ Add photo</button>
         </div>
-        <div id="gallery-settings-list"></div>
+        <div id="home-gallery-settings-list"></div>
+      </section>
+      <section class="gallery-settings">
+        <div class="gallery-settings-head">
+          <div>
+            <h3>Photo studio</h3>
+            <p class="hint">Upload photos of models wearing your tees. These appear in the “Shot in the studio” section below the product rack.</p>
+          </div>
+          <button type="button" class="btn btn-sm" id="add-studio-gallery-photo">+ Add model photo</button>
+        </div>
+        <div id="studio-gallery-settings-list"></div>
       </section>
       <label class="field">
         <span class="field-label">Crop T-Shirt “coming soon” image</span>
@@ -634,23 +644,24 @@ async function renderSettings(panel) {
     </form>
   `;
 
-  const galleryList = $("#gallery-settings-list");
-  let galleryItems = Array.isArray(s.homeGallery) ? s.homeGallery.map((item) => ({ ...item })) : [];
+  const mountGalleryEditor = ({ listSelector, addSelector, initialItems, itemName }) => {
+    const galleryList = $(listSelector);
+    let galleryItems = Array.isArray(initialItems) ? initialItems.map((item) => ({ ...item })) : [];
 
-  const readGalleryRows = () =>
-    [...galleryList.querySelectorAll(".gallery-setting-row")].map((row) => ({
-      src: row.querySelector("[data-gallery-src]").value.trim(),
-      cap: row.querySelector("[data-gallery-cap]").value.trim(),
-      alt: row.querySelector("[data-gallery-alt]").value.trim(),
-    }));
+    const readRows = () =>
+      [...galleryList.querySelectorAll(".gallery-setting-row")].map((row) => ({
+        src: row.querySelector("[data-gallery-src]").value.trim(),
+        cap: row.querySelector("[data-gallery-cap]").value.trim(),
+        alt: row.querySelector("[data-gallery-alt]").value.trim(),
+      }));
 
-  const paintGalleryRows = () => {
-    galleryList.innerHTML = galleryItems.map((item, index) => `
+    const paintRows = () => {
+      galleryList.innerHTML = galleryItems.map((item, index) => `
       <div class="gallery-setting-row">
         <img class="gallery-setting-preview" src="${esc(item.src)}" alt="" data-gallery-preview>
         <div class="gallery-setting-fields">
           <label class="field field-wide">
-            <span class="field-label">Photo ${index + 1} path / URL</span>
+            <span class="field-label">${esc(itemName)} ${index + 1} path / URL</span>
             <input type="text" maxlength="1000" value="${esc(item.src)}" data-gallery-src required>
           </label>
           <label class="field">
@@ -674,55 +685,70 @@ async function renderSettings(panel) {
       </div>
     `).join("");
 
-    galleryList.querySelectorAll("[data-gallery-src]").forEach((input) => {
-      input.addEventListener("input", () => {
-        input.closest(".gallery-setting-row").querySelector("[data-gallery-preview]").src = input.value;
+      galleryList.querySelectorAll("[data-gallery-src]").forEach((input) => {
+        input.addEventListener("input", () => {
+          input.closest(".gallery-setting-row").querySelector("[data-gallery-preview]").src = input.value;
+        });
       });
-    });
-    galleryList.querySelectorAll("[data-gallery-file]").forEach((input) => {
-      input.addEventListener("change", async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        try {
-          input.disabled = true;
-          const url = await uploadImage(file);
-          const row = input.closest(".gallery-setting-row");
-          row.querySelector("[data-gallery-src]").value = url;
-          row.querySelector("[data-gallery-preview]").src = url;
-          toast("Photo uploaded — save settings to publish it");
-        } catch (err) {
-          toast(err.message, true);
-        } finally {
-          input.disabled = false;
-        }
+      galleryList.querySelectorAll("[data-gallery-file]").forEach((input) => {
+        input.addEventListener("change", async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          try {
+            input.disabled = true;
+            const url = await uploadImage(file);
+            const row = input.closest(".gallery-setting-row");
+            row.querySelector("[data-gallery-src]").value = url;
+            row.querySelector("[data-gallery-preview]").src = url;
+            toast("Photo uploaded — save settings to publish it");
+          } catch (err) {
+            toast(err.message, true);
+          } finally {
+            input.disabled = false;
+          }
+        });
       });
-    });
-    galleryList.querySelectorAll("[data-gallery-remove]").forEach((button) => {
-      button.addEventListener("click", () => {
-        galleryItems = readGalleryRows();
-        if (galleryItems.length === 1) return toast("Keep at least one gallery photo", true);
-        galleryItems.splice(Number(button.dataset.galleryRemove), 1);
-        paintGalleryRows();
+      galleryList.querySelectorAll("[data-gallery-remove]").forEach((button) => {
+        button.addEventListener("click", () => {
+          galleryItems = readRows();
+          if (galleryItems.length === 1) return toast(`Keep at least one ${itemName.toLowerCase()}`, true);
+          galleryItems.splice(Number(button.dataset.galleryRemove), 1);
+          paintRows();
+        });
       });
-    });
-    galleryList.querySelectorAll("[data-gallery-move]").forEach((button) => {
-      button.addEventListener("click", () => {
-        galleryItems = readGalleryRows();
-        const from = Number(button.dataset.index);
-        const to = from + Number(button.dataset.galleryMove);
-        [galleryItems[from], galleryItems[to]] = [galleryItems[to], galleryItems[from]];
-        paintGalleryRows();
+      galleryList.querySelectorAll("[data-gallery-move]").forEach((button) => {
+        button.addEventListener("click", () => {
+          galleryItems = readRows();
+          const from = Number(button.dataset.index);
+          const to = from + Number(button.dataset.galleryMove);
+          [galleryItems[from], galleryItems[to]] = [galleryItems[to], galleryItems[from]];
+          paintRows();
+        });
       });
+    };
+
+    paintRows();
+    $(addSelector).addEventListener("click", () => {
+      galleryItems = readRows();
+      if (galleryItems.length >= 12) return toast("This gallery supports up to 12 photos", true);
+      galleryItems.push({ src: "", cap: "", alt: "" });
+      paintRows();
+      galleryList.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
+    return { readRows };
   };
 
-  paintGalleryRows();
-  $("#add-gallery-photo").addEventListener("click", () => {
-    galleryItems = readGalleryRows();
-    if (galleryItems.length >= 12) return toast("The gallery supports up to 12 photos", true);
-    galleryItems.push({ src: "", cap: "", alt: "" });
-    paintGalleryRows();
-    galleryList.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const homeGalleryEditor = mountGalleryEditor({
+    listSelector: "#home-gallery-settings-list",
+    addSelector: "#add-home-gallery-photo",
+    initialItems: s.homeGallery,
+    itemName: "Photo",
+  });
+  const studioGalleryEditor = mountGalleryEditor({
+    listSelector: "#studio-gallery-settings-list",
+    addSelector: "#add-studio-gallery-photo",
+    initialItems: s.studioGallery,
+    itemName: "Model photo",
   });
 
   const comingSoonInput = $("#settings-form [name=comingSoonImage]");
@@ -764,7 +790,8 @@ async function renderSettings(panel) {
       igDm: fd.get("igDm"),
       igProfile: fd.get("igProfile"),
       comingSoonImage: fd.get("comingSoonImage"),
-      homeGallery: readGalleryRows(),
+      homeGallery: homeGalleryEditor.readRows(),
+      studioGallery: studioGalleryEditor.readRows(),
     };
     try {
       await api("/admin/settings", { method: "PUT", body });

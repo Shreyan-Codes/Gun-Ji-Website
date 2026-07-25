@@ -65,7 +65,7 @@ const STATIC_ROUTES = [
     path: "/size-guide",
     title: "Size Guide — Normal Fit T-Shirt Measurements (cm)",
     description:
-      "GUN-जी normal-fit t-shirt size chart in centimetres for XL, XXL and XXXL. Measured flat.",
+      "GUN-जी normal-fit t-shirt size chart in centimetres for S, M and L. Measured flat.",
     changefreq: "yearly",
     priority: "0.4",
   },

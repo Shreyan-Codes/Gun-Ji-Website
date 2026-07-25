@@ -6,12 +6,15 @@ import CtaBand from "../components/CtaBand.jsx";
 import useReveal from "../hooks/useReveal.js";
 import { useSiteData } from "../context/SiteData.jsx";
 import { usePageMeta } from "../lib/seo.js";
-import { DEFAULT_HOME_GALLERY } from "../data/homeGallery.js";
+import { DEFAULT_HOME_GALLERY, DEFAULT_STUDIO_GALLERY } from "../data/homeGallery.js";
 
 export default function Home() {
   const { products, productsRev, settings } = useSiteData();
   const dragRef = useRef(null);
   const gallery = settings.homeGallery?.length ? settings.homeGallery : DEFAULT_HOME_GALLERY;
+  const studioGallery = settings.studioGallery?.length
+    ? settings.studioGallery
+    : DEFAULT_STUDIO_GALLERY;
   usePageMeta({ path: "/" }); // homepage keeps the full default title/description
   // Re-observe reveal targets if the API swaps the catalog in after mount.
   useReveal(`home:${productsRev}`);
@@ -78,7 +81,7 @@ export default function Home() {
               {gallery.map((shot, i) => (
                 <figure
                   className="home-gallery-slide"
-                  key={`${shot.src}-${i}`}
+                  key={shot.src}
                   aria-label={`${i + 1} of ${gallery.length}`}
                 >
                   <img
@@ -121,6 +124,37 @@ export default function Home() {
             <ProductCard product={product} key={product.slug || product.orderItem} />
           ))}
           <ComingSoonCard />
+        </div>
+      </section>
+
+      <section className="lookbook" aria-labelledby="studio-title">
+        <div className="sect-head sect-head-row reveal">
+          <div>
+            <p className="eyebrow">
+              <span className="dev">झलक</span> · Photo studio
+            </p>
+            <h2 id="studio-title">Shot in the studio</h2>
+          </div>
+          <p className="lookbook-note">Real fits, custom prints, and the people who wear them.</p>
+        </div>
+        <div className="lookbook-strip">
+          {studioGallery.map((shot, index) => (
+            <figure className="lookbook-shot reveal" key={shot.src}>
+              <img
+                src={shot.src}
+                alt={shot.alt}
+                width="1200"
+                height="1600"
+                loading="lazy"
+              />
+              <figcaption>
+                <span>{shot.cap || "GUN-जी studio"}</span>
+                <span aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")} / {String(studioGallery.length).padStart(2, "0")}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
 

@@ -303,6 +303,95 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
   .home-intro { padding-top: clamp(1.5rem, 5vw, 3rem); }
 }
 
+/* ---------- homepage photo studio ---------- */
+
+.lookbook {
+  padding: 0 var(--pad-x) clamp(3.5rem, 7vw, 6rem);
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.lookbook .sect-head { padding-top: clamp(3.5rem, 7vw, 6rem); }
+.lookbook .eyebrow { color: #adb5bd; }
+.lookbook .eyebrow .dev { color: var(--on-dark); }
+.lookbook-note {
+  max-width: 32ch;
+  color: #ced4da;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.lookbook-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.8rem, 2vw, 1.6rem);
+}
+.lookbook-shot {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(248, 249, 250, 0.24);
+  background: var(--ink-soft);
+}
+.lookbook-shot img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  transition: transform 0.7s var(--ease-out);
+}
+.lookbook-shot:hover img { transform: scale(1.035); }
+.lookbook-shot figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem;
+  border-top: 1px solid rgba(248, 249, 250, 0.24);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ced4da;
+}
+.lookbook-shot figcaption span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lookbook-shot figcaption span:last-child {
+  flex: none;
+  color: var(--on-dark);
+}
+
+@media (max-width: 880px) {
+  .lookbook-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .lookbook {
+    padding-right: 0;
+    overflow: hidden;
+  }
+  .lookbook .sect-head { padding-right: var(--pad-x); }
+  .lookbook-strip {
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+    padding-right: var(--pad-x);
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lookbook-strip::-webkit-scrollbar { display: none; }
+  .lookbook-shot {
+    flex: 0 0 min(78vw, 20rem);
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lookbook-shot img { transition: none; }
+}
+
 /* ---------- buttons ---------- */
 
 .btn {
