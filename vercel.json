@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "redirects": [
     { "source": "/editions", "destination": "/tees", "permanent": true }
   ],
@@ -7,13 +9,6 @@
     {
       "source": "/((?!assets/|.*\\.).*)",
       "destination": "/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "gunji-api"
-      }
     }
   ],
   "headers": [
@@ -45,11 +40,5 @@
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=2592000" }
       ]
     }
-  ],
-  "services": {
-    "gunji-api": {
-      "root": ".",
-      "framework": "vite"
-    }
-  }
+  ]
 }
