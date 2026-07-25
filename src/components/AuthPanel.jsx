@@ -54,6 +54,10 @@ export default function AuthPanel() {
     },
     [loginWithGoogle]
   );
+  const onGoogleError = useCallback(
+    () => setError("Couldn't load Google sign-in."),
+    []
+  );
 
   return (
     <div className="auth-card reveal">
@@ -139,7 +143,7 @@ export default function AuthPanel() {
       <div className="auth-or"><span>or</span></div>
 
       {googleClientId ? (
-        <GoogleButton clientId={googleClientId} onCredential={onGoogle} onError={() => setError("Couldn't load Google sign-in.")} />
+        <GoogleButton clientId={googleClientId} onCredential={onGoogle} onError={onGoogleError} />
       ) : (
         <>
           <button
