@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard.jsx";
 import ComingSoonCard from "../components/ComingSoonCard.jsx";
@@ -10,42 +10,13 @@ import { DEFAULT_HOME_GALLERY } from "../data/homeGallery.js";
 
 export default function Home() {
   const { products, productsRev, settings } = useSiteData();
-  const galleryRef = useRef(null);
   const dragRef = useRef(null);
-  const scrollFrame = useRef(null);
-  const [activeSlide, setActiveSlide] = useState(0);
   const gallery = settings.homeGallery?.length ? settings.homeGallery : DEFAULT_HOME_GALLERY;
   usePageMeta({ path: "/" }); // homepage keeps the full default title/description
   // Re-observe reveal targets if the API swaps the catalog in after mount.
   useReveal(`home:${productsRev}`);
   // The launch catalog is small enough to show in full on the homepage.
   const featured = products.slice(0, 6);
-
-  const goToSlide = (index) => {
-    const track = galleryRef.current;
-    const slides = track?.querySelectorAll(".home-gallery-slide");
-    if (!track || !slides?.length) return;
-    const next = Math.max(0, Math.min(index, slides.length - 1));
-    track.scrollTo({ left: slides[next].offsetLeft - track.offsetLeft, behavior: "smooth" });
-    setActiveSlide(next);
-  };
-
-  const updateActiveSlide = () => {
-    cancelAnimationFrame(scrollFrame.current);
-    scrollFrame.current = requestAnimationFrame(() => {
-      const track = galleryRef.current;
-      const slides = [...(track?.querySelectorAll(".home-gallery-slide") || [])];
-      if (!track || !slides.length) return;
-      const nearest = slides.reduce(
-        (best, slide, index) => {
-          const distance = Math.abs((slide.offsetLeft - track.offsetLeft) - track.scrollLeft);
-          return distance < best.distance ? { index, distance } : best;
-        },
-        { index: 0, distance: Infinity }
-      );
-      setActiveSlide(nearest.index);
-    });
-  };
 
   const startDrag = (event) => {
     if (event.pointerType !== "mouse") return;
@@ -94,12 +65,11 @@ export default function Home() {
           <div className="home-intro-art clip-reveal">
             <div
               className="home-gallery"
-              ref={galleryRef}
               role="region"
               aria-roledescription="carousel"
               aria-label="GUN-जी studio gallery"
+              aria-description="Swipe or drag horizontally to see all photos"
               tabIndex="0"
-              onScroll={updateActiveSlide}
               onPointerDown={startDrag}
               onPointerMove={dragGallery}
               onPointerUp={endDrag}
@@ -129,22 +99,6 @@ export default function Home() {
             </div>
             <div className="home-gallery-controls">
               <span className="home-gallery-hint">Swipe / drag</span>
-              <div className="home-gallery-dots" aria-label="Choose gallery photo">
-                {gallery.map((shot, i) => (
-                  <button
-                    type="button"
-                    className={i === activeSlide ? "on" : ""}
-                    aria-label={`Show photo ${i + 1}`}
-                    aria-current={i === activeSlide ? "true" : undefined}
-                    onClick={() => goToSlide(i)}
-                    key={`${shot.src}-dot-${i}`}
-                  />
-                ))}
-              </div>
-              <div className="home-gallery-arrows">
-                <button type="button" onClick={() => goToSlide(activeSlide - 1)} disabled={activeSlide === 0} aria-label="Previous photo">←</button>
-                <button type="button" onClick={() => goToSlide(activeSlide + 1)} disabled={activeSlide === gallery.length - 1} aria-label="Next photo">→</button>
-              </div>
             </div>
           </div>
         </div>
