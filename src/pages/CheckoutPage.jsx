@@ -103,7 +103,7 @@ export default function CheckoutPage() {
   function shareLocation() {
     if (!("geolocation" in navigator)) {
       setGeoStatus("error");
-      setGeoError("Your browser can’t share location — just type your address instead.");
+      setGeoError("Your browser can’t share location. Try another browser, or DM us to order.");
       return;
     }
     setGeoStatus("locating");
@@ -118,8 +118,8 @@ export default function CheckoutPage() {
         setGeoStatus("error");
         setGeoError(
           err.code === err.PERMISSION_DENIED
-            ? "Location blocked — allow it in your browser, or just type your address."
-            : "Couldn’t get your location — try again, or type your address."
+            ? "Location is blocked. Allow location for this site in your browser settings, then tap again."
+            : "Couldn’t get your location — check that GPS/location is on, then tap again."
         );
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
@@ -145,6 +145,15 @@ export default function CheckoutPage() {
       setFieldErrors({
         shippingPhone: phone ? "Enter a valid phone number (at least 7 digits)" : "Required",
       });
+      return;
+    }
+
+    // Location pin is mandatory — the rider needs a map point, not just a
+    // typed address. Server enforces it too.
+    if (!geo) {
+      setStatus("error");
+      setError("Share your location so our rider can find you — tap “Share my location” above.");
+      setGeoStatus((s) => (s === "error" ? s : "required"));
       return;
     }
 
@@ -323,8 +332,9 @@ export default function CheckoutPage() {
               <textarea maxLength={300} rows={2} value={form.shippingAddress} onChange={set("shippingAddress")} placeholder="Tole, city — or arrange on DM" />
             </label>
 
-            <div className="co-field co-geo">
-              <span className="co-label">Pin your location <em>(optional — helps our rider find you)</em></span>
+            <div className={`co-field co-geo ${geoStatus === "required" ? "is-missing" : ""}`}>
+              <span className="co-label">Pin your location *</span>
+              <span className="co-hint">Required — our rider delivers to this map point.</span>
               {geoStatus === "ok" && geo ? (
                 <div className="co-geo-ok">
                   <span className="co-geo-badge">📍 Location captured{geo.accuracy ? ` · ±${geo.accuracy}m` : ""}</span>
@@ -339,6 +349,7 @@ export default function CheckoutPage() {
                 </button>
               )}
               {geoStatus === "error" && <span className="co-error">{geoError}</span>}
+              {geoStatus === "required" && <span className="co-error">Required — share your location to place the order.</span>}
             </div>
 
             <label className="co-field">
