@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { apiPost, apiDelete } from "../lib/api.js";
 import { useAuth } from "./Auth.jsx";
+import { T_SHIRT_SIZES } from "../data/sizeGuide.js";
 
 // Wishlist of saved variants. Guests persist to localStorage; on login the guest
 // list is merged into the account and replaced by the server copy. Each entry
@@ -8,11 +9,12 @@ import { useAuth } from "./Auth.jsx";
 
 const KEY = "gunji_wishlist";
 const WishlistContext = createContext(null);
+const ALLOWED_SIZES = new Set(T_SHIRT_SIZES);
 
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY));
-    return Array.isArray(raw) ? raw : [];
+    return Array.isArray(raw) ? raw.filter((item) => ALLOWED_SIZES.has(item?.size)) : [];
   } catch {
     return [];
   }
@@ -50,6 +52,7 @@ export function WishlistProvider({ children }) {
   // item: { variantId, slug, name, img, price, priceFrom, size, color }
   const add = useCallback(
     (item) => {
+      if (!ALLOWED_SIZES.has(item?.size)) return;
       setItems((prev) => (prev.some((i) => i.variantId === item.variantId) ? prev : [item, ...prev]));
       const token = getToken();
       if (customer && token) apiPost("/api/wishlist", { variantId: item.variantId }, { token }).catch(() => {});

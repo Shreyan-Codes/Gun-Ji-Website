@@ -257,7 +257,7 @@ async function renderOrders(panel) {
       <label class="field"><span class="field-label">Customer *</span><input name="name" type="text" required maxlength="80"></label>
       <label class="field"><span class="field-label">Contact *</span><input name="contact" type="text" required maxlength="120" placeholder="@handle or 98…"></label>
       <label class="field"><span class="field-label">Via</span><select name="method">${METHODS.map((m) => `<option>${m}</option>`).join("")}</select></label>
-      <label class="field"><span class="field-label">Size</span><input name="size" type="text" maxlength="20" placeholder="XL"></label>
+      <label class="field"><span class="field-label">Size</span><select name="size"><option value="">Not set</option><option>S</option><option>M</option><option>L</option></select></label>
       <label class="field"><span class="field-label">Qty</span><input name="qty" type="number" min="1" max="99" value="1"></label>
       <label class="field"><span class="field-label">Colour</span><input name="colour" type="text" maxlength="40" placeholder="black"></label>
       <label class="field"><span class="field-label">Unit price (Rs.)</span><input name="unitPrice" type="number" min="0" max="1000000" placeholder="0"></label>

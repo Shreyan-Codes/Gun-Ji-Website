@@ -1,11 +1,13 @@
-// Single source of truth for the size chart — rendered both on /size-guide and
-// inline on the product page, so the two can never drift apart.
-// Garment measurements are a general fit guide and may vary slightly by batch.
+// Single source of truth for every customer-facing size picker and size chart.
+// Exact garment measurements have not been confirmed for the current batch, so
+// keep them blank rather than showing made-up measurements.
+
+export const T_SHIRT_SIZES = ["S", "M", "L"];
 
 export const SIZE_ROWS = [
-  { size: "XL", chest: 60, length: 74, shoulder: 58, sleeve: 25 },
-  { size: "XXL", chest: 62, length: 76, shoulder: 60, sleeve: 26 },
-  { size: "XXXL", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
+  { size: "S", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
+  { size: "M", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
+  { size: "L", chest: "—", length: "—", shoulder: "—", sleeve: "—" },
 ];
 
 export const MEASURE_TIPS = [

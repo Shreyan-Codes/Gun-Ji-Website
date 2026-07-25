@@ -57,7 +57,8 @@ CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images(product_
 CREATE TABLE IF NOT EXISTS product_variants (
   id         SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  size       TEXT NOT NULL,
+  size       TEXT NOT NULL CONSTRAINT product_variants_size_check
+             CHECK (size IN ('S', 'M', 'L')),
   color      TEXT NOT NULL,
   stock      INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
   sku        TEXT UNIQUE,
@@ -150,7 +151,8 @@ CREATE TABLE IF NOT EXISTS custom_requests (
   method        TEXT NOT NULL DEFAULT 'instagram',
   idea          TEXT NOT NULL,
   colour        TEXT NOT NULL DEFAULT '',
-  size          TEXT NOT NULL DEFAULT '',
+  size          TEXT NOT NULL DEFAULT '' CONSTRAINT custom_requests_size_check
+                CHECK (size IN ('', 'S', 'M', 'L')),
   qty           INTEGER NOT NULL DEFAULT 1,
   reference_url TEXT NOT NULL DEFAULT '',
   status        TEXT NOT NULL DEFAULT 'new',

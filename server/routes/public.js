@@ -1,5 +1,5 @@
 import { Router, json } from "express";
-import { clean, CONTACT_METHODS } from "../lib/validate.js";
+import { clean, CONTACT_METHODS, T_SHIRT_SIZES } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { requireCustomer } from "../lib/authMiddleware.js";
 import { getSettings } from "../db/settings.js";
@@ -129,7 +129,7 @@ const contactSpec = {
   name: { required: true, max: 80 },
   contact: { required: true, max: 120 },
   method: { enum: CONTACT_METHODS, default: "instagram" },
-  size: { max: 20 },
+  size: { enum: T_SHIRT_SIZES },
   qty: { type: "int", min: 1, max: 99, default: 1 },
   colour: { max: 40 },
   website: { max: 200 }, // honeypot

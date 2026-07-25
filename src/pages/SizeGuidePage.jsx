@@ -8,7 +8,7 @@ export default function SizeGuidePage() {
   usePageMeta({
     title: "Size Guide — Normal Fit T-Shirt Measurements (cm)",
     description:
-      "GUN-जी normal-fit t-shirt size chart in centimetres for XL, XXL and XXXL. Measured flat.",
+      "GUN-जी normal-fit t-shirts are available in S, M and L, with delivery across Nepal.",
     path: "/size-guide",
   });
 
@@ -18,13 +18,13 @@ export default function SizeGuidePage() {
         eyebrowDev="नाप"
         eyebrow="Size guide"
         title="Find your fit"
-        intro="Measurements are in centimetres and taken flat across the garment. Use them as a general fit guide; small production variations can occur."
+        intro="Available sizes are S, M and L. Exact measurements can vary slightly by production batch."
       />
 
       <section className="sizeguide">
         <SizeChart how />
         <p className="sizeguide-note">
-          Between sizes? For a boxier look, size up. Still unsure —{" "}
+          Need exact measurements or help choosing?{" "}
           <a href="https://ig.me/m/gunji.clo1" target="_blank" rel="noopener noreferrer">DM us</a> your height &amp; usual fit.
         </p>
       </section>

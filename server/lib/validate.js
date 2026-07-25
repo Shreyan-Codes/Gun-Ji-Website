@@ -58,3 +58,4 @@ export const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "
 export const CUSTOM_STATUSES = ["new", "discussing", "printing", "delivered", "declined"];
 export const CONTACT_METHODS = ["instagram", "whatsapp", "phone", "email"];
 export const EDITIONS = ["signature", "player", "anime", "desi", "custom"];
+export const T_SHIRT_SIZES = ["S", "M", "L"];

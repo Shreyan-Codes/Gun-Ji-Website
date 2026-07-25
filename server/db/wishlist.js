@@ -29,7 +29,12 @@ export async function listWishlist(userId) {
 
 export async function addWishlist(userId, variantId) {
   await db
-    .prepare("INSERT INTO wishlist (user_id, variant_id) VALUES (?, ?) ON CONFLICT (user_id, variant_id) DO NOTHING")
+    .prepare(
+      `INSERT INTO wishlist (user_id, variant_id)
+       SELECT ?, id FROM product_variants
+       WHERE id = ? AND size IN ('S', 'M', 'L')
+       ON CONFLICT (user_id, variant_id) DO NOTHING`
+    )
     .run(userId, variantId);
 }
 

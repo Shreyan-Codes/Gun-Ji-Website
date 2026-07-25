@@ -6,7 +6,7 @@
 import { db } from "./index.js";
 import { createProduct, addImage, addVariant } from "./products.js";
 
-const SIZES = ["XL", "XXL", "XXXL"];
+const SIZES = ["S", "M", "L"];
 
 // The normal-fit tee in two colourways and custom print.
 // The illustrated print editions (player / anime / देसी) are not stocked — the

@@ -9,6 +9,7 @@ import { editionFilters } from "../data/products.jsx";
 import { useSiteData } from "../context/SiteData.jsx";
 import { usePageMeta } from "../lib/seo.js";
 import { apiGet } from "../lib/api.js";
+import { T_SHIRT_SIZES } from "../data/sizeGuide.js";
 
 const SORT_OPTS = [
   { key: "", label: "Featured" },
@@ -17,7 +18,7 @@ const SORT_OPTS = [
   { key: "price_desc", label: "Price ↓" },
   { key: "name_asc", label: "A–Z" },
 ];
-const SIZE_ORDER = ["S", "M", "L", "XL", "XXL", "XXXL"];
+const SIZE_ORDER = T_SHIRT_SIZES;
 
 export default function TeesPage() {
   const [params, setParams] = useSearchParams();
@@ -31,7 +32,8 @@ export default function TeesPage() {
 
   const collection = params.get("collection") || "all";
   const sort = params.get("sort") || "";
-  const size = params.get("size") || "";
+  const requestedSize = params.get("size") || "";
+  const size = T_SHIRT_SIZES.includes(requestedSize) ? requestedSize : "";
   const color = params.get("color") || "";
   const inStock = params.get("inStock") === "1";
 
@@ -41,7 +43,7 @@ export default function TeesPage() {
   const sizes = useMemo(() => {
     const s = new Set();
     allProducts.forEach((p) => (p.variants || []).forEach((v) => s.add(v.size)));
-    return SIZE_ORDER.filter((x) => s.has(x)).concat([...s].filter((x) => !SIZE_ORDER.includes(x)));
+    return SIZE_ORDER.filter((x) => s.has(x));
   }, [allProducts]);
   const colors = useMemo(() => {
     const c = new Set();

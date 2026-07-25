@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { apiPost } from "../lib/api.js";
 import { useSiteData } from "../context/SiteData.jsx";
+import { T_SHIRT_SIZES } from "../data/sizeGuide.js";
 
 const methodPlaceholders = {
   instagram: "@your.handle",
@@ -125,11 +126,7 @@ export default function CustomOrderForm() {
           <span className="of-label">Size</span>
           <select value={form.size} onChange={set("size")}>
             <option value="">Not sure yet</option>
-            <option>S</option>
-            <option>M</option>
-            <option>L</option>
-            <option>XL</option>
-            <option>XXL</option>
+            {T_SHIRT_SIZES.map((size) => <option key={size}>{size}</option>)}
           </select>
         </label>
 

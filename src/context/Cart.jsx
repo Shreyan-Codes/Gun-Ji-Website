@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { T_SHIRT_SIZES } from "../data/sizeGuide.js";
 
 // Client-side cart (persisted to localStorage). Lines are keyed by variantId;
 // each stores enough to render without re-fetching. Prices here are for display
@@ -6,6 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 const CartContext = createContext(null);
 const KEY = "gunji_cart";
+const ALLOWED_SIZES = new Set(T_SHIRT_SIZES);
 
 function numericPrice(value) {
   const direct = Number(value);
@@ -17,7 +19,9 @@ function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY));
     return Array.isArray(raw)
-      ? raw.map((item) => ({ ...item, price: numericPrice(item.price) }))
+      ? raw
+          .filter((item) => ALLOWED_SIZES.has(item?.size))
+          .map((item) => ({ ...item, price: numericPrice(item.price) }))
       : [];
   } catch {
     return [];
@@ -37,6 +41,7 @@ export function CartProvider({ children }) {
 
   // line: { variantId, productId, slug, name, img, size, color, price, maxStock }
   const add = useCallback((line, qty = 1) => {
+    if (!ALLOWED_SIZES.has(line?.size)) return;
     setItems((prev) => {
       const existing = prev.find((i) => i.variantId === line.variantId);
       const cap = line.maxStock ?? 99;

@@ -18,7 +18,7 @@ export default function ComingSoonCard() {
       <div className="product-meta">
         <h3>Crop T-Shirt</h3>
         <p className="product-tag">
-          Coming soon · Sizes XL · XXL · XXXL
+          Coming soon · Sizes S · M · L
         </p>
         <div className="product-row">
           <span className="price price-soon">—</span>

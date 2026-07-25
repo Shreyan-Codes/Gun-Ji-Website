@@ -1,7 +1,7 @@
 import { Router, json } from "express";
 import { config } from "../config.js";
 import { db } from "../db/index.js";
-import { clean, ORDER_STATUSES, CUSTOM_STATUSES, CONTACT_METHODS, EDITIONS } from "../lib/validate.js";
+import { clean, ORDER_STATUSES, CUSTOM_STATUSES, CONTACT_METHODS, EDITIONS, T_SHIRT_SIZES } from "../lib/validate.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { verifyPassword } from "../lib/password.js";
 import { bearer, requireAdmin } from "../lib/authMiddleware.js";
@@ -94,7 +94,7 @@ const orderFields = {
   name: { max: 80 },
   contact: { max: 120 },
   method: { enum: CONTACT_METHODS },
-  size: { max: 20 },
+  size: { enum: T_SHIRT_SIZES },
   qty: { type: "int", min: 1, max: 99 },
   colour: { max: 40 },
   unitPrice: { type: "int", min: 0, max: 1000000 },
@@ -342,9 +342,11 @@ router.post("/products", async (req, res) => {
     sortOrder: value.sortOrder === "" ? undefined : value.sortOrder, active: value.active,
   });
   await setPrimaryImage(product.id, value.img, value.alt);
-  // Give new products a placeholder variant so they have valid inventory rows;
-  // real sizes/stock are managed later in the variant editor.
-  await addVariant(product.id, { size: "One size", color: "As shown", stock: 0 });
+  // New products start with the only supported sizes. Stock remains zero until
+  // the owner is ready to put the product on sale.
+  for (const size of T_SHIRT_SIZES) {
+    await addVariant(product.id, { size, color: "As shown", stock: 0 });
+  }
   res.status(201).json({ item: await getProduct(product.id, { admin: true }) });
 });
 
