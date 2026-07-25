@@ -23,13 +23,13 @@ const DIST = path.join(ROOT, "dist");
 // ---- must mirror src/lib/seo.js ----
 const SITE_URL = "https://www.gunji.live";
 const SITE_NAME = "GUN-जी™";
-const DEFAULT_TITLE = "T-Shirts in Nepal — Oversized Tees & Custom Print | Gunji Kathmandu";
+const DEFAULT_TITLE = "Premium T-Shirts at Affordable Prices in Nepal | GUN-जी™";
 const DEFAULT_DESC =
-  "Buy premium oversized t-shirts in Nepal — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Heavyweight tees printed in Kathmandu, shipped nationwide.";
+  "Buy premium normal-fit t-shirts in Nepal at affordable prices. Shop GUN-जी tees in white or black, or make your own custom print, with nationwide delivery.";
 const DEFAULT_IMAGE = `${SITE_URL}/assets/gunji_duo_wide.jpg`;
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
-const pageTitle = (t) => (t ? `${t} · ${SITE_NAME} Kathmandu` : DEFAULT_TITLE);
+const pageTitle = (t) => (t ? `${t} · ${SITE_NAME} Nepal` : DEFAULT_TITLE);
 
 // Indexable static routes and the meta each sets client-side (mirrors the
 // usePageMeta() calls in each page component).
@@ -37,9 +37,9 @@ const STATIC_ROUTES = [
   { path: "/", title: null, description: DEFAULT_DESC, image: DEFAULT_IMAGE, changefreq: "weekly", priority: "1.0" },
   {
     path: "/tees",
-    title: "Oversized T-Shirts Catalog — Buy Tees Online Nepal",
+    title: "Premium T-Shirts at Affordable Prices in Nepal",
     description:
-      "Shop premium oversized t-shirts printed in Kathmandu — the GUN-जी signature logo tee in white or black, plain oversized essentials, or custom-print your own design. Ships across Nepal.",
+      "Shop GUN-जी premium normal-fit t-shirts in white or black at affordable prices, with delivery all across Nepal.",
     changefreq: "weekly",
     priority: "0.9",
   },
@@ -47,9 +47,9 @@ const STATIC_ROUTES = [
   // absent here (no prerendered page, and dropped from sitemap.xml).
   {
     path: "/custom-print",
-    title: "Custom T-Shirt Printing in Kathmandu, Nepal",
+    title: "Make Your Own Custom T-Shirt in Nepal",
     description:
-      "Print your own t-shirt design in Kathmandu — send finished artwork, a reference photo, or just an idea. Premium heavyweight oversized tees, any colour. Ships across Nepal.",
+      "Make your own custom t-shirt in Nepal — send finished artwork, a reference photo, or just an idea. Premium tees delivered nationwide.",
     changefreq: "monthly",
     priority: "0.9",
   },
@@ -57,15 +57,15 @@ const STATIC_ROUTES = [
     path: "/about",
     title: "About — Small Label, Loud Tees",
     description:
-      "GUN-जी is a Kathmandu t-shirt label: heavyweight oversized tees, printed locally, ordered over DM. Born in Kathmandu, printed in Kathmandu.",
+      "GUN-जी is a Nepal-based t-shirt label offering premium tees at affordable prices, with delivery all across Nepal.",
     changefreq: "monthly",
     priority: "0.5",
   },
   {
     path: "/size-guide",
-    title: "Size Guide — Oversized Tee Measurements (cm)",
+    title: "Size Guide — Normal Fit T-Shirt Measurements (cm)",
     description:
-      "GUN-जी oversized t-shirt size chart in centimetres — chest, length, shoulder and sleeve per size. Measured flat.",
+      "GUN-जी normal-fit t-shirt size chart in centimetres for XL, XXL and XXXL. Measured flat.",
     changefreq: "yearly",
     priority: "0.4",
   },
@@ -79,7 +79,7 @@ const STATIC_ROUTES = [
   {
     path: "/policies/returns",
     title: "Returns & exchange",
-    description: "Returns and exchange policy for GUN-जी oversized tees.",
+    description: "Returns and exchange policy for GUN-जी normal-fit t-shirts.",
     changefreq: "yearly",
     priority: "0.3",
   },
@@ -160,8 +160,8 @@ async function fetchProducts() {
 }
 
 function productMeta(p) {
-  const title = pageTitle(`${p.name} — ${rupees(p.price)} Oversized Tee`);
-  const description = `${p.name} (${p.tag}) — premium heavyweight oversized t-shirt printed in Kathmandu. ${rupees(p.price)}, ships across Nepal. Order online or via DM.`;
+  const title = pageTitle(`${p.name} — ${rupees(p.price)} Normal Fit Tee`);
+  const description = `${p.name} (${p.tag}) — a premium normal-fit t-shirt at an affordable price. ${rupees(p.price)}, delivered across Nepal. Order online or via DM.`;
   const canonical = `${SITE_URL}/product/${p.slug}`;
   const image = p.img?.startsWith("http") ? p.img : `${SITE_URL}${p.img}`;
   const jsonLd = {
@@ -169,7 +169,7 @@ function productMeta(p) {
     "@type": "Product",
     name: p.name,
     image: [image],
-    description: `${p.tag} — premium heavyweight oversized tee, printed in Kathmandu, Nepal.`,
+    description: `${p.tag} — a premium normal-fit t-shirt with delivery across Nepal.`,
     sku: p.slug,
     brand: { "@type": "Brand", name: "Gunji" },
     offers: {
@@ -181,7 +181,7 @@ function productMeta(p) {
       availability: p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     },
   };
-  return { title, description, canonical, image, imageAlt: p.alt || `${p.name} — GUN-जी oversized tee`, jsonLd };
+  return { title, description, canonical, image, imageAlt: p.alt || `${p.name} — GUN-जी normal-fit t-shirt`, jsonLd };
 }
 
 function writeSitemap(routes) {
