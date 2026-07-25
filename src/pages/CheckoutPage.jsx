@@ -11,12 +11,10 @@ import { usePageMeta } from "../lib/seo.js";
 
 const rupees = (n) => `Rs. ${Number(n || 0).toLocaleString("en-IN")}`;
 
-const methodPlaceholder = {
-  instagram: "@your.handle",
-  whatsapp: "98XXXXXXXX",
-  phone: "98XXXXXXXX",
-  email: "you@email.com",
-};
+// Mirrors PHONE_RULE in server/routes/public.js — at least 7 digits, but
+// spaces / dashes / brackets / +977 are all fine. Checked client-side too so a
+// missing number fails instantly instead of after a round-trip.
+const PHONE_RE = /^(?=(?:\D*\d){7,})[\d+()\-\s]+$/;
 
 export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
@@ -24,10 +22,10 @@ export default function CheckoutPage() {
   const { settings } = useSiteData();
   usePageMeta({ title: "Checkout", path: "/checkout", noindex: true });
 
+  // Phone is the only contact we collect — the handle/method picker was
+  // removed so there's exactly one number to reach the customer on.
   const [form, setForm] = useState({
     name: customer?.name || "",
-    method: "instagram",
-    contact: "",
     shippingAddress: "",
     shippingPhone: "",
     note: "",
@@ -137,6 +135,19 @@ export default function CheckoutPage() {
   async function submit(e) {
     e.preventDefault();
     if (status === "sending" || items.length === 0) return;
+
+    // Phone is mandatory — catch it here so the shopper sees the error straight
+    // away rather than after a failed POST. The server enforces it regardless.
+    const phone = form.shippingPhone.trim();
+    if (!PHONE_RE.test(phone)) {
+      setStatus("error");
+      setError("Add a phone number so we can reach you about delivery.");
+      setFieldErrors({
+        shippingPhone: phone ? "Enter a valid phone number (at least 7 digits)" : "Required",
+      });
+      return;
+    }
+
     setStatus("sending");
     setError("");
     setFieldErrors({});
@@ -146,10 +157,12 @@ export default function CheckoutPage() {
         {
           items: items.map((i) => ({ variantId: i.variantId, qty: i.qty })),
           name: form.name,
-          contact: form.contact,
-          method: form.method,
+          // The phone doubles as the contact of record, so the admin inbox and
+          // the owner alerts still have a number to reach out on.
+          contact: phone,
+          method: "phone",
           shippingAddress: form.shippingAddress,
-          shippingPhone: form.shippingPhone,
+          shippingPhone: phone,
           note: form.note,
           paymentMethod: form.paymentMethod,
           couponCode: couponQuote?.coupon?.code || "",
@@ -219,7 +232,7 @@ export default function CheckoutPage() {
               </>
             )}
             <div className="co-done-total"><span>Total</span><span>{rupees(placed.total)}</span></div>
-            <p>We’ll confirm delivery &amp; payment on your {form.method === "instagram" ? "Instagram" : form.method === "whatsapp" ? "WhatsApp" : "message"} shortly.</p>
+            <p>We’ll call you on {form.shippingPhone} to confirm delivery &amp; payment shortly.</p>
             <div className="co-done-actions">
               <a className="btn btn-solid" href={dmConfirm(placed)} target="_blank" rel="noopener noreferrer">
                 Confirm on {settings.whatsappNumber ? "WhatsApp" : "Instagram"} <span className="arr" aria-hidden="true">↗</span>
@@ -272,7 +285,7 @@ export default function CheckoutPage() {
         eyebrowDev="चेकआउट"
         eyebrow="Checkout"
         title="Almost yours"
-        intro="Drop your details — no payment now. We confirm price, delivery & payment on your DM before anything’s charged."
+        intro="Drop your details — no payment now. We call you to confirm price, delivery & payment before anything’s charged."
       />
       <section className="checkout-page">
         <div className="co-grid">
@@ -285,22 +298,25 @@ export default function CheckoutPage() {
               {fieldErrors.name && <span className="co-error">{fieldErrors.name}</span>}
             </label>
 
-            <div className="co-row">
-              <label className="co-field">
-                <span className="co-label">Reach you on</span>
-                <select value={form.method} onChange={set("method")}>
-                  <option value="instagram">Instagram</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="phone">Phone</option>
-                  <option value="email">Email</option>
-                </select>
-              </label>
-              <label className="co-field">
-                <span className="co-label">Handle / number *</span>
-                <input type="text" required maxLength={120} value={form.contact} onChange={set("contact")} placeholder={methodPlaceholder[form.method]} />
-                {fieldErrors.contact && <span className="co-error">{fieldErrors.contact}</span>}
-              </label>
-            </div>
+            <label className="co-field">
+              <span className="co-label">Phone number *</span>
+              <input
+                type="tel"
+                required
+                maxLength={40}
+                inputMode="tel"
+                autoComplete="tel"
+                value={form.shippingPhone}
+                onChange={set("shippingPhone")}
+                placeholder="98XXXXXXXX"
+                aria-describedby="co-phone-hint"
+              />
+              <span className="co-hint" id="co-phone-hint">
+                We&apos;ll call you on this number to confirm and deliver your order.
+              </span>
+              {fieldErrors.shippingPhone && <span className="co-error">{fieldErrors.shippingPhone}</span>}
+              {fieldErrors.contact && <span className="co-error">{fieldErrors.contact}</span>}
+            </label>
 
             <label className="co-field">
               <span className="co-label">Delivery address <em>(anywhere in Nepal)</em></span>
@@ -325,16 +341,10 @@ export default function CheckoutPage() {
               {geoStatus === "error" && <span className="co-error">{geoError}</span>}
             </div>
 
-            <div className="co-row">
-              <label className="co-field">
-                <span className="co-label">Phone (optional)</span>
-                <input type="text" maxLength={40} value={form.shippingPhone} onChange={set("shippingPhone")} />
-              </label>
-              <label className="co-field">
-                <span className="co-label">Note (optional)</span>
-                <input type="text" maxLength={1000} value={form.note} onChange={set("note")} placeholder="Deadline, gift, etc." />
-              </label>
-            </div>
+            <label className="co-field">
+              <span className="co-label">Note (optional)</span>
+              <input type="text" maxLength={1000} value={form.note} onChange={set("note")} placeholder="Deadline, gift, etc." />
+            </label>
 
             <fieldset className="co-pay">
               <legend className="co-label">Payment</legend>

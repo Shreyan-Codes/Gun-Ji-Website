@@ -213,12 +213,26 @@ router.post("/orders/:id/payment-proof", proofLimit, requireCustomer, json({ lim
   res.status(202).json({ ok: true });
 });
 
+// Phone is mandatory on every order — the rider needs a number to call, and a
+// DM handle alone isn't enough once the parcel is out. Deliberately permissive
+// on format (spaces, dashes, brackets, +977 country code all fine) but it must
+// carry at least 7 actual digits, so "n/a" or "-" can't slip through.
+const PHONE_RULE = {
+  required: true,
+  max: 40,
+  pattern: /^(?=(?:\D*\d){7,})[\d+()\-\s]+$/,
+  patternMsg: "Enter a valid phone number (at least 7 digits)",
+};
+
 const checkoutSpec = {
   name: { required: true, max: 80 },
-  contact: { required: true, max: 120 },
-  method: { enum: CONTACT_METHODS, default: "instagram" },
+  // Checkout no longer asks for a handle — the phone is the single point of
+  // contact. Kept optional (not removed) so the stored contact/contact_method
+  // columns still work for orders created elsewhere, e.g. manually in /admin.
+  contact: { max: 120 },
+  method: { enum: CONTACT_METHODS, default: "phone" },
   shippingAddress: { max: 300 },
-  shippingPhone: { max: 40 },
+  shippingPhone: PHONE_RULE,
   note: { max: 1000 },
   couponCode: { max: 32 },
   paymentMethod: { enum: ["cod", "esewa", "khalti"], default: "cod" },
@@ -243,8 +257,10 @@ async function placeCartOrder(req, res) {
       shippingName: value.name,
       shippingAddress: value.shippingAddress,
       shippingPhone: value.shippingPhone,
-      contact: value.contact,
-      contactMethod: value.method,
+      // Fall back to the phone so contact is never blank in the admin inbox
+      // or the owner alert, whatever the caller sent.
+      contact: value.contact || value.shippingPhone,
+      contactMethod: value.contact ? value.method : "phone",
       note: value.note,
       paymentMethod: value.paymentMethod,
       couponCode: value.couponCode,
@@ -272,7 +288,19 @@ async function placeCartOrder(req, res) {
 
 async function placeSingleOrder(req, res) {
   const { ok, errors, value } = clean(
-    { ...contactSpec, productId: { type: "int", min: 1 }, item: { max: 160 }, note: { max: 1000 } },
+    {
+      ...contactSpec,
+      // Same mandatory phone as the cart checkout — otherwise this older
+      // single-item shape would be a way to place an order without one.
+      // contact is relaxed to optional here for the same reason as checkout:
+      // the phone is the contact. (contactSpec keeps it required for the
+      // custom-print enquiry form, which collects no phone.)
+      contact: { max: 120 },
+      shippingPhone: PHONE_RULE,
+      productId: { type: "int", min: 1 },
+      item: { max: 160 },
+      note: { max: 1000 },
+    },
     req.body
   );
   if (!ok) return res.status(400).json({ error: "Check the highlighted fields", errors });
@@ -298,8 +326,9 @@ async function placeSingleOrder(req, res) {
   const order = await createOrder({
     userId: req.user ? req.user.id : null,
     shippingName: value.name,
-    contact: value.contact,
-    contactMethod: value.method,
+    shippingPhone: value.shippingPhone,
+    contact: value.contact || value.shippingPhone,
+    contactMethod: value.contact ? value.method : "phone",
     note: value.note,
     source: "site",
     items: [{

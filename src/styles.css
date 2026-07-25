@@ -2745,6 +2745,7 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 }
 .co-form input:focus, .co-form select:focus, .co-form textarea:focus { outline: 2px solid var(--brick); outline-offset: 1px; }
 .co-form textarea { resize: vertical; }
+.co-hint { font-size: 0.72rem; line-height: 1.4; color: var(--bone-dim); }
 .co-error { font-family: var(--font-mono); font-size: 0.68rem; color: var(--brick); }
 .co-error-main { display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap; }
 .co-submit { justify-content: center; margin-top: 0.4rem; }
