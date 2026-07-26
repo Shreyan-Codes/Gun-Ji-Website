@@ -2789,8 +2789,6 @@ h2 .dev { font-size: 0.94em; text-transform: none; letter-spacing: 0; }
 
 /* Opt-in GPS delivery pin */
 .co-geo-btn { align-self: flex-start; }
-/* flagged when submit is blocked for a missing pin */
-.co-geo.is-missing .co-geo-btn { border-color: var(--brick); color: var(--brick); }
 .co-geo-ok { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .co-geo-badge {
   font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink);

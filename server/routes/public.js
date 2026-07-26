@@ -224,15 +224,6 @@ const PHONE_RULE = {
   patternMsg: "Enter a valid phone number (at least 7 digits)",
 };
 
-// GPS delivery pin is mandatory — the rider delivers to the map point, so an
-// order without coordinates isn't deliverable. Accuracy stays optional because
-// not every device reports it.
-const LOCATION_RULES = {
-  locationLat: { type: "num", min: -90, max: 90, required: true },
-  locationLng: { type: "num", min: -180, max: 180, required: true },
-  locationAccuracy: { type: "int", min: 0, max: 100000 },
-};
-
 const checkoutSpec = {
   name: { required: true, max: 80 },
   // Checkout no longer asks for a handle — the phone is the single point of
@@ -245,7 +236,10 @@ const checkoutSpec = {
   note: { max: 1000 },
   couponCode: { max: 32 },
   paymentMethod: { enum: ["cod", "esewa", "khalti"], default: "cod" },
-  ...LOCATION_RULES,
+  // Optional GPS delivery pin (opt-in "Share my location" button at checkout).
+  locationLat: { type: "num", min: -90, max: 90 },
+  locationLng: { type: "num", min: -180, max: 180 },
+  locationAccuracy: { type: "int", min: 0, max: 100000 },
 };
 
 async function placeCartOrder(req, res) {
@@ -273,10 +267,10 @@ async function placeCartOrder(req, res) {
       source: "site",
       items,
       enforceStock: true,
-      // Coordinates are validated as required above, so they're always present.
+      // Only persist the pin when both coordinates came through.
       locationLat: value.locationLat,
       locationLng: value.locationLng,
-      locationAccuracy: value.locationAccuracy,
+      locationAccuracy: value.locationLat !== null && value.locationLng !== null ? value.locationAccuracy : null,
     });
     notifyNewOrder(order); // fire-and-forget owner alert
     logOrderToSheet(order); // fire-and-forget Google Sheet log
@@ -303,8 +297,6 @@ async function placeSingleOrder(req, res) {
       // custom-print enquiry form, which collects no phone.)
       contact: { max: 120 },
       shippingPhone: PHONE_RULE,
-      // ...and the same mandatory delivery pin.
-      ...LOCATION_RULES,
       productId: { type: "int", min: 1 },
       item: { max: 160 },
       note: { max: 1000 },
@@ -339,9 +331,6 @@ async function placeSingleOrder(req, res) {
     contactMethod: value.contact ? value.method : "phone",
     note: value.note,
     source: "site",
-    locationLat: value.locationLat,
-    locationLng: value.locationLng,
-    locationAccuracy: value.locationAccuracy,
     items: [{
       variantId, productId, productName: item,
       size: value.size, color: value.colour, quantity: value.qty, priceAtPurchase: unitPrice,
