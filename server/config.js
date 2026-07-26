@@ -49,6 +49,10 @@ export const config = {
   // Google Apps Script web-app webhook URL that appends orders/requests to a
   // Google Sheet. Empty = skip. Set as a secret in the Render dashboard.
   sheetsWebhookUrl: process.env.GSHEET_WEBHOOK_URL || "",
+  // Shared secret sent with every append. The Apps Script must be deployed
+  // "Anyone" to accept an anonymous POST, so this is what stops a leaked URL
+  // from letting anyone write rows. Must match SHARED_TOKEN in the script.
+  sheetsWebhookToken: process.env.GSHEET_WEBHOOK_TOKEN || "",
   // Set TRUST_PROXY=1 when running behind nginx/caddy so rate limits see real IPs.
   trustProxy: process.env.TRUST_PROXY === "1",
   // Cold-start heartbeat: on Render Free the instance spins down after ~15 min

@@ -17,6 +17,9 @@ async function postToSheet(payload) {
   try {
     const safePayload = {
       ...payload,
+      // The Apps Script has to be deployed as "Anyone" to accept an anonymous
+      // POST, so a shared token is what actually authorises the append.
+      token: config.sheetsWebhookToken,
       row: Array.isArray(payload.row) ? payload.row.map(safeSheetCell) : payload.row,
     };
     const res = await fetch(url, {
@@ -31,29 +34,40 @@ async function postToSheet(payload) {
   }
 }
 
-export function logOrderToSheet(order) {
+// Column order is the sheet's contract — only ever append new columns on the
+// end, otherwise existing rows shift under their headers.
+export const ORDER_HEADERS = [
+  "Time", "Order #", "Tracking", "Name", "Phone", "Items",
+  "Subtotal (Rs.)", "Coupon", "Discount (Rs.)", "Total (Rs.)",
+  "Payment", "Address", "Map pin", "Status",
+];
+
+export function orderToRow(order) {
   const items = (order.items || [])
     .map((i) => `${i.qty}× ${i.item} (${i.size}${i.colour ? "/" + i.colour : ""})`)
     .join(", ");
-  postToSheet({
-    sheet: "Orders",
-    headers: ["Time", "Order #", "Name", "Method", "Contact", "Items", "Subtotal (Rs.)", "Coupon", "Discount (Rs.)", "Total (Rs.)", "Address", "Map pin", "Status"],
-    row: [
-      new Date().toISOString(),
-      order.id,
-      order.shippingName || order.name || "",
-      order.method || "",
-      order.contact || "",
-      items,
-      Number(order.subtotal || order.total || 0),
-      order.couponCode || "",
-      Number(order.discount || 0),
-      Number(order.total || 0),
-      order.shippingAddress || "",
-      order.locationUrl || "",
-      order.status || "pending",
-    ],
-  });
+  return [
+    order.createdAt || new Date().toISOString(),
+    order.id,
+    order.trackingCode || "",
+    order.shippingName || order.name || "",
+    // Checkout is phone-only now, so `contact` mirrors it; fall back for older
+    // rows and for manual orders created in /admin with a handle instead.
+    order.shippingPhone || order.contact || "",
+    items,
+    Number(order.subtotal || order.total || 0),
+    order.couponCode || "",
+    Number(order.discount || 0),
+    Number(order.total || 0),
+    order.paymentMethod || "",
+    order.shippingAddress || "",
+    order.locationUrl || "",
+    order.status || "pending",
+  ];
+}
+
+export function logOrderToSheet(order) {
+  postToSheet({ sheet: "Orders", headers: ORDER_HEADERS, row: orderToRow(order) });
 }
 
 export function logCustomRequestToSheet(cr) {
